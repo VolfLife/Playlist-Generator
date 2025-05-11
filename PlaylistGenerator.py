@@ -10,11 +10,20 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+from PlaylistEditor import PlaylistEditor  # Импорт нового класса
 
 class PlaylistGenerator:
-    def __init__(self, root, file_path=None):
+    def __init__(self, root, file_to_open=None):
         self.root = root
         self.root.title("Генератор плейлистов")
+        
+        # Обработка переданного файла ДО создания виджетов
+        if file_to_open:
+            file_to_open = file_to_open.strip('"')
+            if file_to_open.lower().endswith('.m3u8'):
+                self.root.after(1, lambda: self.open_editor(file_to_open))
+                return  # Прерываем инициализацию основного окна
+                
         self.last_folder = ""
         self.load_settings()
         self.create_widgets()
@@ -37,6 +46,9 @@ class PlaylistGenerator:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.minsize(540, 310)
     
+        
+                
+            
     def show_version_info(self):
         from version_info import version_info
         version_label = tk.Label(
@@ -46,6 +58,26 @@ class PlaylistGenerator:
         )
         version_label.grid(row=8, column=0, columnspan=3, pady=5)
     
+    def open_editor(self, file_path):
+        """Открывает редактор и корректно закрывает текущее окно"""
+        try:
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            self.root.destroy()  # Закрываем основное окно только после успешного создания редактора
+            editor_root.mainloop()
+        except Exception as e:
+            print(f"Ошибка открытия редактора: {e}")
+            self.root.destroy()
+    
+    def process_dropped_file(self, file_path):
+        """Обработка переданного файла при запуске"""
+        if file_path and file_path.lower().endswith('.m3u8'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()
+            
+            
     def create_widgets(self):
         # Настройка сетки для растягивания
         self.root.grid_columnconfigure(1, weight=1)
@@ -96,7 +128,7 @@ class PlaylistGenerator:
         tk.Button(self.root, text="Создать плейлист", command=self.generate_playlist).grid(row=6, column=1, pady=5)
         
         # Поле для вывода информации
-        self.seed_info = tk.Label(self.root, text="")
+        self.seed_info = tk.Label(self.root, text="", fg="green")
         self.seed_info.grid(row=7, column=0, columnspan=3, pady=5)
 
     def toggle_step_entry(self):
@@ -209,13 +241,13 @@ class PlaylistGenerator:
             # 3. Применяем реверс блоков
             shuffled_files = self.apply_reverse_step(shuffled, reverse_step)  # Убрали лишний параметр
             
-            info_text = f"Основной сид: {seed} \nТеневой сид: {shadow_seed} \nРеверс: {reverse_step}"
+            info_text = f"Основной сид: {seed} \nТеневой сид: {shadow_seed} \nШаг реверса: {reverse_step}"
         elif step > 0:
             # Ручной шаг реверса
             reverse_step = step
             shuffled = self.shuffle_files(audio_files, str(seed))
             shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
-            info_text = f"Основной сид: {seed} | Ручной реверс: {reverse_step}"
+            info_text = f"Основной сид: {seed} | Шаг реверса: {reverse_step}"
         else:
             # Без реверса
             random.seed(abs(self.stable_hash(seed)))
@@ -296,7 +328,7 @@ class PlaylistGenerator:
         # Расчет длины сида
         base_length = math.ceil(math.log2(num_tracks + 1)) * 2
         max_reasonable_length = 128  # SHA-512 дает максимум 128 символов
-        seed_length = min(max(2, base_length), max_reasonable_length, length)  # Учитываем все ограничения
+        seed_length = min(max(2, base_length), 128)  # Учитываем все ограничения
     
         # Генерация хеша
         entropy = f"{num_tracks}{date.timestamp()}{random_part}"
@@ -318,6 +350,7 @@ class PlaylistGenerator:
         return shuffled
 
 if __name__ == "__main__":
+    print("Аргументы командной строки:", sys.argv)
     root = tk.Tk()
     file_path = sys.argv[1] if len(sys.argv) > 1 else None
     app = PlaylistGenerator(root, file_path)
