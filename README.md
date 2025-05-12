@@ -24,7 +24,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 	* Block reversal algorithm
 
-* Comprehensive playlist metadata:
+* Preserves playlist metadata:
 
 ```
 #EXTM3U
@@ -82,7 +82,6 @@ Modify existing playlists - works even with missing local files. Launch by drag-
 
 	* Undo/redo actions
 
-* Preserves all playlist metadata
 
 ## Building from Source
 
