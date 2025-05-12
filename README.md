@@ -22,7 +22,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 	* Shadow seed for complex shuffling
 
-	* Block reversal algorithm
+	* Reversal step algorithm
 
 * Preserves playlist metadata:
 
