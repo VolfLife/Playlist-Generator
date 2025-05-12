@@ -2,7 +2,7 @@
 version_info = {
     "version": "3.0",
     "author": "VolfLife",
-    "description": "Генератор плейлистов",
+    "description": "Playlist Generator",
     "copyright": "Copyright (c) 2025 VolfLife",
     "product_name": "Playlist Generator"
 }
