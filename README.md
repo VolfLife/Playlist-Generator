@@ -83,7 +83,7 @@ Modify existing playlists - works even with missing local files. Launch by drag-
 	* Undo/redo actions
 
 
-## Building from Source
+## Compilation
 
 1. Install [Python](https://www.python.org/downloads/windows/) with pip
 
