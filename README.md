@@ -1,45 +1,99 @@
-
 # Playlist Generator
 
-Интуитивно понятный и простой генератор для создания плейлиста с случайным списком треков
+An intuitive and simple tool for generating and editing randomly shuffled playlists.
 
-## Возможности
+## Key Features
 
-* Записывает пути только аудио–файлов: 
-	```
-	.mp3, .flac, .ogg, .wav, .m4a, .aac
-	```
-* Перемешивает список треков, используя случайно сгенерированный/пользовательский cид
+* Clean, minimalist interface
 
-* Использование теневого сида и реверса для более сложного перемешивания
+* Multi-language support
 
-* Редактирование плейлиста
+	>*Note: Translations may contain minor errors*
 
-* Ввод данных для повторного воспроизведения плейлиста
+* Dual-functionality: Generator & Editor
 
-* Записывает метаданные в плейлист: 
-	```
-	#EXTM3U
-	#Created by VolfLife's Playlist Generator
-	#GENERATED:2025-03-29 01:24:00
-	#PLAYLIST:my_playlist
-	#SEED:89451...
-	#SHADOW_SEED:11042...
-	#REVERSE_STEP:19
-	#TRACKS:25
-	...
-	```
-* Создает `.m3u8`–плейлист
-	>*очевидно*
-	
-## Сборка
+* Supported audio formats:
 
-1. Установить [Python](https://www.python.org/downloads/windows/), pip
-2. В терминале:
+	`mp3, .flac, .ogg, .wav, .m4a, .aac`
 
-	```
-	pip install pyinstaller
-	```
-	```
-	pyinstaller --onefile --windowed --icon=PlaylistGeneratorIcon.ico --name "Playlist Generator" "PlaylistGenerator.py"
-	```
+* Seed-based shuffling for reproducible results
+
+* Advanced mixing options:
+
+	* Shadow seed for complex shuffling
+
+	* Block reversal algorithm
+
+* Comprehensive playlist metadata:
+
+```
+#EXTM3U
+#Created by VolfLife's Playlist Generator
+#GENERATED:2025-03-29 01:24:00
+#PLAYLIST:my_playlist
+#SEED:89451...
+#SHADOW_SEED:11042...
+#REVERSE_STEP:19
+#TRACKS:25
+...
+```
+
+
+## Usage
+
+The program operates in two modes: GENERATOR or EDITOR.
+
+
+### Generator Mode
+___
+
+![Generator Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/generator_img.png)
+
+Creates `.m3u8` playlists from scratch. Simply launch the executable to enter generator mode.
+
+1. Select your music folder
+
+2. Name your playlist
+
+3. Enter a custom seed or leave blank for random generation
+
+4. Set reversal step size (optional)
+
+5. Enable shadow seed for advanced shuffling (optional)
+
+6. Click "Generate playlist" - the playlist will be saved in the program directory
+
+### Editor Mode
+___
+
+![Editor Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/editor_img.png)
+
+Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u` file onto the program shortcut.
+
+#### Features:
+
+* All generator mixing options (excluding shadow seed)
+
+* Manual track management:
+
+	* Reorder with ▲/▼ buttons
+
+  	* Delete tracks
+
+	* Undo/redo actions
+
+* Preserves all playlist metadata
+
+## Building from Source
+
+1. Install [Python](https://www.python.org/downloads/windows/) with pip
+
+2. Run in terminal:
+
+```
+pip install pyinstaller
+```
+
+```
+pyinstaller --onefile --windowed --icon=Icon.ico --name "Playlist Generator" "PlaylistGenerator.py"
+```
