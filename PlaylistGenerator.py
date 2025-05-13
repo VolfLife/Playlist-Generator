@@ -98,21 +98,7 @@ class PlaylistGenerator:
         except Exception as e:
             print(self.localization.tr("error_open_editor").format(error=e))
             self.root.destroy()
-    
-    def process_dropped_file(self, file_path):
-        """Обработка переданного файла при запуске"""
-        if file_path and file_path.lower().endswith('.m3u8'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()
-        if file_path and file_path.lower().endswith('.m3u'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()    
         
-    
     
     def save_language_settings(self):
         """Сохраняет настройки языка"""
