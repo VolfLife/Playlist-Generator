@@ -68,7 +68,7 @@ ___
 
 ![Editor Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/editor_img.png)
 
-Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u` file onto the program shortcut.
+Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file onto the program shortcut.
 
 #### Features:
 
