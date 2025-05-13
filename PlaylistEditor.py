@@ -364,7 +364,6 @@ class PlaylistEditor:
     
         # Расчет длины сида
         base_length = math.ceil(math.log2(num_tracks + 1))
-        #max_reasonable_length = 128 (не актуально)
         seed_length = min(max(1, base_length), base_length)
     
         # Генерация хеша
@@ -402,9 +401,8 @@ class PlaylistEditor:
         
             # 1. Генерация/получение сида
             if not user_seed or user_seed == "0":
-                # Автоматическая генерация основного сида на основе количества треков
-                base_length = math.ceil(math.log2(num_tracks + 1))           
-                seed_length = min(max(1, base_length), base_length)
+                # Автоматическая генерация основного сида на основе количества треков           
+                seed_length = min(max(1, num_tracks), num_tracks)
                 seed = self.generate_seed(num_tracks=num_tracks, date=now, length=seed_length)
                 
                 self.seed_entry.delete(0, tk.END)
