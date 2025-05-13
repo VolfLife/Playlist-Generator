@@ -113,27 +113,18 @@ class PlaylistGenerator:
             editor_root.mainloop()    
         
     
-    def load_language_settings(self):
-        """Загружает настройки языка"""
-        try:
-            with open('playlist_settings.json', 'r') as f:
-                settings = json.load(f)
-                lang = settings.get('language', self.localization.detect_system_language())
-                self.localization.set_language(lang)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.localization.set_language(self.localization.detect_system_language())
     
     def save_language_settings(self):
         """Сохраняет настройки языка"""
         try:
-            with open('playlist_settings.json', 'r') as f:
+            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
                 settings = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             settings = {}
         
         settings['language'] = self.localization.current_lang
         
-        with open('playlist_settings.json', 'w') as f:
+        with open('playlist_settings.json', 'w', encoding='utf-8') as f:
             json.dump(settings, f, ensure_ascii=False, indent=4)
             
     
@@ -286,12 +277,17 @@ class PlaylistGenerator:
             
             settings['last_folder'] = self.folder_entry.get()
             
-            with open('playlist_settings.json', 'w') as f:
+            with open('playlist_settings.json', 'w', encoding='utf-8') as f:
                 json.dump(settings, f, ensure_ascii=False, indent=4)
     
     def load_settings(self):
         """Загружает все настройки из файла, включая язык и последнюю папку"""
         try:
+            settings = {
+                'language': self.localization.current_lang,
+                'last_folder': self.last_folder
+            }
+            
             with open('playlist_settings.json', 'r', encoding='utf-8') as f:
                 settings = json.load(f)
             
@@ -514,8 +510,7 @@ class PlaylistGenerator:
     
         # Расчет длины сида
         base_length = math.ceil(math.log2(num_tracks + 1))
-        #max_reasonable_length = 128 (не актуально)
-        seed_length = min(max(1, base_length), base_length)
+        seed_length = min(max(1, base_length), num_tracks)
     
         # Генерация хеша
         entropy = f"{num_tracks}{date.timestamp()}{random_part}"
