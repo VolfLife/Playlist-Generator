@@ -81,10 +81,12 @@ class PlaylistEditor:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#'):
+                    if self.file_path.lower().endswith('.txt'):
+                        line = line.replace('"', '')    
                     self.full_paths.append(line)
                     self.display_names.append(os.path.basename(line))
                     temp_files.append(line)
-
+                
         # Сортируем файлы по именам (без учета регистра)
         temp_files.sort(key=lambda x: os.path.basename(x).lower())
         
@@ -97,7 +99,9 @@ class PlaylistEditor:
         if filename.lower().endswith('.m3u8'):
             filename = filename[:-5]  # Удаляем .m3u8
         if filename.lower().endswith('.m3u'):
-            filename = filename[:-4]  # Удаляем .m3u   
+            filename = filename[:-4]  # Удаляем .m3u
+        if filename.lower().endswith('.txt'):
+            filename = filename[:-4]  # Удаляем .txt            
         
         # Удаляем _mixed если уже есть
         if filename.endswith('_mixed'):

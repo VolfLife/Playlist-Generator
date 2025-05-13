@@ -34,7 +34,10 @@ class PlaylistGenerator:
                 return  # Прерываем инициализацию основного окна                   
             if file_to_open.lower().endswith('.m3u'):
                 self.root.after(1, lambda: self.open_editor(file_to_open))
-                return  
+                return
+            if file_to_open.lower().endswith('.txt'):
+                self.root.after(1, lambda: self.open_editor(file_to_open))
+                return
                 
         self.create_widgets()
         self.show_version_info()
@@ -78,7 +81,7 @@ class PlaylistGenerator:
         from version_info import version_info
         version_label = tk.Label(
             self.root, 
-            text=f"{version_info['product_name']} v{version_info['version']} | {version_info['author']}",
+            text=f"{version_info['product_name']} v{version_info['version']} by {version_info['author']}",
             fg="gray"
         )
         version_label.grid(row=8, column=0, columnspan=3, pady=5)
@@ -131,7 +134,7 @@ class PlaylistGenerator:
         settings['language'] = self.localization.current_lang
         
         with open('playlist_settings.json', 'w') as f:
-            json.dump(settings, f)
+            json.dump(settings, f, ensure_ascii=False, indent=4)
             
     
     def create_widgets(self):
@@ -273,9 +276,18 @@ class PlaylistGenerator:
 
     def browse_folder(self):
         folder_selected = filedialog.askdirectory()
+        settings = {
+            'language': self.localization.current_lang,
+            'last_folder': self.last_folder
+        }
         if folder_selected:
             self.folder_entry.delete(0, tk.END)
             self.folder_entry.insert(0, folder_selected)
+            
+            settings['last_folder'] = self.folder_entry.get()
+            
+            with open('playlist_settings.json', 'w') as f:
+                json.dump(settings, f, ensure_ascii=False, indent=4)
     
     def load_settings(self):
         """Загружает все настройки из файла, включая язык и последнюю папку"""
@@ -298,7 +310,10 @@ class PlaylistGenerator:
                 self.last_folder = settings.get('last_folder', '')
                 if self.last_folder and not self.is_valid_folder(self.last_folder):
                     self.last_folder = ""  # Сбрасываем если папка не существует
-        
+                if 'last_folder' in settings:
+                    settings['last_folder'] = os.path.normpath(settings['last_folder'])
+                return settings
+                
         except (FileNotFoundError, json.JSONDecodeError):
             # 3. Если файла нет вообще, используем язык системы и сохраняем
             sys_lang = self.localization.detect_system_language()
