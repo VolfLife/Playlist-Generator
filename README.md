@@ -28,7 +28,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 ```
 #EXTM3U
-#Created by VolfLife's Playlist Generator
+#Made by VolfLife's Playlist Generator
 #GENERATED:2025-03-29 01:24:00
 #PLAYLIST:my_playlist
 #SEED:89451...
