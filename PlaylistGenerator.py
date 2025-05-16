@@ -1,4 +1,7 @@
 import os
+import code
+import ctypes
+import subprocess
 import sys
 import random
 import datetime
@@ -15,13 +18,48 @@ from PlaylistEditor import PlaylistEditor  # Импорт нового клас�
 from Localization import Localization
 
 
+def is_shift_pressed():
+    """Проверяет, зажата ли клавиша Shift при запуске"""
+    VK_SHIFT = 0x10
+    return ctypes.windll.user32.GetKeyState(VK_SHIFT) & 0x8000
+
+def setup_console():
+    """Настраивает консоль и перенаправляет потоки вывода"""
+    if sys.platform == 'win32':
+        ctypes.windll.kernel32.AllocConsole()
+        # Перенаправляем стандартные потоки
+        sys.stdout = open('CONOUT$', 'w')
+        sys.stderr = open('CONOUT$', 'w')
+        sys.stdin = open('CONIN$', 'r')
+
+def handle_exception(type, value, traceback):
+    """Обработчик неотловленных исключений"""
+    if sys.stdout:  # Если вывод доступен
+        print("\n=== НЕОБРАБОТАННОЕ ИСКЛЮЧЕНИЕ ===")
+        print(f"Тип: {type.__name__}")
+        print(f"Ошибка: {value}")
+        if 'is_shift_pressed' in globals() and is_shift_pressed():
+            import traceback as tb
+            tb.print_exception(type, value, traceback)
+    messagebox.showerror("Критическая ошибка", str(value))
+
 
 
 class PlaylistGenerator:
     def __init__(self, root, file_to_open=None):
+        
+        self.debug_mode = is_shift_pressed() or not getattr(sys, 'frozen', False)
+        
+        if self.debug_mode:
+            print("Инициализация PlaylistGenerator")
+            print(f"Загружено файлов: {len(file_paths) if file_paths else 0}")
+        
+        
         self.root = root
         self.localization = Localization()
-        self.last_folder = ""
+        self.last_folders = []
+        self.visited_github = False
+        self.github_link = None
         self.load_settings()
         self.root.title(self.localization.tr("window_title_generator"))
         
@@ -38,10 +76,19 @@ class PlaylistGenerator:
             if file_to_open.lower().endswith('.txt'):
                 self.root.after(1, lambda: self.open_editor(file_to_open))
                 return
-                
+        
         self.create_widgets()
         self.show_version_info()
+        self.github_link = None  # Инициализируем атрибут
         
+        if self.last_folders:
+            if len(self.last_folders) == 1:
+                display_text = self.last_folders[0]
+            else:
+                display_text = ', '.join(os.path.basename(p) for p in self.last_folders)
+            self.folder_entry.delete(0, tk.END)
+            self.folder_entry.insert(0, display_text)
+
         # Установка размеров окна
         window_width = 540
         window_height = 310
@@ -59,23 +106,24 @@ class PlaylistGenerator:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.minsize(540, 310)
     
-        if self.last_folder:
-            self.folder_entry.insert(0, self.last_folder)
-                
+        if self.last_folders:
+            self.folder_entry.insert(0, self.last_folders)
+        
+        
+        # Обновляем поле ввода с последними папками
+        self.update_folder_entry()
+      
     
-    def is_valid_folder(self, path):
-        """Проверяет, существует ли папка, с обработкой возможных ошибок"""
-        if not path:  # Если путь пустой
+    def is_valid_folders(self, paths):
+        """Проверяет, существуют ли все папки в списке"""
+        if not paths:
             return False
-    
-        try:
-            return os.path.isdir(path)
-        except (OSError, TypeError):
-            # Ловим ошибки, связанные с:
-            # - некорректными символами в пути
-            # - неправильным типом данных
-            # - другими системными ошибками доступа
-            return False
+        
+        for path in paths:
+            if not path or not os.path.isdir(path):
+                return False
+        return True
+        
         
     def show_version_info(self):
         from version_info import version_info
@@ -84,7 +132,95 @@ class PlaylistGenerator:
             text=f"{version_info['product_name']} v{version_info['version']} by {version_info['author']}",
             fg="gray"
         )
-        version_label.grid(row=8, column=0, columnspan=3, pady=5)
+        # Размещаем в правом нижнем углу окна
+        version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-5)
+    
+    
+    def load_settings(self):
+        """Загружает все настройки из файла, включая язык и последнюю папку"""
+        try:
+            settings = {
+                'language': self.localization.current_lang,
+                'last_folders': [],
+                'visited_github': self.visited_github
+            }
+            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+                self.visited_github = settings.get('visited_github', False)               
+                saved_lang = settings.get('language')
+                if saved_lang and self.localization.is_language_supported(saved_lang):
+                    self.localization.set_language(saved_lang)
+                    print(f"[DEBUG] Загружен язык: {saved_lang}")
+                else:
+                    sys_lang = self.localization.detect_system_language()
+                    print(f"[DEBUG] Неподдерживаемый язык в настройках. Авто–язык: {sys_lang}")
+                    self.localization.set_language(sys_lang)
+                    self.save_settings()       
+                
+                if 'last_folders' in settings and isinstance(settings['last_folders'], list):
+                    # Оставляем только существующие папки
+                    self.last_folders = [f for f in settings['last_folders'] if self.is_valid_folders([f])]
+                return settings
+        except (FileNotFoundError, json.JSONDecodeError):
+            print(f"[DEBUG] Файл настроек не найден. Был создан новый.")
+            sys_lang = self.localization.detect_system_language()
+            print(f"[DEBUG] Автоматический выбор языка: {sys_lang}")
+            self.localization.set_language(sys_lang)
+            self.visited_github = False
+            self.last_folders = []
+            self.save_settings()
+            
+    
+    def save_settings(self):
+        """Сохраняет все настройки в файл"""
+        settings = {
+            'language': self.localization.current_lang,
+            'last_folders': self.last_folders,
+            'visited_github': self.visited_github
+        }
+        try:
+            with open('playlist_settings.json', 'w', encoding='utf-8') as f:
+                json.dump(settings, f, ensure_ascii=False, indent=4)
+        except IOError as e:
+            print(self.localization.tr("error_save_settings").format(error=e))
+    
+   
+    
+    def open_github(self, event=None):
+        """Обработчик клика по GitHub ссылке"""
+        import webbrowser
+        webbrowser.open("https://github.com/VolfLife/Playlist-Generator/")
+        print(f"[DEBUG] Ссылка: https://github.com/VolfLife/Playlist-Generator/")
+        if not self.visited_github:
+            self.visited_github = True
+            self.save_settings()  # Сначала сохраняем
+            
+            # Затем обновляем виджет
+            if self.github_link:
+                self.github_link.config(fg="gray")
+            else:
+                self.create_github_link()  # Пересоздаем если не существует     
+            
+    def create_github_link(self):
+        """Создает кликабельную GitHub ссылку"""
+        if hasattr(self, 'github_link') and self.github_link:
+            self.github_link.destroy()
+        
+        color = "gray" if self.visited_github else "black"
+        
+        self.github_link = tk.Label(
+            self.root,
+            text="GitHub",
+            fg=color,
+            cursor="hand2",
+            font=("Arial", 10, "underline"),
+            bg=self.root.cget('bg')  # Фон как у основного окна
+        )
+        # Размещаем ссылку в левом нижнем углу ВСЕГО окна
+        self.github_link.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-5)
+        self.github_link.bind("<Button-1>", self.open_github)
+        
+            
     
     def open_editor(self, file_path):
         """Открывает редактор и корректно закрывает текущее окно"""
@@ -98,7 +234,69 @@ class PlaylistGenerator:
         except Exception as e:
             print(self.localization.tr("error_open_editor").format(error=e))
             self.root.destroy()
+    
+    
+    def process_dropped_file(self, file_path):
+        """Обработка переданного файла при запуске"""
+        if file_path and file_path.lower().endswith('.m3u8'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()
+        if file_path and file_path.lower().endswith('.m3u'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()    
+        if file_path and file_path.lower().endswith('.txt'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()    
         
+        
+    def change_language(self, event=None):
+        """Обработчик смены языка"""
+        selected_name = self.language_var.get()
+        # Находим код языка по выбранному названию
+        for code, name in self.localization.lang_names.items():
+            if name == selected_name:
+                new_lang = code
+                break
+        else:
+            new_lang = "en-us"  # fallback
+            print(f"[DEBUG] Неподдерживаемый язык. Авто–язык: {new_lang}")
+    
+        if new_lang != self.localization.current_lang:
+            self.localization.set_language(new_lang)
+            self.save_language_settings()
+            # Обновляем заголовок окна
+            self.root.title(self.localization.tr("window_title_generator"))
+            # Обновляем остальной интерфейс
+            self.update_ui_texts()
+        
+            # Обновляем список форматов сида
+            self.seed_format['values'] = self.localization.get_seed_format_options()
+
+            
+            # Получаем текущее значение формата сида
+            current_seed_format = self.seed_format.get()
+            # Список форматов, при которых текущее значение не должно меняться
+            numeric_formats = ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]
+            # Проверяем, находится ли текущее значение в списке форматов
+            if current_seed_format in numeric_formats:
+                # Если текущее значение в списке, не меняем его
+                self.seed_format['values'] = self.localization.get_seed_format_options()
+                self.seed_format.current(0)
+            else:
+                # Если текущее значение не в списке, устанавливаем значение по умолчанию
+                self.seed_format.current(1)  # Устанавливаем второе значение как значение по умолчанию
+                
+            # Обновляем имя плейлиста по умолчанию
+            self.playlist_entry.delete(0, tk.END)
+            self.playlist_entry.insert(0, self.localization.tr("default_playlist_name"))
+
     
     def save_language_settings(self):
         """Сохраняет настройки языка"""
@@ -112,8 +310,20 @@ class PlaylistGenerator:
         
         with open('playlist_settings.json', 'w', encoding='utf-8') as f:
             json.dump(settings, f, ensure_ascii=False, indent=4)
-            
+        
+        print(f"[DEBUG] Язык сохранен: {self.localization.current_lang}")        
     
+    def update_folder_entry(self):
+        """Обновляет поле ввода с последними папками"""
+        if self.last_folders:
+            if len(self.last_folders) == 1:
+                display_text = self.last_folders[0]
+            else:
+                display_text = ', '.join(os.path.basename(p) for p in self.last_folders)
+            self.folder_entry.delete(0, tk.END)
+            self.folder_entry.insert(0, display_text)
+            
+            
     def create_widgets(self):
         # Настройка сетки для растягивания
         self.root.grid_columnconfigure(1, weight=1)
@@ -123,7 +333,8 @@ class PlaylistGenerator:
         self.folder_entry = tk.Entry(self.root, width=40)
         self.folder_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
-        tk.Button(self.root, text=self.localization.tr("browse_button"), command=self.browse_folder).grid(row=0, column=2, padx=5, pady=10)
+        
+        tk.Button(self.root, text=self.localization.tr("browse_button"), command=self.browse_folders).grid(row=0, column=2, padx=5, pady=10)
         
         tk.Label(self.root, text=self.localization.tr("playlist_name_label")).grid(row=1, column=0, sticky="w", padx=10, pady=5)
         self.playlist_entry = tk.Entry(self.root, width=40)
@@ -158,11 +369,23 @@ class PlaylistGenerator:
         )
         self.shadow_seed_check.grid(row=5, column=0, columnspan=3, pady=5)
         
+        # Добавляем подсказку при наведении курсора
+        self.folder_entry_tooltip = tk.Label(self.root, text=self.localization.tr("folder_entry_tooltip"), 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.folder_entry_tooltip.place_forget()
+        self.folder_entry.bind("<Enter>", self.show_folder_entry_tooltip)
+        self.folder_entry.bind("<Leave>", self.hide_folder_entry_tooltip)
+        
+        # Добавляем обработчик правой кнопки мыши для очистки
+        self.folder_entry.bind("<Button-3>", self.clear_folder_entry)
+        
+        
         # Выбор языка
         language_frame = tk.Frame(self.root)
         language_frame.grid(row=6, column=0, columnspan=3, pady=5, sticky="ew")
     
-        tk.Label(language_frame, text=self.localization.tr("language_label")).pack(side=tk.LEFT, padx=(10, 5))
+        self.language_label = tk.Label(language_frame, text=self.localization.tr("language_label"))
+        self.language_label.pack(side=tk.LEFT, padx=(10, 5))
     
         # Создаем список языков в формате (название, код)
         lang_options = [(self.localization.lang_names[code], code) 
@@ -187,39 +410,58 @@ class PlaylistGenerator:
         
         tk.Button(self.root, text=self.localization.tr("generate_button"), command=self.generate_playlist).grid(row=6, column=1, pady=5)
         
+        
         # Поле для вывода информации
-        self.seed_info = tk.Label(self.root, text="", fg="green")
+        self.seed_info = tk.Label(self.root, text="", fg="green", bg=self.root.cget('bg'))
         self.seed_info.grid(row=7, column=0, columnspan=3, pady=5)
-    
-    def change_language(self, event=None):
-        """Обработчик смены языка"""
-        selected_name = self.language_var.get()
-        # Находим код языка по выбранному названию
-        for code, name in self.localization.lang_names.items():
-            if name == selected_name:
-                new_lang = code
-                break
-        else:
-            new_lang = "en-us"  # fallback
-    
-        if new_lang != self.localization.current_lang:
-            self.localization.set_language(new_lang)
-            self.save_language_settings()
-            # Обновляем заголовок окна
-            self.root.title(self.localization.tr("window_title_generator"))
-            # Обновляем остальной интерфейс
-            self.update_ui_texts()
         
-            # Обновляем список форматов сида
-            self.seed_format['values'] = self.localization.get_seed_format_options()
-            self.seed_format.current(0)
         
-            # Обновляем имя плейлиста по умолчанию
-            self.playlist_entry.delete(0, tk.END)
-            self.playlist_entry.insert(0, self.localization.tr("default_playlist_name"))
+        self.create_github_link()  # Создаем ссылку на GitHub
+        
+        # Убедимся, что ссылка поверх информации
+        self.github_link.lift()  # Поднимаем на передний план
+        
+
     
+    def show_folder_entry_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = self.localization.tr("folder_entry_tooltip")
+        self.folder_entry_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.folder_entry_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.folder_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.folder_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.folder_entry_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.folder_entry.winfo_y() + 20  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.folder_entry_tooltip.place(x=x, y=y)
+
+    def hide_folder_entry_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'folder_entry_tooltip'):
+            self.folder_entry_tooltip.place_forget()
+    
+    
+    def clear_folder_entry(self, event=None):
+        # Очищаем поле ввода и список папок, сохраняем настройки
+        self.folder_entry.delete(0, tk.END)
+        self.last_folders = []
+        self.save_settings()
+        self.hide_folder_entry_tooltip()
+        print(f"[DEBUG] Поле ввода очищена")
+        
     def update_ui_texts(self):
         """Обновляет все тексты в интерфейсе"""
+        # Обновляем language_label
+        self.language_label.config(text=self.localization.tr("language_label"))
+        
         widgets_to_update = [
             (0, 0, "music_folder_label"),
             (0, 2, "browse_button"),
@@ -229,7 +471,7 @@ class PlaylistGenerator:
             (4, 0, "seed_format_label"),
             (5, 0, "shadow_seed_check"),
             (6, 1, "generate_button"),
-            (6, 0, "language_label")  # Для label в language_frame
+            (6, 0, "language_label"), # Для label в language_frame
         ]
         
         for row, col, key in widgets_to_update:
@@ -237,9 +479,9 @@ class PlaylistGenerator:
             if isinstance(widget, (tk.Label, tk.Button, tk.Checkbutton)):
                 widget.config(text=self.localization.tr(key))
         
-        # Обновляем значения в Combobox
-        self.seed_format['values'] = self.localization.tr("seed_formats")
-        self.seed_format.current(0)
+        # Обновляем текст подсказки
+        if hasattr(self, 'folder_entry_tooltip'):
+            self.folder_entry_tooltip.config(text=self.localization.tr("folder_entry_tooltip"))
         
 
     def toggle_step_entry(self):
@@ -251,97 +493,133 @@ class PlaylistGenerator:
         else:
             self.step_entry.config(state='normal')
 
-    def browse_folder(self):
-        folder_selected = filedialog.askdirectory()
-        settings = {
-            'language': self.localization.current_lang,
-            'last_folder': self.last_folder
-        }
-        if folder_selected:
+    def browse_folders(self):
+        selected_dir = filedialog.askdirectory()
+        if selected_dir:
+            if not self.last_folders:
+                self.last_folders = []
+                print(f"[DEBUG] Нет последних папок")
+            if selected_dir not in self.last_folders:
+                self.last_folders.append(selected_dir)
+            # Если одна папка — показываем полный путь
+            if len(self.last_folders) == 1:
+                display_text = self.last_folders[0]
+                print(f"[DEBUG] Была выбрана папка: {display_text}")
+            else:
+                # Иначе показываем имена папок через запятую
+                display_text = ', '.join(os.path.basename(p) for p in self.last_folders)
+                print(f"[DEBUG] Были выбраны папки: {display_text}")
             self.folder_entry.delete(0, tk.END)
-            self.folder_entry.insert(0, folder_selected)
-            
-            settings['last_folder'] = self.folder_entry.get()
-            
-            with open('playlist_settings.json', 'w', encoding='utf-8') as f:
-                json.dump(settings, f, ensure_ascii=False, indent=4)
-    
-    def load_settings(self):
-        """Загружает все настройки из файла, включая язык и последнюю папку"""
-        try:
-            settings = {
-                'language': self.localization.current_lang,
-                'last_folder': self.last_folder
-            }
-            
-            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
-                settings = json.load(f)
-            
-                # 1. Пробуем загрузить сохраненный язык
-                saved_lang = settings.get('language')
-                if saved_lang and self.localization.is_language_supported(saved_lang):
-                    self.localization.set_language(saved_lang)
-                else:
-                    # 2. Если нет файла или язык не поддерживается, определяем язык системы
-                    sys_lang = self.localization.detect_system_language()
-                    self.localization.set_language(sys_lang)
-                    # Сохраняем новый язык
-                    self.save_settings()
-                
-                # 2. Загружаем последнюю папку (с проверкой существования)
-                self.last_folder = settings.get('last_folder', '')
-                if self.last_folder and not self.is_valid_folder(self.last_folder):
-                    self.last_folder = ""  # Сбрасываем если папка не существует
-                if 'last_folder' in settings:
-                    settings['last_folder'] = os.path.normpath(settings['last_folder'])
-                return settings
-                
-        except (FileNotFoundError, json.JSONDecodeError):
-            # 3. Если файла нет вообще, используем язык системы и сохраняем
-            sys_lang = self.localization.detect_system_language()
-            self.localization.set_language(sys_lang)
-            self.last_folder = ""
+            self.folder_entry.insert(0, display_text)
             self.save_settings()
-    
-    def save_settings(self):
-        """Сохраняет все настройки в файл"""
-        settings = {
-            'language': self.localization.current_lang,
-            'last_folder': self.last_folder
-        }
-        try:
-            with open('playlist_settings.json', 'w', encoding='utf-8') as f:
-                json.dump(settings, f, ensure_ascii=False, indent=4)
-        except IOError as e:
-            print(self.localization.tr("error_save_settings").format(error=e))
-    
-    
+
+               
     def stable_hash(self, s):
         """Детерминированная замена hash() с использованием hashlib"""
         return int(hashlib.md5(str(s).encode()).hexdigest(), 16) % (10**12)
-       
     
+
+    def get_audio_files(self, folders):
+        """Принимает список папок, возвращает общий список аудиофайлов всех папок"""
+        audio_extensions = {'.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac'}
+        audio_files = []
+        for folder in folders:
+            try:
+                for root, _, files in os.walk(folder):
+                    for file in files:
+                        if Path(file).suffix.lower() in audio_extensions:
+                            full_path = os.path.join(root, file)
+                            try:
+                                with open(full_path, 'rb'):
+                                    pass
+                                audio_files.append(full_path)
+                            except (IOError, OSError):
+                                continue
+            except (OSError, UnicodeDecodeError) as e:
+                print(self.localization.tr("error_scanning_folder").format(error=e))
+                continue
+        
+        # Сортируем аудиофайлы сначала по ASCII символам, затем A-Z
+        # Т.к. sort стабилен, сортируем дважды
+        audio_files.sort(key=lambda x: (not os.path.basename(x)[0].isalpha(), os.path.basename(x).lower()))
+        return audio_files
+
+
+    def generate_seed(self, num_tracks, date, total_size):
+        """Генерация предсказуемого основного сида на основе даты и n!"""
+        sys.set_int_max_str_digits(0)
+        # Вычисляем факториал
+        fact = math.factorial(num_tracks)
+        print(f"[DEBUG] Факториал {num_tracks}! = {fact}")
+        
+        # Предсказуемая часть: дата + количество треков
+        date_part = int(date.timestamp())
+        predictable_num = (date_part * num_tracks * total_size) % fact
+        
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Дата = {date_part} \n Размер = {total_size} \n Количество треков = {num_tracks} \n Результат = {predictable_num}")
+        # Форматируем в соответствии с выбранным форматом
+        if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
+            return str(predictable_num).zfill(len(str(fact)))
+        else:
+            # Для буквенно-цифрового формата используем хеш
+            hash_obj = hashlib.sha256(str(predictable_num).encode())
+            return hash_obj.hexdigest()[:len(str(fact))]
+        
+        
+        
+    def generate_shadow_seed(self, num_tracks, seed_trimmed):
+        """Генерация непредсказуемого теневого сида"""
+        sys.set_int_max_str_digits(0)
+        print(f"[DEBUG] ПРОЦЕСС ПЕРЕМЕШИВАНИЯ \n===================================================================")
+        # Вычисляем факториал
+        fact = math.factorial(num_tracks)
+        
+        # Непредсказуемая часть: хеш основного сида + случайное число
+        random_part = random.getrandbits(256)
+        seed_hash = hashlib.sha3_256((str(seed_trimmed) + str(random_part)).encode()).hexdigest()
+        
+        # Преобразуем хеш в число
+        shadow_num = int(seed_hash, 16) % fact
+        
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Случайное число = {random_part} \n Хеш сида = {seed_hash} \n Хеш в число = {shadow_num}")
+        # Форматируем аналогично основному сиду
+        if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
+            return str(shadow_num).zfill(len(str(fact)))
+        else:
+            return seed_hash[:len(str(fact))]
+        
+        
+        
     def generate_playlist(self):
-        music_folder = self.folder_entry.get()
-        playlist_name = self.playlist_entry.get()
-        user_seed = self.seed_entry.get()
-        step_value = self.step_entry.get()
-    
-    # Валидация ввода
-        if not music_folder:
+        import _pylong
+        sys.set_int_max_str_digits(0)
+        # Разбор введённого текста в поле папок (несколько, разделены ',')
+        input_text = self.folder_entry.get()
+        # По запятым, с очисткой пробелов
+        input_paths = [p.strip() for p in input_text.split(',') if p.strip()]
+        
+        if not input_paths:
             self.seed_info.config(text=self.localization.tr("error_no_music_folder"), fg="red")
             return
-
+        valid_paths = [p for p in self.last_folders if os.path.isdir(p)]
+        if not valid_paths:
+            self.seed_info.config(text=self.localization.tr("error_folder_not_exist"), fg="red")
+            return
+        
+        playlist_name = self.playlist_entry.get()
         if not playlist_name:
             self.seed_info.config(text=self.localization.tr("error_no_playlist_name"), fg="red")
             return
+        
+        user_seed = self.seed_entry.get()
+        step_value = self.step_entry.get()
 
-        if not self.is_valid_folder(music_folder):
-            self.seed_info.config(text=self.localization.tr("error_folder_not_exist"), fg="red")
-            return
-    
-        step = 0  # Значение по умолчанию (реверс выключен)
-        if step_value.strip():  # Если поле не пустое
+
+        # Обработка шага реверса
+        step = 0
+        if step_value.strip():
             try:
                 step = int(step_value)
                 if step < 0 or step > 20:
@@ -349,35 +627,42 @@ class PlaylistGenerator:
             except ValueError:
                 self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")
                 return
-    
-        audio_files = self.get_audio_files(music_folder)
+
+        # Получаем аудиофайлы
+        audio_files = self.get_audio_files(valid_paths)
         if not audio_files:
             self.seed_info.config(text=self.localization.tr("error_no_audio_files"), fg="red")
             return
-    
+
+
         num_tracks = len(audio_files)
         total_size = sum(os.path.getsize(f) for f in audio_files)
         now = datetime.datetime.now()
+
     
-        # Новая логика генерации сидов
+        # Генерация сидов
         if not user_seed or user_seed == "0":
-            # Автоматическая генерация основного сида на основе количества треков
-            base_length = math.ceil(math.log2(num_tracks + 1))           
-            seed_length = min(max(1, base_length), base_length)
-            seed = self.generate_seed(num_tracks=num_tracks, date=now, length=seed_length)
+            seed = self.generate_seed(num_tracks, now, total_size)
         else:
-            # Используем пользовательский сид без ограничения длины
-            seed = user_seed  # Теперь сохраняем как строку
+            seed = user_seed
+
+        # Обрезаем нули
+        seed_trimmed = seed.lstrip('0') or '0'
         
-        # Теневой сид генерируется на основе основного без ограничений
-        try:
-            seed_num = int(seed) if seed.isdigit() else abs(self.stable_hash(seed))
-        except:
-            seed_num = abs(self.stable_hash(seed))
-            
-        shadow_seed = (seed_num * 12345 + 67890 * total_size)
-    
-    
+        
+        # Всегда генерируем теневой сид, даже если не используется
+        shadow_seed = self.generate_shadow_seed(num_tracks, seed_trimmed)
+        
+        # Обрезаем нули
+        shadow_seed_trimmed = shadow_seed.lstrip('0') or '0'
+        
+        
+        print(f"[DEBUG] Основной сид = {seed}")
+        print(f"[DEBUG] Теневой сид = {shadow_seed} ")
+        
+        print(f"[DEBUG] Использованный основной сид = {seed_trimmed}")
+        print(f"[DEBUG] Использованный теневой сид = {shadow_seed_trimmed}")
+
         # Определяем путь для сохранения
         if getattr(sys, 'frozen', False):
             script_dir = os.path.dirname(sys.executable)
@@ -385,51 +670,50 @@ class PlaylistGenerator:
             script_dir = os.path.dirname(os.path.abspath(__file__))
         playlist_path = os.path.join(script_dir, f"{playlist_name}.m3u8")
 
-        # Обработка шага реверса
-        reverse_step = None  # По умолчанию реверс выключен
-        if self.use_shadow_seed.get():
-            # Фиксируем генератор случайных чисел по теневому сиду
-            random.seed(abs(self.stable_hash(shadow_seed)))
-    
-            # 1. Определяем шаг реверса (1-5)
+
+        # Обработка перемешивания
+        reverse_step = None
+        if self.use_shadow_seed.get():       
+            # Определяем шаг реверса (1-20)
             reverse_step = random.randint(1, 20)
-    
-            # 2. Основное перемешивание по теневому сиду
-            shuffled = self.shuffle_files(audio_files, str(shadow_seed))
-    
-            # 3. Применяем реверс блоков
-            shuffled_files = self.apply_reverse_step(shuffled, reverse_step)  # Убрали лишний параметр
+            print(f"[DEBUG] Реверс = {reverse_step}")
+            
+            # Основное перемешивание по теневому сиду
+            shuffled = self.shuffle_files(audio_files, str(shadow_seed_trimmed))
+            
+            # Применяем реверс блоков
+            shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
             
             info_text = self.localization.tr("seed_info_shadow").format(
-                seed=seed, shadow_seed=shadow_seed, step=reverse_step
+                seed=seed_trimmed, shadow_seed=shadow_seed_trimmed, step=reverse_step
             )
         elif step > 0:
             # Ручной шаг реверса
             reverse_step = step
-            shuffled = self.shuffle_files(audio_files, str(seed))
+            print(f"[DEBUG] Реверс = {reverse_step}")
+            shuffled = self.shuffle_files(audio_files, str(seed_trimmed))
             shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
             info_text = self.localization.tr("seed_info_step").format(
-                seed=seed, step=reverse_step
+                seed=seed_trimmed, step=reverse_step
             )
         else:
             # Без реверса
-            random.seed(abs(self.stable_hash(seed)))
-            shuffled_files = self.shuffle_files(audio_files, str(seed))
-            info_text = self.localization.tr("seed_info_basic").format(seed=seed)
-    
+            shuffled_files = self.shuffle_files(audio_files, str(seed_trimmed))
+            info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
+
         # Создание плейлиста
         self.save_m3u8_playlist(
             path=playlist_path,
             files=shuffled_files,
             name=playlist_name,
-            seed=str(seed),
-            shadow_seed=shadow_seed,
+            seed=seed_trimmed,
+            shadow_seed=shadow_seed_trimmed,
             num_tracks=num_tracks,
             date=now,
-            reverse_step=reverse_step  # Теперь переменная определена
+            reverse_step=reverse_step
         )
-    
-        self.last_folder = music_folder
+
+        self.last_folder = valid_paths
         self.save_settings()
         self.seed_info.config(text=self.localization.tr("playlist_created").format(info=info_text), fg="green")
     
@@ -440,7 +724,7 @@ class PlaylistGenerator:
         
         with open(path, 'w', encoding='utf-8') as f:
             f.write("#EXTM3U\n")
-            f.write("#Created by VolfLife's Playlist Generator\n")
+            f.write("#Made with VolfLife's Playlist Generator\n")
             f.write(f"#GENERATED:{date_str}\n")
             f.write(f"#PLAYLIST:{name}\n")
             f.write(f"#SEED:{seed}\n")
@@ -467,62 +751,64 @@ class PlaylistGenerator:
             reversed_files[i:i+step] = reversed(reversed_files[i:i+step])
         return reversed_files
     
-    def get_audio_files(self, folder):
-        audio_extensions = {'.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac'}
-        audio_files = []
-    
-        try:
-            for root, _, files in os.walk(folder):
-                for file in files:
-                    if Path(file).suffix.lower() in audio_extensions:
-                        full_path = os.path.join(root, file)
-                        try:
-                            # Проверяем, можно ли открыть файл
-                            with open(full_path, 'rb'):
-                                pass
-                            audio_files.append(full_path)
-                        except (IOError, OSError):
-                            continue
-        except (OSError, UnicodeDecodeError) as e:
-            print(self.localization.tr("error_scanning_folder").format(error=e))
-            return []
-    
-        return audio_files
-    
-    def generate_seed(self, num_tracks, date, length=None):
-        """Генерация сида переменной длины на основе треков и даты"""
-        date_part = date.strftime("%Y%m%d%H%M%S")
-        random_part = random.getrandbits(64)
-    
-        # Расчет длины сида
-        base_length = math.ceil(math.log2(num_tracks + 1))
-        seed_length = min(max(1, base_length), num_tracks)
-    
-        # Генерация хеша
-        entropy = f"{num_tracks}{date.timestamp()}{random_part}"
-        hash_str = hashlib.sha512(entropy.encode()).hexdigest()
-    
-        # Форматирование
-        format_type = self.seed_format.get()
-        if format_type in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", "Толькі лічбы",
-                    "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Chiffres uniquement", "Sólo números", "Apenas números", 
-                    "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
-            return ''.join(c for c in hash_str if c.isdigit())[:seed_length]
-        return hash_str[:seed_length]
-        
-       
+           
     
     def shuffle_files(self, files, seed_value):
         """Улучшенное перемешивание с явным указанием сида"""
-        random.seed(abs(self.stable_hash(seed_value)))
+        random.seed(abs(self.stable_hash((str(seed_value)))))
         shuffled = files.copy()
         random.shuffle(shuffled)
         return shuffled
 
 if __name__ == "__main__":
-    print("Аргументы командной строки:", sys.argv)
+    
+    # Устанавливаем обработчик исключений ДО всего остального
+    sys.excepthook = handle_exception
+    
+    # Проверяем режим отладки
+    debug_mode = is_shift_pressed() or not getattr(sys, 'frozen', False)
+    
+    if debug_mode:
+        setup_console()
+        print("===========================================")
+        print("    Playlist Generator v4.0 by VolfLife    ")
+        print("                                           ")
+        print("   github.com/VolfLife/Playlist-Generator  ")
+        print("                                           ")
+        print("====== : РЕЖИМ ОТЛАДКИ АКТИВИРОВАН : ======")
+        print(f"Аргументы: {sys.argv}")
+    
+    
+    
+    try:
+        # Проверяем зажат ли Shift ИЛИ это не собранный exe
+        if is_shift_pressed() or not getattr(sys, 'frozen', False):
+            setup_console()
+        
+        # Теперь все print() будут выводиться в консоль
+        print("Программа запущена с аргументами:", sys.argv)
+    except Exception as e:
+        print(f"ОШИБКА: {str(e)}", file=sys.stderr)
+        if 'is_shift_pressed' in globals() and is_shift_pressed():
+            import traceback
+            traceback.print_exc()
+        messagebox.showerror("Ошибка", f"Произошла ошибка: {str(e)}")
+        sys.exit(1)
+        
     root = tk.Tk()
-    file_path = sys.argv[1] if len(sys.argv) > 1 else None
-    app = PlaylistGenerator(root, file_path)
-    root.mainloop()
+    
+    # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
+    file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
+    
+    # Если переданы файлы, открываем редактор
+    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt')) for fp in file_paths):
+        root.withdraw()  # Скрываем основное окно генератора
+        editor_root = tk.Tk()
+        PlaylistEditor(editor_root, file_paths)
+        root.destroy()  # Закрываем генератор
+        editor_root.mainloop()
+    else:
+        # Иначе открываем генератор
+        app = PlaylistGenerator(root, file_paths[0] if file_paths else None)
+        root.mainloop()
     

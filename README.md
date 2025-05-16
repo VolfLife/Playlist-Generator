@@ -51,7 +51,7 @@ ___
 
 Creates `.m3u8` playlists from scratch. Simply launch the executable to enter generator mode.
 
-1. Select your music folder
+1. Select your music folder/folders
 
 2. Name your playlist
 
@@ -68,7 +68,7 @@ ___
 
 ![Editor Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/editor_img.png)
 
-Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file onto the program shortcut.
+Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file(s) onto the program shortcut.
 
 #### Features:
 
@@ -76,11 +76,13 @@ Modify existing playlists - works even with missing local files. Launch by drag-
 
 * Manual track management:
 
-	* Reorder with ▲/▼ buttons
+	* Reorder with drag-and-drop or ▲/▼ buttons
 
   	* Delete tracks
 
 	* Undo/redo actions
+	
+	* Edit track paths
 
 
 ## Compilation
