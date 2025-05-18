@@ -12,9 +12,11 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Dual-functionality: Generator & Editor
 
-* Supported audio formats:
+* Supported audio and video formats:
 
-	`mp3, .flac, .ogg, .wav, .m4a, .aac`
+	* Audio:	`mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff`
+
+	* Video: 	`.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .mpg, .mpeg`
 
 * Seed-based shuffling for reproducible results
 
@@ -47,9 +49,9 @@ The program operates in two modes: GENERATOR or EDITOR.
 ### Generator Mode
 ___
 
-![Generator Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/generator_img.png)
+![Generator Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/generator_img.png)
 
-Creates `.m3u8` playlists from scratch. Simply launch the executable to enter generator mode.
+Creates `.m3u8`/`.m3u` playlists from scratch. Simply launch the executable to enter generator mode.
 
 1. Select your music folder/folders
 
@@ -66,7 +68,7 @@ Creates `.m3u8` playlists from scratch. Simply launch the executable to enter ge
 ### Editor Mode
 ___
 
-![Editor Interface](https://github.com/VolfLife/fractureiser-samples/blob/main/screenshots/editor_img.png)
+![Editor Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/editor_img.png)
 
 Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file(s) onto the program shortcut.
 
@@ -96,5 +98,5 @@ pip install pyinstaller
 ```
 
 ```
-pyinstaller --onefile --windowed --icon=Icon.ico --name "Playlist Generator" "PlaylistGenerator.py"
+pyinstaller --onefile --hidden-import=_pylong --windowed --add-data "version_info.py;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
 ```
