@@ -20,6 +20,8 @@ class PlaylistEditor:
         self.localization = Localization()
         self.visited_github = False
         self.github_link = None
+        self.format_m3u8 = "m3u8"
+        self.format_file = "m3u8"
         self.load_language_settings()
         self.root.title(self.localization.tr("window_title_editor"))
         self.playlist_name = ""
@@ -33,8 +35,7 @@ class PlaylistEditor:
         self.shuffled_list = None # Результат перемешивания
         self.tracks = []  # Формат: [{"path": "", "name": "", "num": 0}, ...]
         self.display_tracks = []  # Треки для отображения
-        
-        
+        self.modified_paths = {}
         # Принимаем как один путь, так и список путей
         if file_paths:
             if isinstance(file_paths, str):
@@ -55,9 +56,15 @@ class PlaylistEditor:
         try:
             self.create_widgets()
             self.load_playlist()
+            # История для Undo/Redo
+            self.history = []
+            self.history_index = -1
+            self.save_state(force_save=True)  # Сохраняем начальное состояние
+            
+            self.save_initial_state()
             self.show_version_info()
             self.original_paths = self.full_paths.copy()  # Сохраняем оригинал
-
+            
             self.center_window(540, 600)
         except Exception as e:
             messagebox.showerror(
@@ -75,19 +82,37 @@ class PlaylistEditor:
                 settings = json.load(f)
             
                 saved_lang = settings.get('language')
-                self.visited_github = settings.get('visited_github', False)
+                self.visited_github = settings.get('visited_github')
+                saved_format = settings.get('playlist_format')
+                print(f"[DEBUG] Посетил GitHub: {self.visited_github}")
                 if saved_lang and self.localization.is_language_supported(saved_lang):
                     self.localization.set_language(saved_lang)
                     print(f"[DEBUG] Загружен язык: {saved_lang}")
                 else:
                     sys_lang = self.localization.detect_system_language()
                     self.localization.set_language(sys_lang)
+                    print(f"[DEBUG] Неподдерживаемый язык в настройках. Авто–язык: {sys_lang}")
+                    
                     # Для редактора не сохраняем, т.к. это может быть нежелательно
                 
+                # Устанавливаем значение напрямую, если оно есть в списке
+                if saved_format in ["m3u8", "m3u"]:
+                    self.format_m3u8 = saved_format 
+                    print(f"[DEBUG] Загружен формат: {saved_format}")
+                else:
+                    self.format_m3u8 = "m3u8"
+                    print(f"[DEBUG] Неподдерживаемый формат '{saved_format}'. Авто–формат: m3u8")
+                
+                
+        
+                
         except (FileNotFoundError, json.JSONDecodeError):
+            print(f"[DEBUG] Файл настроек не найден. Был создан новый.")
             sys_lang = self.localization.detect_system_language()
             self.localization.set_language(sys_lang)
             self.visited_github = False
+            print(f"[DEBUG] Автоматический выбор языка: {sys_lang}")
+            print(f"[DEBUG] Автоматический выбор формата: m3u8")
 
     def show_version_info(self):
         from version_info import version_info
@@ -139,7 +164,12 @@ class PlaylistEditor:
 
     def load_playlist(self):
         """Загружает несколько плейлистов и объединяет их"""
-        
+        supported_formats = {
+            # Аудио
+            '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff',
+            # Видео
+            '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg'
+        }
         for i, file_path in enumerate(self.file_paths, 1):
             temp_list = []
             try:
@@ -147,14 +177,27 @@ class PlaylistEditor:
                     for line_num, line in enumerate(f, 1):
                         line = line.strip()
                         if line and not line.startswith('#'):
-                            if file_path.lower().endswith('.txt'):
-                                line = line.replace('"', '')
+                                
+                                
+                            # Удаляем кавычки и лишние пробелы
+                            clean_path = line.strip('"\' \t')
+                            
+                            # Проверяем расширение файла
+                            if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                continue
+                                
+                            # Нормализуем путь (убираем лишние слеши и т.д.)
+                            normalized_path = os.path.normpath(clean_path)    
+                            
+                                
                             temp_list.append({
-                                "path": line,
-                                "name": os.path.basename(line),
-                                "num": line_num,
-                                "source": f"original_temp_list_{i}"  # Добавляем источник
-                            })
+                                    "path": normalized_path,
+                                    "name": os.path.basename(normalized_path),
+                                    "num": line_num,
+                                    "source": f"original_temp_list_{i}",  # Добавляем источник
+                                    "original_path": normalized_path,  # Добавили сохранение оригинального пути
+                                    "was_modified": False
+                                })    
                 
                 # Сохраняем отдельный список
                 self.original_lists[f"original_temp_list_{i}"] = temp_list
@@ -172,6 +215,9 @@ class PlaylistEditor:
         self.display_tracks = self.original_list.copy()
         self.update_display()
         
+        # Сохраняем начальное состояние
+        self.save_initial_state()
+    
         # Генерируем имя плейлиста
         if self.file_paths:
             base_name = os.path.basename(self.file_paths[0])
@@ -211,6 +257,23 @@ class PlaylistEditor:
     def stable_hash(self, s):
         """Детерминированная замена hash() с использованием hashlib"""
         return int(hashlib.md5(str(s).encode()).hexdigest(), 16) % (10**12)
+
+
+    def change_format(self, event=None):
+        """Сохраняет настройки выбранного формата файла"""
+        self.format_m3u8 = self.format_combobox.get()
+        try:
+            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            settings = {}
+        
+        settings['playlist_format'] = self.format_m3u8
+        
+        with open('playlist_settings.json', 'w', encoding='utf-8') as f:
+            json.dump(settings, f, ensure_ascii=False, indent=4)
+        
+        print(f"[DEBUG] Формат файла сохранен: {self.format_m3u8}")        
 
             
     def create_github_link(self):
@@ -281,24 +344,24 @@ class PlaylistEditor:
         input_frame.pack(fill=tk.X, pady=5)
         
         # Поле имени плейлиста
-        ttk.Label(input_frame, text=self.localization.tr("playlist_name_label")).grid(row=0, column=0, sticky="w", padx=5, pady=3)
+        tk.Label(input_frame, text=self.localization.tr("playlist_name_label")).grid(row=0, column=0, sticky="w", padx=5, pady=3)
         self.name_entry = ttk.Entry(input_frame, width=45)
         self.name_entry.grid(row=0, column=1, padx=5, pady=3, sticky="ew")
         self.name_entry.insert(0, self.playlist_name)
         
         # Поле сида (увеличенная ширина)
-        ttk.Label(input_frame, text=self.localization.tr("seed_label")).grid(row=1, column=0, sticky="w", padx=5, pady=3)
+        tk.Label(input_frame, text=self.localization.tr("seed_label")).grid(row=1, column=0, sticky="w", padx=5, pady=3)
         self.seed_entry = ttk.Entry(input_frame, width=45)
         self.seed_entry.grid(row=1, column=1, padx=5, pady=3, sticky="ew")
         
         # Остальные элементы без изменений
-        ttk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
+        tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
             row=2, column=0, sticky="w", padx=5, pady=3)
         self.step_entry = ttk.Entry(input_frame, width=5)
         self.step_entry.insert(0, "")
         self.step_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
         
-        ttk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
+        tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
             row=3, column=0, sticky="w", padx=5, pady=3)
         self.seed_format_combobox = ttk.Combobox(
             input_frame, 
@@ -317,6 +380,18 @@ class PlaylistEditor:
         
         ttk.Button(btn_frame, text=self.localization.tr("shuffle_button"), command=self.shuffle_tracks).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text=self.localization.tr("save_button"), command=self.save_playlist).pack(side=tk.LEFT)
+                
+
+        # Combobox формата
+        self.format_combobox = ttk.Combobox(
+            btn_frame,
+            values=["m3u8", "m3u"],
+            state="readonly",
+            width=5
+        )
+        self.format_combobox.pack(side=tk.LEFT, padx=12)
+        self.format_combobox.set(self.format_m3u8)
+        self.format_combobox.bind("<<ComboboxSelected>>", self.change_format)
         
         # Поле для сообщений
         message_frame = ttk.Frame(main_frame)
@@ -413,80 +488,92 @@ class PlaylistEditor:
             self.tree_tooltip.place_forget()    
     
     
-    
     def on_treeview_button_press(self, event):
+        """Обработчик нажатия кнопки мыши для начала перетаскивания"""
         item = self.tree.identify_row(event.y)
         if item:
-            # Allow Ctrl for multi-selection: do not override selection if Ctrl is held
+            # Если Ctrl не нажат и элемент не выделен - выделяем только его
             if not (event.state & 0x0004) and item not in self.tree.selection():
-                # If Ctrl not pressed and item not selected - select only this item
                 self.tree.selection_set(item)
-            # else keep current selection (allows Ctrl and Shift)
-            self._drag_data["items"] = self.tree.selection()
-            self._drag_data["y"] = event.y
+            
+            # Сохраняем позиции всех выделенных элементов
+            self._drag_data = {
+                "items": self.tree.selection(),
+                "y": event.y,
+                "indices": [self.tree.index(i) for i in self.tree.selection()]
+            }
         else:
-            self._drag_data["items"] = None
-
+            self._drag_data = None
 
     def on_treeview_mouse_move(self, event):
-        if not self._drag_data["items"]:
+        """Обработчик перемещения мыши при перетаскивании"""
+        if not self._drag_data or not self._drag_data["items"]:
             return
+        
         y = event.y
         delta_y = y - self._drag_data["y"]
-        if abs(delta_y) < 5:
+        if abs(delta_y) < 5:  # Минимальное перемещение для начала drag
             return
-        children = list(self.tree.get_children())
+        
+        # Определяем целевой элемент
         target_item = self.tree.identify_row(y)
+        children = list(self.tree.get_children())
         
-        # Обрабатывать случай, когда курсор находится под всеми элементами — вставить в конец
         if target_item:
-            try:
-                target_index = children.index(target_item)
-            except ValueError:
-                return
+            target_index = children.index(target_item)
         else:
-            target_index = len(children)
-        items = list(self._drag_data["items"])
-        selected_indices = sorted(children.index(item) for item in items)
+            target_index = len(children)  # Если курсор ниже всех элементов
         
-        # Если target_index находится внутри выбранных индексов, игнорировать перемещение
-        if selected_indices and (target_index >= selected_indices[0] and target_index <= selected_indices[-1]):
+        # Получаем индексы перемещаемых элементов
+        moving_indices = sorted(self._drag_data["indices"])
+        
+        # Если целевая позиция внутри выделения - игнорируем
+        if target_index >= moving_indices[0] and target_index <= moving_indices[-1] + 1:
             return
+        
+        # Создаем временный список если его еще нет
         if self.temp_list is None:
             self.temp_list = [track.copy() for track in self.display_tracks]
-        moving_tracks = [self.temp_list[i] for i in selected_indices]
         
+        # Извлекаем перемещаемые треки
+        moving_tracks = [self.temp_list[i] for i in moving_indices]
         
-        # Удалить выбранное из temp_list в обратном порядке
-        for i in reversed(selected_indices):
+        # Удаляем их из исходных позиций (в обратном порядке)
+        for i in reversed(moving_indices):
             del self.temp_list[i]
-            
-        # Отрегулируйте позицию вставки с учетом удаленных элементов перед целевым индексом
-        adjustment = sum(1 for i in selected_indices if i < target_index)
-        insert_index = target_index - adjustment
         
-        # Зафиксировать insert_index в допустимом диапазоне
-        if insert_index < 0:
-            insert_index = 0
-        elif insert_index > len(self.temp_list):
-            insert_index = len(self.temp_list)
-        for offset, track in enumerate(moving_tracks):
-            self.temp_list.insert(insert_index + offset, track)
+        # Корректируем целевую позицию с учетом удаленных элементов
+        if target_index > moving_indices[-1]:
+            target_index -= len(moving_indices)
+        
+        # Вставляем треки в новую позицию
+        for i, track in enumerate(moving_tracks):
+            self.temp_list.insert(target_index + i, track)
+        
+        # Обновляем отображение
         self.display_tracks = self.temp_list.copy()
-        new_selection_indices = list(range(insert_index, insert_index + len(moving_tracks)))
+        
+        # Вычисляем новые индексы выделения
+        new_selection_indices = list(range(target_index, target_index + len(moving_tracks)))
         self.update_display(selection_indices=new_selection_indices)
-        children = self.tree.get_children()
-        self._drag_data["items"] = [children[i] for i in new_selection_indices]
+        
+        # Обновляем данные для drag
         self._drag_data["y"] = y
-
+        self._drag_data["indices"] = new_selection_indices
 
     def on_treeview_button_release(self, event):
-        if self._drag_data["items"]:
-            self.save_state()
-        self._drag_data["items"] = None
-        self._drag_data["y"] = 0
-        
-    
+        """Обработчик отпускания кнопки мыши с гарантированным сохранением"""
+        if hasattr(self, '_drag_data') and self._drag_data and self._drag_data.get("items"):
+            # Проверяем, изменились ли позиции
+            original_indices = set(self._drag_data["indices"])
+            current_indices = set(self.tree.index(i) for i in self.tree.selection())
+            
+            if original_indices != current_indices:
+                self.save_state()
+                print("[DRAG] Состояние сохранено после перетаскивания")
+        self.save_state()
+        self._drag_data = None
+
     
     def move_up(self):
         selected = self.tree.selection()
@@ -498,10 +585,13 @@ class PlaylistEditor:
         if positions[0] == 0:
             return
         
-        self.save_state()
         
         if self.temp_list is None:
-            self.temp_list = [track.copy() for track in self.display_tracks]
+            self.temp_list = []
+            for track in self.display_tracks:
+                new_track = track.copy()
+                new_track["was_modified"] = track.get("was_modified", False)
+                self.temp_list.append(new_track)
         
         for index in positions:
             self.temp_list[index], self.temp_list[index-1] = self.temp_list[index-1], self.temp_list[index]
@@ -515,7 +605,7 @@ class PlaylistEditor:
         self.show_message(self.localization.tr("moved_up"), "green")
         self.manual_edit = True
         self.update_undo_redo_buttons()
-
+        self.save_state()
 
 
     def move_down(self):
@@ -529,10 +619,13 @@ class PlaylistEditor:
         if positions[0] == max_index:
             return
         
-        self.save_state()
         
         if self.temp_list is None:
-            self.temp_list = [track.copy() for track in self.display_tracks]
+            self.temp_list = []
+            for track in self.display_tracks:
+                new_track = track.copy()
+                new_track["was_modified"] = track.get("was_modified", False)
+                self.temp_list.append(new_track)
         
         for index in positions:
             self.temp_list[index], self.temp_list[index+1] = self.temp_list[index+1], self.temp_list[index]
@@ -546,7 +639,7 @@ class PlaylistEditor:
         self.show_message(self.localization.tr("moved_down"), "green")
         self.manual_edit = True
         self.update_undo_redo_buttons()
-
+        self.save_state()
         
 
     def delete_tracks(self):
@@ -555,10 +648,13 @@ class PlaylistEditor:
             self.show_message(self.localization.tr("error_no_selection"), "red")
             return
         
-        self.save_state()
         
         if self.temp_list is None:
-            self.temp_list = [track.copy() for track in self.display_tracks]
+            self.temp_list = []
+            for track in self.display_tracks:
+                new_track = track.copy()
+                new_track["was_modified"] = track.get("was_modified", False)
+                self.temp_list.append(new_track)
         
         indices = sorted([self.tree.index(item) for item in selected], reverse=True)
         for index in indices:
@@ -572,56 +668,28 @@ class PlaylistEditor:
         )
         self.manual_edit = True
         self.update_undo_redo_buttons()
-
-    def undo_action(self):
-        if not self.history:
-            self.show_message(self.localization.tr("nothing_to_undo"), "red")
-            return
+        self.save_state()
         
-        # Сохраняем текущее состояние в redo stack
-        self.redo_stack.append(self.get_current_state())
-        
-        
-      
-        state = self.history.pop()
-        self.restore_state(state)
-        
-        self.manual_edit = True
-        self.update_undo_redo_buttons()
-        self.update_track_lists()  # Обновляем списки после отмены
-        self.show_message(self.localization.tr("action_undone"), "green")
-        
-        
-    def redo_action(self):
-        """Повтор отмененного действия"""
-        if not self.redo_stack:
-            return
-        
-        # Сохраняем текущее состояние в undo history
-        self.history.append(self.get_current_state())
-        
-        # Восстанавливаем состояние из redo stack
-        state = self.redo_stack.pop()
-        self.restore_state(state)
-        
-        self.manual_edit = True
-        self.update_undo_redo_buttons()
-        self.show_message(self.localization.tr("action_redone"), "green")
-    
-    def update_undo_redo_buttons(self):
-        """Обновляет состояние кнопок Undo/Redo"""
-        self.undo_btn['state'] = 'normal' if self.history else 'disabled'
-        self.redo_btn['state'] = 'normal' if self.redo_stack else 'disabled'
-    
     
     def update_display(self, selection_indices=None):
         """Обновляет отображение треков в таблице с правильной нумерацией"""
         self.tree.delete(*self.tree.get_children())  # Очищаем таблицу
         
+        # Конфигурация тега для измененных треков
+        self.tree.tag_configure('modified', background='#FFFACD')  # Светло-желтый
+        
         # Вставляем треки с правильной нумерацией (начиная с 1)
         for i, track in enumerate(self.display_tracks, 1):
-            print(f"Трек {i}: {track['name']} (ожидаемый номер: {i}, текущий номер: {track.get('num', 'N/A')})")
-            self.tree.insert('', 'end', values=(i, track["name"]))
+            item = self.tree.insert('', 'end', values=(i, track['name']))
+            if track.get('was_modified', False):
+                self.tree.item(item, tags=('modified',))
+        
+        # Восстанавливаем выделение если указаны индексы
+        if selection_indices is not None:
+            children = self.tree.get_children()
+            for idx in selection_indices:
+                if 0 <= idx < len(children):
+                    self.tree.selection_add(children[idx])
         
         # Обновляем внутренние списки
         self.full_paths = [t["path"] for t in self.display_tracks]
@@ -632,36 +700,152 @@ class PlaylistEditor:
             all_items = self.tree.get_children()
             for idx in selection_indices:
                 if 0 <= idx < len(all_items):
-                    self.tree.selection_add(all_items[idx])    
-    
-    def save_state(self):
-        """Сохраняет текущее состояние для Undo/Redo"""
-        current_state = self.get_current_state()
-        if hasattr(self, 'history') and self.history and self.history[-1] == current_state:
+                    self.tree.selection_add(all_items[idx])
+                    
+                    
+    def save_initial_state(self):
+        """Явно сохраняет начальное состояние"""
+        if not hasattr(self, 'display_tracks') or not self.display_tracks:
+            return
+            
+        initial_state = {
+            'tracks': [track.copy() for track in self.display_tracks],
+            'selection': []
+        }
+        
+        self.history = [initial_state]
+        self.history_index = 0
+        self.update_undo_redo_buttons()
+        print("[HISTORY] Начальное состояние сохранено")
+
+    def save_state(self, force_save=False):
+        """Сохраняет текущее состояние с улучшенной логикой"""
+        # Создаем глубокую копию текущего состояния
+        current_state = {
+            'tracks': [{
+                'path': track['path'],
+                'name': track['name'],
+                'num': track['num'],
+                'original_path': track.get('original_path', track['path']),
+                'was_modified': track.get('was_modified', False)
+            } for track in self.display_tracks],
+            'selection': list(self.tree.selection())
+        }
+        
+        # Проверяем, нужно ли сохранять (если не force_save и состояние не изменилось)
+        if not force_save and self.history and self.compare_states(self.history[self.history_index], current_state):
             return
         
-        if hasattr(self, 'history'):
-            self.history.append(current_state)
-            # Очищаем redo stack при новом действии
-            self.redo_stack = []
-            self.update_undo_redo_buttons()
-        else:
-            self.history = [current_state]
+        # Если мы не в конце истории (после undo), удаляем будущие состояния
+        if self.history_index < len(self.history) - 1:
+            self.history = self.history[:self.history_index + 1]
+        
+        # Добавляем новое состояние
+        self.history.append(current_state)
+        self.history_index = len(self.history) - 1
+        
+        # Ограничиваем размер истории
+        if len(self.history) > 50:
+            self.history.pop(0)
+            self.history_index -= 1
+        
+        self.update_undo_redo_buttons()
+        print(f"[HISTORY] Состояние сохранено (всего: {len(self.history)}, позиция: {self.history_index})")
+    
+    def compare_states(self, state1, state2):
+        """Сравнивает два состояния треков"""
+        if len(state1['tracks']) != len(state2['tracks']):
+            return False
+        
+        for t1, t2 in zip(state1['tracks'], state2['tracks']):
+            if (t1['path'] != t2['path'] or 
+                t1['name'] != t2['name'] or
+                t1['original_path'] != t2['original_path'] or
+                t1['was_modified'] != t2['was_modified']):
+                return False
+        return True
 
-    def get_current_state(self):
-        """Возвращает текущее состояние плейлиста"""
-        return [(self.tree.item(item)['values'], item) 
-                for item in self.tree.get_children()]
 
     def restore_state(self, state):
-        """Восстанавливает состояние из истории"""
+        """Восстанавливает состояние с полным обновлением интерфейса"""
+        # Обновляем основной список
+        self.display_tracks = [track.copy() for track in state['tracks']]
+        
+        # Обновляем временный список если он существует
+        if self.temp_list is not None:
+            self.temp_list = self.display_tracks.copy()
+        
+        # Обновляем Treeview
         self.tree.delete(*self.tree.get_children())
-        for values, item in state:
-            self.tree.insert('', 'end', values=values, iid=item)
+        for i, track in enumerate(self.display_tracks, 1):
+            item = self.tree.insert('', 'end', values=(i, track['name']))
+            if track['was_modified']:
+                self.tree.item(item, tags=('modified',))
+        
+        # Восстанавливаем выделение
+        if state['selection']:
+            try:
+                self.tree.selection_set(state['selection'])
+            except tk.TclError:
+                pass  # Игнорируем если элементы больше не существуют
+            
+    def undo_action(self):
+        """Отменяет последнее действие с улучшенной логикой"""
+        if self.history_index <= 0:
+            self.show_message(self.localization.tr("nothing_to_undo"), "red")
+            return
+        
+        self.history_index -= 1
+        self.restore_state(self.history[self.history_index])
+        self.show_message(self.localization.tr("action_undone"), "green")
+        self.update_undo_redo_buttons()
+        print(f"[DEBUG] Действие отменено")
+        print(f"[HISTORY] Состояние: (всего: {len(self.history)}, позиция: {self.history_index})")
+
+    def redo_action(self):
+        """Повторяет отмененное действие с улучшенной логикой"""
+        if self.history_index >= len(self.history) - 1:
+            self.show_message(self.localization.tr("nothing_to_redo"), "red")
+            return
+        
+        self.history_index += 1
+        self.restore_state(self.history[self.history_index])
+        self.show_message(self.localization.tr("action_redone"), "green")
+        self.update_undo_redo_buttons()
+        print(f"[DEBUG] Действие повторено")
+        print(f"[HISTORY] Состояние: (всего: {len(self.history)}, позиция: {self.history_index})")
+    
+    def update_undo_redo_buttons(self):
+        """Обновляет состояние кнопок с учетом новой логики"""
+        self.undo_btn['state'] = 'normal' if self.history_index > 0 else 'disabled'
+        self.redo_btn['state'] = 'normal' if self.history_index < len(self.history) - 1 else 'disabled'
 
 
 
+    def update_internal_lists(self):
+        """Обновляет внутренние списки на основе текущего состояния Treeview"""
+        self.display_tracks = []
+        for item in self.tree.get_children():
+            values = self.tree.item(item)['values']
+            if len(values) >= 2:
+                track = {
+                    "path": values[1],
+                    "name": os.path.basename(values[1]),
+                    "num": values[0],
+                    "was_modified": 'modified' in self.tree.item(item, 'tags')
+                }
+                self.display_tracks.append(track)
+        
+        # Обновляем временный список, если он существует
+        if self.temp_list is not None:
+            self.temp_list = self.display_tracks.copy()
 
+
+    def get_treeview_state(self):
+        """Возвращает текущее состояние Treeview в унифицированном формате"""
+        return [self.tree.item(item)['values'] for item in self.tree.get_children()]
+    
+    
     def show_message(self, text, color):
         """Обновляет поле сообщений"""
         self.seed_info.config(text=text, fg=color)    
@@ -682,11 +866,16 @@ class PlaylistEditor:
         
         # Немного усложнено: дата + количество треков + случайное число из списка
         date_part = int(date.timestamp())
-        numbers = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576]
-        random_number = random.choice(numbers)
-        predictable_num = (date_part * num_tracks * random_number) % fact
+        random_number = random.getrandbits(128)
+        random_nbr = random.getrandbits(128)
+        random_nbrr = random.getrandbits(64)
+        number = [1, random_nbr, random_nbrr]
+        random_divisor = random.choice(number)
+        result = (random_number // random_divisor)
+
+        predictable_num = (date_part * num_tracks * random_number // random_divisor + 1) % fact
         
-        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Дата = {date_part} \n Число = {random_number} \n Количество треков = {num_tracks} \n Результат = {predictable_num}")
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Дата = {date_part} \n Случайное число = {random_number} \n Делитель = {random_divisor} \n Результат = {predictable_num}")
         # Форматируем в соответствии с выбранным форматом
         if self.seed_format_combobox.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
                         "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
@@ -694,8 +883,9 @@ class PlaylistEditor:
         else:
             # Для буквенно-цифрового формата используем хеш
             hash_obj = hashlib.sha256(str(predictable_num).encode())
+            print(f"[DEBUG] Хеш = {hash_obj}")
             return hash_obj.hexdigest()[:len(str(fact))]
-
+        
 
     def apply_reverse_step(self, files, step):
         """Реверс блоков (идентично генератору)"""
@@ -718,6 +908,12 @@ class PlaylistEditor:
             # Определяем базовый список для работы
             base_list = self.temp_list if self.temp_list is not None else self.original_list.copy()
             
+            
+            # Гарантируем наличие original_path
+            for track in base_list:
+                if "original_path" not in track:
+                    track["original_path"] = track["path"]
+                    
             # Сортируем по именам (A-Z)
             self.sorted_list = sorted(base_list, 
                             key=lambda x: (not x['name'][0].isalpha(), x['name'].lower()))
@@ -736,10 +932,16 @@ class PlaylistEditor:
             seed_trimmed = seed.lstrip('0') or '0'
             
             
-            print(f"[DEBUG] Основной сид = {seed}")
+            print(f"[DEBUG] Сид = {seed}")
             
-            print(f"[DEBUG] Использованный основной сид = {seed_trimmed}")
+            print(f"[DEBUG] Использованный сид = {seed_trimmed}")
            
+            # Восстанавливаем измененные пути
+            for track in base_list:
+                if track["original_path"] in self.modified_paths:
+                    track["path"] = self.modified_paths[track["original_path"]]
+                    track["was_modified"] = True
+        
             # Настраиваем генератор случайных чисел
             random.seed(abs(self.stable_hash(seed_trimmed)))
                         
@@ -761,6 +963,12 @@ class PlaylistEditor:
                     self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")
                     return
             
+            # После перемешивания снова восстанавливаем изменения
+            for track in self.shuffled_list:
+                if track["original_path"] in self.modified_paths:
+                    track["path"] = self.modified_paths[track["original_path"]]
+                    track["was_modified"] = True
+                
             # Обновляем отображение
             self.display_tracks = self.shuffled_list
             self.update_display()
@@ -769,7 +977,7 @@ class PlaylistEditor:
             self.current_seed = seed_trimmed
             self.current_reverse_step = step if step > 0 else None
                       
-            
+            self.save_state()
             # Показываем сообщение
             if step > 0:
                 info_text = self.localization.tr("seed_info_step").format(seed=seed_trimmed, step=step)
@@ -794,11 +1002,12 @@ class PlaylistEditor:
             source_list = self.temp_list if self.temp_list is not None else self.display_tracks
             
             for idx, track in enumerate(source_list, 1):
-                # Перенумеруем треки
                 current_tracks.append({
                     "path": track["path"],
                     "name": os.path.basename(track["path"]),
-                    "num": idx
+                    "num": idx,
+                    "original_path": track.get("original_path", track["path"]),  # Сохраняем оригинальный путь
+                    "was_modified": track.get("was_modified", False)
                 })
             
             if not current_tracks:
@@ -811,7 +1020,12 @@ class PlaylistEditor:
             # Определяем путь для сохранения
             script_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) \
                       else os.path.dirname(os.path.abspath(__file__))
-            save_path = os.path.join(script_dir, f"{playlist_name}.m3u8")
+            # Получаем выбранный формат
+            playlist_format = self.format_m3u8
+            if not playlist_format:  # Защита на случай пустого значения
+                playlist_format = "m3u8"    
+                
+            save_path = os.path.join(script_dir, f"{playlist_name}.{playlist_format}")
             
             # Записываем файл
             with open(save_path, 'w', encoding='utf-8') as f:
@@ -832,16 +1046,20 @@ class PlaylistEditor:
                     f.write(f"#EXTINF:-1,{track['name']}\n")
                     f.write(f"{track['path']}\n")
             
-            # Обновляем внутренние списки
+            # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
-                self.temp_list = current_tracks.copy()
+                self.temp_list = []
+                for track in current_tracks:
+                    new_track = track.copy()
+                    new_track["original_path"] = track.get("original_path", track["path"])
+                    self.temp_list.append(new_track)
             
             # Обновляем отображение из current_tracks, чтобы синхронизироваться
             self.display_tracks = current_tracks.copy()
             self.update_display()
             
             # Формируем сообщение
-            message = self.localization.tr("playlist_saved").format(name=f"{playlist_name}.m3u8")
+            message = self.localization.tr("playlist_saved").format(name=f"{playlist_name}.{playlist_format}")
             if self.shuffled_list is not None and hasattr(self, 'current_seed'):
                 message += f" | {self.localization.tr('seed_info_value')}: {self.current_seed}"
                 if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
@@ -852,15 +1070,7 @@ class PlaylistEditor:
         except Exception as e:
             self.seed_info.config(text=f"{self.localization.tr('error_save')}: {str(e)}", fg="red")
     
-    def update_track_lists(self):
-        self.full_paths = []
-        self.display_names = []
-        for item in self.tree.get_children():
-            values = self.tree.item(item)['values']
-            if len(values) >= 2:
-                self.full_paths.append(values[1])
-                self.display_names.append(values[1])
-        self.original_paths = self.full_paths.copy()
+
     
     def create_path_editor_window(self, event=None):
         """Создает окно для изменения путей выделенных треков"""
@@ -982,40 +1192,41 @@ class PlaylistEditor:
             self.new_path_entry.insert(0, folder_path)
     
     def apply_new_paths(self):
-        """Применяет новый путь к выбранным трекам и сохраняет в temp_list"""
         try:
             new_path = self.new_path_entry.get().strip()
             if not new_path:
                 raise ValueError(self.localization.tr("error_empty_path"))
             
-            # Нормализуем путь
             new_path = os.path.normpath(new_path)
             if not new_path.endswith(os.sep):
                 new_path += os.sep
             
-            # Сохраняем текущее состояние для undo
             self.save_state()
             
-            # Создаем/обновляем temp_list
             if self.temp_list is None:
-                # Берем копию текущих треков с корректными путями
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
-            # Получаем индексы выбранных элементов в Treeview
-            selected_items = self.selected_for_edit  # селекты заранее сохранены
-            selected_indices = [self.tree.index(item) for item in selected_items]
+            selected_indices = [self.tree.index(item) for item in self.selected_for_edit]
             
-            # Обновляем пути выбранных треков по индексам
             for idx in selected_indices:
-                old_track = self.temp_list[idx]
-                filename = os.path.basename(old_track["path"])
+                track = self.temp_list[idx]
+                original_path = track.get("original_path", track["path"])  # Сохраняем оригинальный путь
+                filename = os.path.basename(original_path)
                 new_full_path = os.path.normpath(new_path + filename)
-                self.temp_list[idx]["path"] = new_full_path
-                self.temp_list[idx]["name"] = filename
+                
+                # Обновляем словарь изменённых путей
+                self.modified_paths[original_path] = new_full_path
+                
+                # Обновляем трек
+                track["path"] = new_full_path
+                track["name"] = filename
+                track["was_modified"] = True
+                track["original_path"] = original_path  # Сохраняем оригинальный путь
             
-            # Обновляем отображение из temp_list
             self.display_tracks = self.temp_list.copy()
             self.update_display()
+            self.save_state()
+
             
             # Сбрасываем перемешанную версию
             self.shuffled_list = None

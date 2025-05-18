@@ -60,6 +60,8 @@ class PlaylistGenerator:
         self.last_folders = []
         self.visited_github = False
         self.github_link = None
+        self.format_m3u8 = "m3u8"  # Строка для хранения формата
+        self.format_combobox = None  # Виджет Combobox
         self.load_settings()
         self.root.title(self.localization.tr("window_title_generator"))
         
@@ -79,7 +81,7 @@ class PlaylistGenerator:
         
         self.create_widgets()
         self.show_version_info()
-        self.github_link = None  # Инициализируем атрибут
+
         
         if self.last_folders:
             if len(self.last_folders) == 1:
@@ -142,21 +144,33 @@ class PlaylistGenerator:
             settings = {
                 'language': self.localization.current_lang,
                 'last_folders': [],
-                'visited_github': self.visited_github
+                'visited_github': self.visited_github,
+                'playlist_format': self.format_m3u8
             }
             with open('playlist_settings.json', 'r', encoding='utf-8') as f:
                 settings = json.load(f)
-                self.visited_github = settings.get('visited_github', False)               
+                self.visited_github = settings.get('visited_github')   
+                saved_format = settings.get('playlist_format')                
                 saved_lang = settings.get('language')
                 if saved_lang and self.localization.is_language_supported(saved_lang):
                     self.localization.set_language(saved_lang)
                     print(f"[DEBUG] Загружен язык: {saved_lang}")
                 else:
                     sys_lang = self.localization.detect_system_language()
-                    print(f"[DEBUG] Неподдерживаемый язык в настройках. Авто–язык: {sys_lang}")
                     self.localization.set_language(sys_lang)
+                    print(f"[DEBUG] Неподдерживаемый язык в настройках. Авто–язык: {sys_lang}")
                     self.save_settings()       
                 
+                # Устанавливаем значение напрямую, если оно есть в списке
+                if saved_format in ["m3u8", "m3u"]:
+                    self.format_m3u8 = saved_format
+                    print(f"[DEBUG] Загружен формат: {saved_format}")
+                else:
+                    
+                    self.format_m3u8 = "m3u8"
+                    print(f"[DEBUG] Неподдерживаемый формат '{saved_format}'. Авто–формат: m3u8")
+                    
+                    
                 if 'last_folders' in settings and isinstance(settings['last_folders'], list):
                     # Оставляем только существующие папки
                     self.last_folders = [f for f in settings['last_folders'] if self.is_valid_folders([f])]
@@ -168,15 +182,19 @@ class PlaylistGenerator:
             self.localization.set_language(sys_lang)
             self.visited_github = False
             self.last_folders = []
+            self.format_m3u8 = "m3u8"
+            print(f"[DEBUG] Автоматический выбор формата: m3u8")
             self.save_settings()
             
     
     def save_settings(self):
         """Сохраняет все настройки в файл"""
+        
         settings = {
             'language': self.localization.current_lang,
             'last_folders': self.last_folders,
-            'visited_github': self.visited_github
+            'visited_github': self.visited_github,
+            'playlist_format': self.format_m3u8
         }
         try:
             with open('playlist_settings.json', 'w', encoding='utf-8') as f:
@@ -254,6 +272,22 @@ class PlaylistGenerator:
             PlaylistEditor(editor_root, file_path)
             editor_root.mainloop()    
         
+    def change_format(self, event=None):
+        """Сохраняет настройки выбранного формата файла"""
+        self.format_m3u8 = self.format_combobox.get()
+        try:
+            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            settings = {}
+        
+        settings['playlist_format'] = self.format_m3u8
+        
+        with open('playlist_settings.json', 'w', encoding='utf-8') as f:
+            json.dump(settings, f, ensure_ascii=False, indent=4)
+        
+        print(f"[DEBUG] Формат файла сохранен: {self.format_m3u8}")        
+
         
     def change_language(self, event=None):
         """Обработчик смены языка"""
@@ -272,6 +306,10 @@ class PlaylistGenerator:
             self.save_language_settings()
             # Обновляем заголовок окна
             self.root.title(self.localization.tr("window_title_generator"))
+            # Обновляем текст кнопки генерации
+            self.generate_btn.config(text=self.localization.tr("generate_button"))
+            self.browse_btn.config(text=self.localization.tr("browse_button"))
+            self.shadow_seed_check.config(text=self.localization.tr("shadow_seed_check"))
             # Обновляем остальной интерфейс
             self.update_ui_texts()
         
@@ -330,25 +368,30 @@ class PlaylistGenerator:
         
         # Метки и поля ввода
         tk.Label(self.root, text=self.localization.tr("music_folder_label")).grid(row=0, column=0, sticky="w", padx=10, pady=5)
-        self.folder_entry = tk.Entry(self.root, width=40)
+        self.folder_entry = ttk.Entry(self.root, width=40)
         self.folder_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
         
-        tk.Button(self.root, text=self.localization.tr("browse_button"), command=self.browse_folders).grid(row=0, column=2, padx=5, pady=10)
+        self.browse_btn = ttk.Button(
+            self.root,
+            text=self.localization.tr("browse_button"),
+            command=self.browse_folders
+            )
+        self.browse_btn.grid(row=0, column=2, padx=1, pady=10, sticky="w")
         
         tk.Label(self.root, text=self.localization.tr("playlist_name_label")).grid(row=1, column=0, sticky="w", padx=10, pady=5)
-        self.playlist_entry = tk.Entry(self.root, width=40)
+        self.playlist_entry = ttk.Entry(self.root, width=40)
         self.playlist_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
         self.playlist_entry.insert(0, self.localization.tr("default_playlist_name")) # Добавляем значение по умолчанию
         
         
         tk.Label(self.root, text=self.localization.tr("seed_label")).grid(row=2, column=0, sticky="w", padx=10, pady=5)
-        self.seed_entry = tk.Entry(self.root, width=40)
+        self.seed_entry = ttk.Entry(self.root, width=40)
         self.seed_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         # Поле для шага реверса
         tk.Label(self.root, text=self.localization.tr("reverse_step_label")).grid(row=3, column=0, sticky="w", padx=10, pady=5)
-        self.step_entry = tk.Entry(self.root, width=40)
+        self.step_entry = ttk.Entry(self.root, width=40)
         self.step_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
 
         # Выбор формата сида
@@ -361,7 +404,7 @@ class PlaylistGenerator:
 
         # Чекбокс для теневого сида
         self.use_shadow_seed = tk.BooleanVar()
-        self.shadow_seed_check = tk.Checkbutton(
+        self.shadow_seed_check = ttk.Checkbutton(
             self.root, 
             text=self.localization.tr("shadow_seed_check"),
             variable=self.use_shadow_seed,
@@ -381,7 +424,7 @@ class PlaylistGenerator:
         
         
         # Выбор языка
-        language_frame = tk.Frame(self.root)
+        language_frame = ttk.Frame(self.root)
         language_frame.grid(row=6, column=0, columnspan=3, pady=5, sticky="ew")
     
         self.language_label = tk.Label(language_frame, text=self.localization.tr("language_label"))
@@ -408,8 +451,26 @@ class PlaylistGenerator:
         self.language_dropdown.pack(side=tk.LEFT)
         self.language_dropdown.bind("<<ComboboxSelected>>", self.change_language)
         
-        tk.Button(self.root, text=self.localization.tr("generate_button"), command=self.generate_playlist).grid(row=6, column=1, pady=5)
+        # Кнопка генерации
+        self.generate_btn = ttk.Button(
+            language_frame,
+            text=self.localization.tr("generate_button"),
+            command=self.generate_playlist
+        )
+        self.generate_btn.pack(side=tk.LEFT, padx=(95, 10))
         
+        
+        # Combobox формата
+        self.format_combobox = ttk.Combobox(
+            language_frame,
+            values=["m3u8", "m3u"],
+            state="readonly",
+            width=5
+        )
+
+        self.format_combobox.pack(side=tk.LEFT)
+        self.format_combobox.set(self.format_m3u8)
+        self.format_combobox.bind("<<ComboboxSelected>>", self.change_format)
         
         # Поле для вывода информации
         self.seed_info = tk.Label(self.root, text="", fg="green", bg=self.root.cget('bg'))
@@ -521,7 +582,12 @@ class PlaylistGenerator:
 
     def get_audio_files(self, folders):
         """Принимает список папок, возвращает общий список аудиофайлов всех папок"""
-        audio_extensions = {'.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac'}
+        audio_extensions = {
+                # Аудио
+                '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff',
+                # Видео
+                '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg'
+            }
         audio_files = []
         for folder in folders:
             try:
@@ -577,12 +643,20 @@ class PlaylistGenerator:
         
         # Непредсказуемая часть: хеш основного сида + случайное число
         random_part = random.getrandbits(256)
-        seed_hash = hashlib.sha3_256((str(seed_trimmed) + str(random_part)).encode()).hexdigest()
+        random_nbr = random.getrandbits(256)
+        random_nbrr = random.getrandbits(128)
+        number = [1, random_nbr, random_nbrr]
+        random_divisor = random.choice(number)
+        seed_num = int(seed_trimmed, 16) if isinstance(seed_trimmed, str) else seed_trimmed
+        
+        predictable_num = ((seed_num % fact) * random_part // random_divisor + 1) % fact
+        
+        seed_hash = hashlib.sha3_256((str(predictable_num)).encode()).hexdigest()
         
         # Преобразуем хеш в число
-        shadow_num = int(seed_hash, 16) % fact
+        shadow_num = predictable_num #int(seed_hash, 16) % fact
         
-        print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Случайное число = {random_part} \n Хеш сида = {seed_hash} \n Хеш в число = {shadow_num}")
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Случайное число = {random_part} \n Делитель = {random_divisor} \n Результат = {predictable_num} \n Хеш сида = {seed_hash}")
         # Форматируем аналогично основному сиду
         if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
                         "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
@@ -668,7 +742,12 @@ class PlaylistGenerator:
             script_dir = os.path.dirname(sys.executable)
         else:
             script_dir = os.path.dirname(os.path.abspath(__file__))
-        playlist_path = os.path.join(script_dir, f"{playlist_name}.m3u8")
+        # Получаем выбранный формат
+        playlist_format = self.format_m3u8
+        if not playlist_format:  # Защита на случай пустого значения
+            playlist_format = "m3u8" 
+                
+        playlist_path = os.path.join(script_dir, f"{playlist_name}.{playlist_format}")
 
 
         # Обработка перемешивания
@@ -721,7 +800,7 @@ class PlaylistGenerator:
     def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None):
         """Создает M3U8 файл плейлиста"""
         date_str = date.strftime("%Y-%m-%d %H:%M:%S")
-        
+                
         with open(path, 'w', encoding='utf-8') as f:
             f.write("#EXTM3U\n")
             f.write("#Made with VolfLife's Playlist Generator\n")
@@ -771,7 +850,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_console()
         print("===========================================")
-        print("    Playlist Generator v4.0 by VolfLife    ")
+        print("    Playlist Generator v4.1 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
