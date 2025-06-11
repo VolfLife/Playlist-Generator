@@ -749,9 +749,9 @@ class PlaylistEditor:
         self.tree.tag_configure('modified', background='#FFFACD')  # Светло-желтый - измененные пути
         self.tree.tag_configure('moved', background='#D5E8D4')    # Светло-зеленый - перемещенные треки
         self.tree.tag_configure('restored', background='#FFCCCB') # Светло-красный - восстановленные треки
-        self.tree.tag_configure('modified_moved', background='#E6D5FF') # Комбинация modified + moved
-        self.tree.tag_configure('modified_restored', background='#FFD5E6') # Комбинация modified + restored
-        self.tree.tag_configure('moved_restored', background='#D5F0FF') # Комбинация moved + restored
+        self.tree.tag_configure('modified_moved', background='#FFFACD') # Комбинация modified + moved E6D5FF
+        self.tree.tag_configure('modified_restored', background='#FFFACD') # Комбинация modified + restored FFD5E6
+        self.tree.tag_configure('moved_restored', background='#D5E8D4') # Комбинация moved + restored D5F0FF
         self.tree.tag_configure('all', background='#E0E0E0') # Все три состояния
 
         # Вставляем треки с правильной нумерацией (начиная с 1)
