@@ -794,9 +794,13 @@ class PlaylistGenerator:
                 seed=seed_trimmed, step=reverse_step
             )
         else:
-            # Без реверса
-            shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
-            info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
+            if user_seed:
+                shuffled_files = self.shuffle_files(audio_files, str(seed_trimmed))
+                info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
+            else:
+                # Без реверса
+                shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
+                info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
 
         # Создание плейлиста
         self.save_m3u8_playlist(
@@ -892,8 +896,8 @@ class PlaylistGenerator:
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
         
-        
         return files
+        
 if __name__ == "__main__":
     
     # Устанавливаем обработчик исключений ДО всего остального

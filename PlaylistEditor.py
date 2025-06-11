@@ -1058,8 +1058,11 @@ class PlaylistEditor:
                         
             # Перемешиваем sorted_list
             tracks = self.sorted_list.copy()
-            print(f"[DEBUG] Скопировано")
-            self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
+            
+            if user_seed:
+                self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
+            else:
+                self.shuffled_list = self.shuffle_files(tracks, str(seed_trimmed))
                         
             
                 
@@ -1111,6 +1114,14 @@ class PlaylistEditor:
             
             
             
+    def shuffle_files(self, files, seed_value):
+        """Перемешивание с небольшими изменениями"""
+        random.seed(abs(self.stable_hash(str(seed_value))))
+        files = files.copy()
+        random.shuffle(files)        
+        return files
+
+
     def soft_shuffle(self, files, seed_value, intensity=0.2):
         """Перемешивание с небольшими изменениями"""
         random.seed(abs(self.stable_hash(str(seed_value))))
@@ -1121,10 +1132,10 @@ class PlaylistEditor:
         
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
-            files[i], files[j] = files[j], files[i]    
-        
+            files[i], files[j] = files[j], files[i]
+         
         return files
-        print(f"[DEBUG] Перемешано")
+
 
 
     def save_playlist(self):
