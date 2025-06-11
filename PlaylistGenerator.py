@@ -776,7 +776,7 @@ class PlaylistGenerator:
             print(f"[DEBUG] Реверс = {reverse_step}")
             
             # Основное перемешивание по теневому сиду
-            shuffled = self.shuffle_files(audio_files, str(shadow_seed_trimmed))
+            shuffled = self.soft_shuffle(audio_files, str(shadow_seed_trimmed))
             
             # Применяем реверс блоков
             shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
@@ -794,13 +794,9 @@ class PlaylistGenerator:
                 seed=seed_trimmed, step=reverse_step
             )
         else:
-            if user_seed:
-                shuffled_files = self.shuffle_files(audio_files, str(seed_trimmed))
-                info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
-            else:
-                # Без реверса
-                shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
-                info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
+            # Без реверса
+            shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
+            info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
 
         # Создание плейлиста
         self.save_m3u8_playlist(
@@ -884,13 +880,24 @@ class PlaylistGenerator:
         return shuffled
     
     
-    def soft_shuffle(self, files, seed_value, intensity=0.2):
+    def soft_shuffle(self, files, seed_value, intensity=None):
         """Перемешивание с небольшими изменениями"""
         random.seed(abs(self.stable_hash(str(seed_value))))
         files = files.copy()
         
+        # Генерация intensity из сида, если не задано
+        if intensity is None:
+            # Используем хеш сида для генерации значения 0.1-0.9
+            hash_val = self.stable_hash(str(seed_value))
+            intensity = 0.1 + (hash_val % 8000) / 10000  # Дает значение 0.1-0.9
+            intensity = round(intensity, 2)  # Округляем до 2 знаков
+        else:
+            # Ограничиваем заданное значение
+            intensity = max(0.1, min(0.9, float(intensity)))
+        
         # Количество перестановок = 30% от числа треков (можно регулировать)
         num_swaps = max(1, int(len(files) * intensity))
+        print(f"[DEBUG] Генерация intensity из сида = {intensity}")
         
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
