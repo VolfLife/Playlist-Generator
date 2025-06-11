@@ -905,7 +905,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_console()
         print("===========================================")
-        print("    Playlist Generator v4.2 by VolfLife    ")
+        print("    Playlist Generator v4.3 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")

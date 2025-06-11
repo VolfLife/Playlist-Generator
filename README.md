@@ -51,7 +51,7 @@ ___
 
 ![Generator Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/generator_img.png)
 
-Creates `.m3u8`/`.m3u` playlists from scratch. Simply launch the executable to enter generator mode.
+Creates `.m3u8`/`.m3u`/`.txt` playlists from scratch. Simply launch the executable to enter generator mode.
 
 1. Select your music folder(s)
 
@@ -98,5 +98,5 @@ pip install pyinstaller
 ```
 
 ```
-pyinstaller --onefile --hidden-import=_pylong --windowed --add-data "version_info.py;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
+pyinstaller --onefile --hidden-import=_pylong,fonttools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
 ```
