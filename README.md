@@ -51,7 +51,7 @@ ___
 
 ![Generator Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/generator_img.png)
 
-Creates `.m3u8`/`.m3u`/`.txt` playlists from scratch. Simply launch the executable to enter generator mode.
+Creates `.m3u8`/`.m3u`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
 
 1. Select your music folder(s)
 
