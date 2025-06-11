@@ -880,7 +880,7 @@ class PlaylistGenerator:
         return shuffled
     
     
-    def soft_shuffle(self, files, seed_value, intensity=0.1):
+    def soft_shuffle(self, files, seed_value, intensity=0.2):
         """Перемешивание с небольшими изменениями"""
         random.seed(abs(self.stable_hash(str(seed_value))))
         files = files.copy()

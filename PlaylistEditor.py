@@ -76,7 +76,7 @@ class PlaylistEditor:
             self.root.destroy()
             raise
         
-        self.icon_ico = self.font_loader.icon_ico 
+
         
     def load_language_settings(self):
         """Загружает настройки языка с той же логикой"""
@@ -1054,13 +1054,13 @@ class PlaylistEditor:
                     if "was_restored" not in track:
                         track["was_restored"] = False
                     
-            # Настраиваем генератор случайных чисел
-            random.seed(abs(self.stable_hash(seed_trimmed)))
+
                         
             # Перемешиваем sorted_list
-            self.shuffled_list = self.sorted_list.copy()
-            random.shuffle(self.shuffled_list)
-            
+            tracks = self.sorted_list.copy()
+            print(f"[DEBUG] Скопировано")
+            self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
+                        
             
                 
             # Применяем реверс если нужно
@@ -1108,8 +1108,24 @@ class PlaylistEditor:
             
         except Exception as e:
             self.seed_info.config(text=f"{self.localization.tr('error')}: {str(e)}", fg="red")
-                
+            
+            
+            
+    def soft_shuffle(self, files, seed_value, intensity=0.2):
+        """Перемешивание с небольшими изменениями"""
+        random.seed(abs(self.stable_hash(str(seed_value))))
+        files = files.copy()
         
+        # Количество перестановок = 30% от числа треков (можно регулировать)
+        num_swaps = max(1, int(len(files) * intensity))
+        
+        for _ in range(num_swaps):
+            i, j = random.sample(range(len(files)), 2)
+            files[i], files[j] = files[j], files[i]    
+        
+        return files
+        print(f"[DEBUG] Перемешано")
+
 
     def save_playlist(self):
         """Сохранение плейлиста с учетом текущего состояния"""
@@ -1118,9 +1134,11 @@ class PlaylistEditor:
             if self.shuffled_list is not None:
                 # Если было перемешивание - используем перемешанный список
                 source_list = self.shuffled_list
-            if self.temp_list is not None:
+            
+            elif self.temp_list is not None:
                 # Если было ручное редактирование - используем временный список
                 source_list = self.temp_list
+            
             else:
                 # Если не было ни перемешивания, ни редактирования - используем оригинальный порядок
                 source_list = self.original_list
