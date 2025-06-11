@@ -53,7 +53,7 @@ ___
 
 Creates `.m3u8`/`.m3u` playlists from scratch. Simply launch the executable to enter generator mode.
 
-1. Select your music folder/folders
+1. Select your music folder(s)
 
 2. Name your playlist
 
