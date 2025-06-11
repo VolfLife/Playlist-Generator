@@ -644,13 +644,18 @@ class PlaylistEditor:
             for track in self.display_tracks:
                 new_track = track.copy()
                 new_track["was_modified"] = track.get("was_modified", False)
+                new_track["was_restored"] = track.get("was_restored", False)
                 self.temp_list.append(new_track)
         
         for index in positions:
+            # Сохраняем флаги для обоих треков
+            prev_restored = self.temp_list[index-1].get("was_restored", False)
+            current_restored = self.temp_list[index].get("was_restored", False)
             self.temp_list[index], self.temp_list[index-1] = self.temp_list[index-1], self.temp_list[index]
             # Помечаем перемещенные треки
-            self.temp_list[index]['was_moved'] = True
             self.temp_list[index-1]['was_moved'] = True
+            self.temp_list[index-1]['was_restored'] = prev_restored
+            self.temp_list[index]['was_restored'] = current_restored
         
         self.display_tracks = self.temp_list
         
@@ -679,14 +684,21 @@ class PlaylistEditor:
             for track in self.display_tracks:
                 new_track = track.copy()
                 new_track["was_modified"] = track.get("was_modified", False)
+                new_track["was_restored"] = track.get("was_restored", False)
                 self.temp_list.append(new_track)
         
         for index in positions:
+            # Сохраняем флаги для обоих треков
+            next_restored = self.temp_list[index+1].get("was_restored", False)
+            current_restored = self.temp_list[index].get("was_restored", False)
+            
             self.temp_list[index], self.temp_list[index+1] = self.temp_list[index+1], self.temp_list[index]
             # Помечаем перемещенные треки
-            self.temp_list[index]['was_moved'] = True
             self.temp_list[index+1]['was_moved'] = True
-        
+            self.temp_list[index+1]['was_restored'] = next_restored
+            self.temp_list[index]['was_restored'] = current_restored
+            
+            
         self.display_tracks = self.temp_list
         
         # Перед обновлением сохраняем новые индексы выбранных элементов (со смещением на +1)
@@ -705,12 +717,12 @@ class PlaylistEditor:
             self.show_message(self.localization.tr("error_no_selection"), "red")
             return
         
-        
         if self.temp_list is None:
             self.temp_list = []
             for track in self.display_tracks:
                 new_track = track.copy()
                 new_track["was_modified"] = track.get("was_modified", False)
+                new_track["was_restored"] = track.get("was_restored", False)  # Сохраняем флаг восстановления
                 self.temp_list.append(new_track)
         
         indices = sorted([self.tree.index(item) for item in selected], reverse=True)
@@ -733,19 +745,41 @@ class PlaylistEditor:
         """Обновляет отображение треков в таблице с правильной нумерацией"""
         self.tree.delete(*self.tree.get_children())  # Очищаем таблицу
         
-        self.tree.tag_configure('modified', background='#FFFACD')  # Светло-желтый
-        self.tree.tag_configure('restored', background='#FFCCCB') # Светло-красный
-        self.tree.tag_configure('moved', background='#D5E8D4')
+        # Настраиваем теги для разных состояний треков
+        self.tree.tag_configure('modified', background='#FFFACD')  # Светло-желтый - измененные пути
+        self.tree.tag_configure('moved', background='#D5E8D4')    # Светло-зеленый - перемещенные треки
+        self.tree.tag_configure('restored', background='#FFCCCB') # Светло-красный - восстановленные треки
+        self.tree.tag_configure('modified_moved', background='#E6D5FF') # Комбинация modified + moved
+        self.tree.tag_configure('modified_restored', background='#FFD5E6') # Комбинация modified + restored
+        self.tree.tag_configure('moved_restored', background='#D5F0FF') # Комбинация moved + restored
+        self.tree.tag_configure('all', background='#E0E0E0') # Все три состояния
 
         # Вставляем треки с правильной нумерацией (начиная с 1)
         for i, track in enumerate(self.display_tracks, 1):
             item = self.tree.insert('', 'end', values=(i, track['name']))
-            # Применяем теги в зависимости от состояния трека
+            
+            # Определяем теги в зависимости от состояния трека
             tags = []
-            if track.get('was_modified', False):
+            is_modified = track.get('was_modified', False)
+            is_moved = track.get('was_moved', False)
+            is_restored = track.get('was_restored', False)
+            
+            # Комбинируем теги для всех возможных сочетаний
+            if is_modified and is_moved and is_restored:
+                tags.append('all')
+            elif is_modified and is_moved:
+                tags.append('modified_moved')
+            elif is_modified and is_restored:
+                tags.append('modified_restored')
+            elif is_moved and is_restored:
+                tags.append('moved_restored')
+            elif is_modified:
                 tags.append('modified')
-            if track.get('was_moved', False):
+            elif is_moved:
                 tags.append('moved')
+            elif is_restored:
+                tags.append('restored')
+            
             if tags:
                 self.tree.item(item, tags=tuple(tags))
         
@@ -831,33 +865,24 @@ class PlaylistEditor:
         current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
         
         # Обновляем основной список
-        self.display_tracks = [track.copy() for track in state['tracks']]
+        self.display_tracks = []
+        for track in state['tracks']:
+            new_track = track.copy()
+            # Помечаем восстановленные треки (те, которых не было в current_paths)
+            if track['path'] not in current_paths:
+                new_track['was_restored'] = True
+            else:
+                # Сохраняем существующий флаг restored если он есть
+                existing_track = next((t for t in self.display_tracks if t['path'] == track['path']), None)
+                if existing_track and existing_track.get('was_restored', False):
+                    new_track['was_restored'] = True
+            self.display_tracks.append(new_track)
         
         # Обновляем временный список если он существует
         if self.temp_list is not None:
             self.temp_list = self.display_tracks.copy()
         
-        # Обновляем Treeview
-        self.tree.delete(*self.tree.get_children())
-        
-        # Получаем пути из восстановленного состояния
-        restored_paths = {track['path'] for track in state['tracks']}
-        
-        # Определяем восстановленные треки (те, которых не было в current_paths)
-        restored_tracks = restored_paths - current_paths
-        
-        for i, track in enumerate(self.display_tracks, 1):
-            item = self.tree.insert('', 'end', values=(i, track['name']))
-            # Применяем теги в зависимости от состояния трека
-            tags = []
-            if track.get('was_modified', False):
-                tags.append('modified')
-            if track.get('was_moved', False):
-                tags.append('moved')
-            if track['path'] in restored_tracks:
-                tags.append('restored')
-            if tags:
-                self.tree.item(item, tags=tuple(tags))
+        self.update_display()
         
         # Восстанавливаем выделение
         if state['selection']:
@@ -865,6 +890,7 @@ class PlaylistEditor:
                 self.tree.selection_set(state['selection'])
             except tk.TclError:
                 pass  # Игнорируем если элементы больше не существуют
+                
             
     def undo_action(self):
         """Отменяет последнее действие с улучшенной логикой"""
@@ -988,10 +1014,14 @@ class PlaylistEditor:
             base_list = self.temp_list if self.temp_list is not None else self.original_list.copy()
             
             
-            # Гарантируем наличие original_path
+            # Гарантируем наличие original_path и сохраняем флаги
             for track in base_list:
                 if "original_path" not in track:
                     track["original_path"] = track["path"]
+                # Сохраняем флаг restored перед перемешиванием
+                if "was_restored" not in track:
+                    track["was_restored"] = False
+                    
                     
             # Сортируем по именам (A-Z)
             self.sorted_list = sorted(base_list, 
@@ -1020,7 +1050,9 @@ class PlaylistEditor:
                 if track["original_path"] in self.modified_paths:
                     track["path"] = self.modified_paths[track["original_path"]]
                     track["was_modified"] = True
-                    track["was_moved"] = False
+                    # Сохраняем флаг restored
+                    if "was_restored" not in track:
+                        track["was_restored"] = False
                     
             # Настраиваем генератор случайных чисел
             random.seed(abs(self.stable_hash(seed_trimmed)))
@@ -1050,11 +1082,12 @@ class PlaylistEditor:
                 if track["original_path"] in self.modified_paths:
                     track["path"] = self.modified_paths[track["original_path"]]
                     track["was_modified"] = True
-                    #Снимаем пометку о перемещении
-                    track["was_moved"] = False
-                                    
+                
+                # Убираем только метку перемещения, сохраняем остальные
                 if 'was_moved' in track:
                     del track['was_moved']
+                if 'was_restored' not in track:
+                    track['was_restored'] = False
                       
             # Обновляем отображение
             self.display_tracks = self.shuffled_list
@@ -1105,6 +1138,8 @@ class PlaylistEditor:
                     "num": idx,
                     "original_path": track.get("original_path", track["path"]),  # Сохраняем оригинальный путь
                     "was_modified": track.get("was_modified", False),
+                    "was_moved": track.get("was_moved", False),  # Сохраняем состояние перемещения
+                    "was_restored": track.get("was_restored", False)  # Сохраняем состояние восстановления
                 })
             
             if not current_tracks:
@@ -1142,7 +1177,8 @@ class PlaylistEditor:
                     
                     for track in current_tracks:
                         f.write(f"#EXTINF:-1,{track['name']}\n")
-                        f.write(f"{track['path']}\n")
+                        escaped_path = track['path'].replace('\\', '/')
+                        f.write(f"{escaped_path}\n")
             
             if playlist_format in ["txt"]:  
                 with open(save_path, 'w', encoding='utf-8') as f:
@@ -1159,7 +1195,8 @@ class PlaylistEditor:
                     f.write(f"#TRACKS:{len(current_tracks)}\n\n")
                     
                     for track in current_tracks:
-                        f.write(f"{track['path']}\n")
+                        escaped_path = track['path'].replace('\\', '/')
+                        f.write(f"{escaped_path}\n")
 
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
@@ -1316,7 +1353,7 @@ class PlaylistEditor:
             if not new_path.endswith(os.sep):
                 new_path += os.sep
             
-            self.save_state()
+            #self.save_state()
             
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
@@ -1332,11 +1369,18 @@ class PlaylistEditor:
                 # Обновляем словарь изменённых путей
                 self.modified_paths[original_path] = new_full_path
                 
+                # Сохраняем все существующие флаги
+                was_moved = track.get("was_moved", False)
+                was_restored = track.get("was_restored", False)
+                
                 # Обновляем трек
                 track["path"] = new_full_path
                 track["name"] = filename
                 track["was_modified"] = True
-                track["original_path"] = original_path  # Сохраняем оригинальный путь
+                track["original_path"] = original_path
+                track["was_moved"] = was_moved  # Сохраняем состояние перемещения
+                track["was_restored"] = was_restored  # Сохраняем состояние восстановления
+            
             
             self.display_tracks = self.temp_list.copy()
             self.update_display()
