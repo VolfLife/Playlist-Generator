@@ -1124,18 +1124,18 @@ class PlaylistEditor:
         
         # Генерация intensity из сида, если не задано
         if intensity is None:
-            # Используем хеш сида для генерации значения 0.1-0.9
+            # Используем хеш сида для генерации значения 0.6-1.0
             hash_val = self.stable_hash(str(seed_value))
-            intensity = 0.1 + (hash_val % 8000) / 10000  # Дает значение 0.1-0.9
-            intensity = round(intensity, 2)  # Округляем до 2 знаков
+            intensity = 0.6 + (hash_val % 4001) / 10000  # 0.6 + (0-0.6) = 0.6-1.0
+            intensity = round(intensity, 10)  # Округляем до 10 знаков
         else:
             # Ограничиваем заданное значение
-            intensity = max(0.1, min(0.9, float(intensity)))
+            intensity = max(0.6, min(1.0, float(intensity)))
             
         # Количество перестановок = 30% от числа треков (можно регулировать)
         num_swaps = max(1, int(len(files) * intensity))
         print(f"[DEBUG] Генерация intensity из сида = {intensity}")
-        
+        print(f"[DEBUG] Количество перестановок = {num_swaps}")
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
