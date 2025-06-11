@@ -16,7 +16,7 @@ from tkinter import filedialog, messagebox
 from tkinter import ttk
 from PlaylistEditor import PlaylistEditor  # Импорт нового класса
 from Localization import Localization
-
+from FontLoader import FontLoader
 
 def is_shift_pressed():
     """Проверяет, зажата ли клавиша Shift при запуске"""
@@ -64,6 +64,7 @@ class PlaylistGenerator:
         self.format_combobox = None  # Виджет Combobox
         self.load_settings()
         self.root.title(self.localization.tr("window_title_generator"))
+
         
         # Обработка переданного файла ДО создания виджетов
         if file_to_open:
@@ -114,7 +115,8 @@ class PlaylistGenerator:
         
         # Обновляем поле ввода с последними папками
         self.update_folder_entry()
-      
+        self.font_loader = FontLoader(root)
+        self.icon_ico = self.font_loader.icon_ico
     
     def is_valid_folders(self, paths):
         """Проверяет, существуют ли все папки в списке"""
@@ -162,7 +164,7 @@ class PlaylistGenerator:
                     self.save_settings()       
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u"]:
+                if saved_format in ["m3u8", "m3u", "txt"]:
                     self.format_m3u8 = saved_format
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -321,7 +323,7 @@ class PlaylistGenerator:
             current_seed_format = self.seed_format.get()
             # Список форматов, при которых текущее значение не должно меняться
             numeric_formats = ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ"]
             # Проверяем, находится ли текущее значение в списке форматов
             if current_seed_format in numeric_formats:
                 # Если текущее значение в списке, не меняем его
@@ -463,7 +465,7 @@ class PlaylistGenerator:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             language_frame,
-            values=["m3u8", "m3u"],
+            values=["m3u8", "m3u", "txt"],
             state="readonly",
             width=5
         )
@@ -611,21 +613,61 @@ class PlaylistGenerator:
         return audio_files
 
 
-    def generate_seed(self, num_tracks, date, total_size):
+    def generate_seed(self, num_tracks, date, total_size, iteration=0):
         """Генерация предсказуемого основного сида на основе даты и n!"""
+        import _pylong
         sys.set_int_max_str_digits(0)
         # Вычисляем факториал
         fact = math.factorial(num_tracks)
-        print(f"[DEBUG] Факториал {num_tracks}! = {fact}")
+        print(f"[DEBUG] Факториал {num_tracks}! = {fact} \n===================================================================")
         
         # Предсказуемая часть: дата + количество треков
         date_part = int(date.timestamp())
-        predictable_num = (date_part * num_tracks * total_size) % fact
+        base_seed = (date_part * num_tracks * total_size) % fact
         
-        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Дата = {date_part} \n Размер = {total_size} \n Количество треков = {num_tracks} \n Результат = {predictable_num}")
+        if not hasattr(self, '_base_seed'):
+            self._base_seed = (int(date.timestamp()) * num_tracks * total_size) % fact
+            
+        # Добавляем итерацию для плавного изменения
+        modified_seed = self._base_seed + iteration % fact
+        
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Дата = {date_part} \n Размер = {total_size} \n Количество треков = {num_tracks} \n Базовый сид = {base_seed} \n Результат = {modified_seed}")
         # Форматируем в соответствии с выбранным форматом
         if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
+            return str(modified_seed).zfill(len(str(fact)))
+        else:
+            # Для буквенно-цифрового формата используем хеш
+            hash_obj = hashlib.sha256(str(modified_seed).encode())
+            return hash_obj.hexdigest()[:len(str(fact))]
+        
+        
+        
+    def generate_shadow_seed(self, num_tracks, seed_trimmed):
+        """Генерация непредсказуемого теневого сида"""
+        import _pylong
+        sys.set_int_max_str_digits(0)
+        
+        # Вычисляем факториал
+        fact = math.factorial(num_tracks)
+        
+        # Непредсказуемая часть: хеш основного сида + случайное число
+        random_part = random.getrandbits(256)
+        random_nbr = random.getrandbits(128)
+        random_nbrr = random.getrandbits(64)
+        number = [1, random_nbr, random_nbrr, 1]
+        random_divisor = random.choice(number)
+        result = (random_part // random_divisor)
+        
+        seed_num = int(seed_trimmed) if isinstance(seed_trimmed, str) else seed_trimmed
+        
+        predictable_num = (seed_num + result + 1) % fact
+        
+        
+        print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Случайное число = {random_part} \n Делитель = {random_divisor} \n Разность = {result} \n Основной сид = {seed_num} \n Результат = {predictable_num}")
+        # Форматируем аналогично основному сиду
+        if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
             return str(predictable_num).zfill(len(str(fact)))
         else:
             # Для буквенно-цифрового формата используем хеш
@@ -634,41 +676,10 @@ class PlaylistGenerator:
         
         
         
-    def generate_shadow_seed(self, num_tracks, seed_trimmed):
-        """Генерация непредсказуемого теневого сида"""
-        sys.set_int_max_str_digits(0)
-        print(f"[DEBUG] ПРОЦЕСС ПЕРЕМЕШИВАНИЯ \n===================================================================")
-        # Вычисляем факториал
-        fact = math.factorial(num_tracks)
-        
-        # Непредсказуемая часть: хеш основного сида + случайное число
-        random_part = random.getrandbits(256)
-        random_nbr = random.getrandbits(256)
-        random_nbrr = random.getrandbits(128)
-        number = [1, random_nbr, random_nbrr]
-        random_divisor = random.choice(number)
-        seed_num = int(seed_trimmed, 16) if isinstance(seed_trimmed, str) else seed_trimmed
-        
-        predictable_num = ((seed_num % fact) * random_part // random_divisor + 1) % fact
-        
-        seed_hash = hashlib.sha3_256((str(predictable_num)).encode()).hexdigest()
-        
-        # Преобразуем хеш в число
-        shadow_num = predictable_num #int(seed_hash, 16) % fact
-        
-        print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Случайное число = {random_part} \n Делитель = {random_divisor} \n Результат = {predictable_num} \n Хеш сида = {seed_hash}")
-        # Форматируем аналогично основному сиду
-        if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만"]:
-            return str(shadow_num).zfill(len(str(fact)))
-        else:
-            return seed_hash[:len(str(fact))]
-        
-        
-        
     def generate_playlist(self):
         import _pylong
         sys.set_int_max_str_digits(0)
+        print(f"[DEBUG] ПРОЦЕСС ПЕРЕМЕШИВАНИЯ \n===================================================================")
         # Разбор введённого текста в поле папок (несколько, разделены ',')
         input_text = self.folder_entry.get()
         # По запятым, с очисткой пробелов
@@ -714,9 +725,16 @@ class PlaylistGenerator:
         now = datetime.datetime.now()
 
     
+        # Счетчик итераций (сбрасывается при ручном вводе сида)
+        if not hasattr(self, '_generation_iteration'):
+            self._generation_iteration = 0
+        elif not user_seed:  # только для автоматического сида
+            self._generation_iteration += 1
+        
+        
         # Генерация сидов
         if not user_seed or user_seed == "0":
-            seed = self.generate_seed(num_tracks, now, total_size)
+            seed = self.generate_seed(num_tracks, now, total_size, self._generation_iteration)
         else:
             seed = user_seed
 
@@ -770,14 +788,14 @@ class PlaylistGenerator:
             # Ручной шаг реверса
             reverse_step = step
             print(f"[DEBUG] Реверс = {reverse_step}")
-            shuffled = self.shuffle_files(audio_files, str(seed_trimmed))
+            shuffled = self.soft_shuffle(audio_files, str(seed_trimmed))
             shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
             info_text = self.localization.tr("seed_info_step").format(
                 seed=seed_trimmed, step=reverse_step
             )
         else:
             # Без реверса
-            shuffled_files = self.shuffle_files(audio_files, str(seed_trimmed))
+            shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
             info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
 
         # Создание плейлиста
@@ -789,7 +807,8 @@ class PlaylistGenerator:
             shadow_seed=shadow_seed_trimmed,
             num_tracks=num_tracks,
             date=now,
-            reverse_step=reverse_step
+            reverse_step=reverse_step,
+            playlist_format=playlist_format
         )
 
         self.last_folder = valid_paths
@@ -797,31 +816,52 @@ class PlaylistGenerator:
         self.seed_info.config(text=self.localization.tr("playlist_created").format(info=info_text), fg="green")
     
     
-    def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None):
+    def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None, playlist_format=None):
         """Создает M3U8 файл плейлиста"""
         date_str = date.strftime("%Y-%m-%d %H:%M:%S")
+        if playlist_format in ["m3u8", "m3u"]:      
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write("#EXTM3U\n")
+                f.write("#Made with VolfLife's Playlist Generator\n")
+                f.write(f"#GENERATED:{date_str}\n")
+                f.write(f"#PLAYLIST:{name}\n")
+                f.write(f"#SEED:{seed}\n")
+                f.write(f"#SHADOW_SEED:{shadow_seed}\n")
                 
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write("#EXTM3U\n")
-            f.write("#Made with VolfLife's Playlist Generator\n")
-            f.write(f"#GENERATED:{date_str}\n")
-            f.write(f"#PLAYLIST:{name}\n")
-            f.write(f"#SEED:{seed}\n")
-            f.write(f"#SHADOW_SEED:{shadow_seed}\n")
-            
-            if reverse_step is not None and reverse_step > 0:
-                f.write(f"#REVERSE_STEP:{reverse_step}\n")
-            
-            f.write(f"#TRACKS:{num_tracks}\n")
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
+                
+                f.write(f"#TRACKS:{num_tracks}\n")
 
-            f.write("\n")  # Разделитель
-            
-            for file_path in files:
-                file_path = os.path.normpath(file_path)
-                escaped_path = file_path.replace('\\', '/')
-                f.write(f"#EXTINF:-1,{os.path.basename(file_path)}\n")
-                f.write(f"{escaped_path}\n")
+                f.write("\n")  # Разделитель
+                
+                for file_path in files:
+                    file_path = os.path.normpath(file_path)
+                    escaped_path = file_path.replace('\\', '/')
+                    f.write(f"#EXTINF:-1,{os.path.basename(file_path)}\n")
+                    f.write(f"{escaped_path}\n")
+        
+        if playlist_format in ["txt"]:      
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write("#Made with VolfLife's Playlist Generator\n")
+                f.write(f"#GENERATED:{date_str}\n")
+                f.write(f"#TRACKLIST:{name}\n")
+                f.write(f"#SEED:{seed}\n")
+                f.write(f"#SHADOW_SEED:{shadow_seed}\n")
+                
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
+                
+                f.write(f"#TRACKS:{num_tracks}\n")
 
+                f.write("\n")  # Разделитель
+                
+                for file_path in files:
+                    file_path = os.path.normpath(file_path)
+                    escaped_path = file_path.replace('\\', '/')
+                    f.write(f"{escaped_path}\n")
+        
+        
     def apply_reverse_step(self, files, step):
         """Применяет реверс блоков без повторной фиксации генератора"""
         # Создаем копию списка, чтобы не менять оригинал
@@ -838,7 +878,22 @@ class PlaylistGenerator:
         shuffled = files.copy()
         random.shuffle(shuffled)
         return shuffled
-
+    
+    
+    def soft_shuffle(self, files, seed_value, intensity=0.1):
+        """Перемешивание с небольшими изменениями"""
+        random.seed(abs(self.stable_hash(str(seed_value))))
+        files = files.copy()
+        
+        # Количество перестановок = 30% от числа треков (можно регулировать)
+        num_swaps = max(1, int(len(files) * intensity))
+        
+        for _ in range(num_swaps):
+            i, j = random.sample(range(len(files)), 2)
+            files[i], files[j] = files[j], files[i]
+        
+        
+        return files
 if __name__ == "__main__":
     
     # Устанавливаем обработчик исключений ДО всего остального
@@ -850,7 +905,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_console()
         print("===========================================")
-        print("    Playlist Generator v4.1 by VolfLife    ")
+        print("    Playlist Generator v4.2 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")

@@ -1,3 +1,3 @@
 @echo off
-pyinstaller --onefile --hidden-import=_pylong --windowed --add-data "version_info.py;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
+pyinstaller --onefile --hidden-import=_pylong,fonttools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
 pause
