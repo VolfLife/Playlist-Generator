@@ -531,22 +531,28 @@ class PlaylistEditor:
             self.tree_tooltip.place_forget()    
     
     
-    def on_treeview_button_press(self, event):
-        """Обработчик нажатия кнопки мыши для начала перетаскивания"""
-        item = self.tree.identify_row(event.y)
-        if item:
-            # Если Ctrl не нажат и элемент не выделен - выделяем только его
-            if not (event.state & 0x0004) and item not in self.tree.selection():
-                self.tree.selection_set(item)
+    def on_treeview_button_release(self, event):
+        """Обработчик отпускания кнопки мыши с гарантированным сохранением"""
+        if hasattr(self, '_drag_data') and self._drag_data and self._drag_data.get("items"):
+            # Проверяем, изменились ли позиции
+            original_indices = set(self._drag_data["indices"])
+            current_indices = set(self.tree.index(i) for i in self.tree.selection())
             
-            # Сохраняем позиции всех выделенных элементов
-            self._drag_data = {
-                "items": self.tree.selection(),
-                "y": event.y,
-                "indices": [self.tree.index(i) for i in self.tree.selection()]
-            }
-        else:
-            self._drag_data = None
+            if original_indices != current_indices:
+                # Создаем временный список если его еще нет
+                if self.temp_list is None:
+                    self.temp_list = [track.copy() for track in self.display_tracks]
+                
+                # Помечаем все перемещённые треки
+                for idx in current_indices:
+                    if 0 <= idx < len(self.temp_list):  # Проверяем границы списка
+                        self.temp_list[idx]['was_moved'] = True
+                
+                self.save_state()
+                print("[DRAG] Состояние сохранено после перетаскивания")
+        
+        self._drag_data = None
+        self.save_state()
 
     def on_treeview_mouse_move(self, event):
         """Обработчик перемещения мыши при перетаскивании"""
@@ -608,25 +614,27 @@ class PlaylistEditor:
         self._drag_data["y"] = y
         self._drag_data["indices"] = new_selection_indices
 
-
-    def on_treeview_button_release(self, event):
-        """Обработчик отпускания кнопки мыши с гарантированным сохранением"""
-        if hasattr(self, '_drag_data') and self._drag_data and self._drag_data.get("items"):
-            # Проверяем, изменились ли позиции
-            original_indices = set(self._drag_data["indices"])
-            current_indices = set(self.tree.index(i) for i in self.tree.selection())
+    def on_treeview_button_press(self, event):
+        """Обработчик нажатия кнопки мыши для начала перетаскивания"""
+        item = self.tree.identify_row(event.y)
+        if item:
+            # Если Ctrl или Shift нажат, не начинаем перетаскивание
+            if event.state & (0x0004 | 0x0001):  # 0x0004 - Ctrl, 0x0001 - Shift
+                self._drag_data = None
+                return
             
-            if original_indices != current_indices:
-                # Помечаем все перемещённые треки
-                for idx in current_indices:
-                    if 0 <= idx < len(self.temp_list):
-                        self.temp_list[idx]['was_moved'] = True
-                
-                self.save_state()
-                print("[DRAG] Состояние сохранено после перетаскивания")
-        
-        self._drag_data = None
-        self.save_state()
+            # Если элемент не выделен - выделяем только его
+            if item not in self.tree.selection():
+                self.tree.selection_set(item)
+            
+            # Сохраняем позиции всех выделенных элементов
+            self._drag_data = {
+                "items": self.tree.selection(),
+                "y": event.y,
+                "indices": [self.tree.index(i) for i in self.tree.selection()]
+            }
+        else:
+            self._drag_data = None
 
     
     def move_up(self):
