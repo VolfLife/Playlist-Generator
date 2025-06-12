@@ -1019,18 +1019,24 @@ class PlaylistEditor:
             # Определяем базовый список для работы
             base_list = self.temp_list if self.temp_list is not None else self.original_list.copy()
             
-            # Сохраняем текущие состояния restored перед любыми изменениями
-            current_restored_states = {track['original_path']: track.get('was_restored', False) 
-                                 for track in self.display_tracks.copy()}
-            current_modified_states = {track['original_path']: track.get('was_modified', False) 
-                                 for track in self.display_tracks.copy()}                 
+            # Сохраняем текущие состояния restored и modified перед любыми изменениями
+            track_states = {
+                track['original_path']: {
+                    'was_restored': track.get('was_restored', False),
+                    'was_modified': track.get('was_modified', False),
+                    'path': track['path']
+                } 
+                for track in self.display_tracks.copy()
+            }            
                              
             # Гарантируем наличие original_path и сохраняем флаги
             for track in base_list:
                 if "original_path" not in track:
                     track["original_path"] = track["path"]
                     
-                    
+                if track["original_path"] in self.modified_paths:
+                    track["path"] = self.modified_paths[track["original_path"]]    
+                    track["was_modified"] = True
                     
             # Сортируем по именам (A-Z)
             self.sorted_list = sorted(base_list, 
@@ -1054,8 +1060,6 @@ class PlaylistEditor:
             
             print(f"[DEBUG] Использованный сид = {seed_trimmed}")
            
-         
-         
             # Перемешиваем sorted_list
             tracks = [track.copy() for track in self.sorted_list]  # Глубокое копирование
             self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
@@ -1078,13 +1082,23 @@ class PlaylistEditor:
             
             # Восстанавливаем флаги после всех операций
             for track in self.shuffled_list:
-                # Сохраняем restored состояние из сохраненного словаря
-                track["was_restored"] = current_restored_states.get(track["original_path"], False)
-                track["was_modified"] = current_modified_states.get(track["original_path"], False)
+                original_path = track["original_path"]
+                
+                # Восстанавливаем состояния из сохраненного словаря
+                if original_path in track_states:
+                    track["was_restored"] = track_states[original_path]['was_restored']
+                    track["was_modified"] = track_states[original_path]['was_modified']
+                
+                # Применяем текущие изменения путей
+                if original_path in self.modified_paths:
+                    track["path"] = self.modified_paths[original_path]
+                    track["was_modified"] = True
+                
                 # Удаляем временный флаг перемещения
                 if 'was_moved' in track:
                     del track['was_moved']
-                    
+                
+                
                     
             # Обновляем отображение
             self.display_tracks = self.shuffled_list
