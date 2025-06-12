@@ -662,7 +662,7 @@ class PlaylistEditor:
             self.temp_list[index], self.temp_list[index-1] = self.temp_list[index-1], self.temp_list[index]
             # Помечаем перемещенные треки
             self.temp_list[index-1]['was_moved'] = True
-            self.temp_list[index-1]['was_restored'] = prev_restored
+            self.temp_list[index-1]['was_restored'] = False
             #self.temp_list[index]['was_restored'] = current_restored
         
         self.display_tracks = self.temp_list
@@ -703,7 +703,7 @@ class PlaylistEditor:
             self.temp_list[index], self.temp_list[index+1] = self.temp_list[index+1], self.temp_list[index]
             # Помечаем перемещенные треки
             self.temp_list[index+1]['was_moved'] = True
-            self.temp_list[index+1]['was_restored'] = next_restored
+            self.temp_list[index+1]['was_restored'] = False
             #self.temp_list[index]['was_restored'] = current_restored
             
             
