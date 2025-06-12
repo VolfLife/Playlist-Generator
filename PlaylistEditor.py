@@ -1013,14 +1013,16 @@ class PlaylistEditor:
             # Определяем базовый список для работы
             base_list = self.temp_list if self.temp_list is not None else self.original_list.copy()
             
-            
+            # Сохраняем текущие состояния restored перед любыми изменениями
+            current_restored_states = {track['original_path']: track.get('was_restored', False) 
+                                 for track in self.display_tracks.copy()}
+                             
+                             
             # Гарантируем наличие original_path и сохраняем флаги
             for track in base_list:
                 if "original_path" not in track:
                     track["original_path"] = track["path"]
-                # Сохраняем флаг restored перед перемешиванием
-                if "was_restored" not in track:
-                    track["was_restored"] = False
+                    
                     
                     
             # Сортируем по именам (A-Z)
@@ -1050,14 +1052,11 @@ class PlaylistEditor:
                 if track["original_path"] in self.modified_paths:
                     track["path"] = self.modified_paths[track["original_path"]]
                     track["was_modified"] = True
-                    # Сохраняем флаг restored
-                    if "was_restored" not in track:
-                        track["was_restored"] = False
                     
-
-                        
+         
+         
             # Перемешиваем sorted_list
-            tracks = self.sorted_list.copy()
+            tracks = [track.copy() for track in self.sorted_list]  # Глубокое копирование
             self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
             
                 
@@ -1075,18 +1074,22 @@ class PlaylistEditor:
                     self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")
                     return
             
-            # После перемешивания снова восстанавливаем изменения
+            
+            # Восстанавливаем флаги после всех операций
             for track in self.shuffled_list:
+                # Сохраняем restored состояние из сохраненного словаря
+                track["was_restored"] = current_restored_states.get(track["original_path"], False)
+                
+                # Обновляем modified состояние
                 if track["original_path"] in self.modified_paths:
                     track["path"] = self.modified_paths[track["original_path"]]
                     track["was_modified"] = True
                 
-                # Убираем только метку перемещения, сохраняем остальные
+                # Удаляем временный флаг перемещения
                 if 'was_moved' in track:
                     del track['was_moved']
-                if 'was_restored' not in track:
-                    track['was_restored'] = False
-                      
+                    
+                    
             # Обновляем отображение
             self.display_tracks = self.shuffled_list
             self.update_display()
@@ -1119,27 +1122,27 @@ class PlaylistEditor:
 
     def soft_shuffle(self, files, seed_value, intensity=None):
         """Перемешивание с небольшими изменениями"""
-        random.seed(abs(self.stable_hash(str(seed_value))))
+        seed_hash = abs(self.stable_hash(str(seed_value)))
+        random.seed(seed_hash)
         files = files.copy()
         
         # Генерация intensity из сида, если не задано
         if intensity is None:
-            # Используем хеш сида для генерации значения 0.6-1.0
-            hash_val = self.stable_hash(str(seed_value))
-            intensity = 0.6 + (hash_val % 4001) / 10000  # 0.6 + (0-0.6) = 0.6-1.0
-            intensity = round(intensity, 10)  # Округляем до 10 знаков
+            # Используем хеш сида как основу для 0.6-1.0
+            hash_ratio = (seed_hash % 10_000_000_000) / 10_000_000_000  # 0.0-0.999...
+            intensity = 0.6 + 0.3 * hash_ratio  # Растягиваем на диапазон 0.6-1.0
         else:
-            # Ограничиваем заданное значение
+            # Ограничиваем ручной ввод с сохранением точности
             intensity = max(0.6, min(1.0, float(intensity)))
             
         # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = max(1, int(len(files) * intensity))
+        num_swaps = max(0, int(len(files) * intensity))
         print(f"[DEBUG] Генерация intensity из сида = {intensity}")
         print(f"[DEBUG] Количество перестановок = {num_swaps}")
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
-         
+            #print(f"[DEBUG] Перемешано {i}<->{j}")
         return files
 
 

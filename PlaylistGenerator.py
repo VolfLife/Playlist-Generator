@@ -882,27 +882,27 @@ class PlaylistGenerator:
     
     def soft_shuffle(self, files, seed_value, intensity=None):
         """Перемешивание с небольшими изменениями"""
-        random.seed(abs(self.stable_hash(str(seed_value))))
+        seed_hash = abs(self.stable_hash(str(seed_value)))
+        random.seed(seed_hash)
         files = files.copy()
         
         # Генерация intensity из сида, если не задано
         if intensity is None:
             # Используем хеш сида для генерации значения 0.6-1.0
-            hash_val = self.stable_hash(str(seed_value))
-            intensity = 0.6 + (hash_val % 4001) / 10000  # 0.6 + (0-0.6) = 0.6-1.0
-            intensity = round(intensity, 10)  # Округляем до 10 знаков
+            hash_val = (seed_hash % 10_000_000_000) / 10_000_000_000
+            intensity = 0.6 + 0.3 * hash_val  # Растягиваем на диапазон 0.6-1.0
         else:
             # Ограничиваем заданное значение
             intensity = max(0.6, min(1.0, float(intensity)))
         
         # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = max(1, int(len(files) * intensity))
+        num_swaps = max(0, int(len(files) * intensity))
         print(f"[DEBUG] Генерация intensity из сида = {intensity}")
         print(f"[DEBUG] Количество перестановок = {num_swaps}")
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
-        
+            #print(f"[DEBUG] Перемешано {i}<->{j}")
         return files
         
 if __name__ == "__main__":
