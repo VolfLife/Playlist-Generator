@@ -10,6 +10,7 @@ import math
 import string
 import json
 import locale
+import logging
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -23,15 +24,55 @@ def is_shift_pressed():
     VK_SHIFT = 0x10
     return ctypes.windll.user32.GetKeyState(VK_SHIFT) & 0x8000
 
-def setup_console():
-    """Настраивает консоль и перенаправляет потоки вывода"""
+def setup_logging_and_console():
+    """Настраивает запись логов в файл и консоль"""
+    # Определяем путь для сохранения
+    if getattr(sys, 'frozen', False):
+        script_dir = os.path.dirname(sys.executable)
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+    log_file = os.path.join(script_dir, 'debug.log')
+    
+    # Очищаем предыдущий лог-файл
+    open(log_file, 'w').close()
+
+    # Создаем класс для дублирования вывода в файл и консоль
+    class DualOutput:
+        def __init__(self, file, console):
+            self.file = file
+            self.console = console
+            
+        def write(self, message):
+            self.file.write(message)
+            self.console.write(message)
+            
+        def flush(self):
+            self.file.flush()
+            self.console.flush()
+
+    # Настраиваем консоль для вывода (только для Windows)
     if sys.platform == 'win32':
         ctypes.windll.kernel32.AllocConsole()
-        # Перенаправляем стандартные потоки
-        sys.stdout = open('CONOUT$', 'w')
-        sys.stderr = open('CONOUT$', 'w')
-        sys.stdin = open('CONIN$', 'r')
+        # Открываем консольные потоки
+        console_out = open('CONOUT$', 'w', encoding='utf-8')
+        console_err = open('CONOUT$', 'w', encoding='utf-8')
+        
+        # Открываем файловые потоки
+        file_out = open(log_file, 'a', encoding='utf-8')
+        file_err = open(log_file, 'a', encoding='utf-8')
+        
+        # Создаем дублирующие потоки
+        sys.stdout = DualOutput(file_out, console_out)
+        sys.stderr = DualOutput(file_err, console_err)
+    else:
+        # Для других ОС просто пишем в файл
+        file_out = open(log_file, 'a', encoding='utf-8')
+        file_err = open(log_file, 'a', encoding='utf-8')
+        sys.stdout = file_out
+        sys.stderr = file_err
 
+    
 def handle_exception(type, value, traceback):
     """Обработчик неотловленных исключений"""
     if sys.stdout:  # Если вывод доступен
@@ -176,6 +217,8 @@ class PlaylistGenerator:
                 if 'last_folders' in settings and isinstance(settings['last_folders'], list):
                     # Оставляем только существующие папки
                     self.last_folders = [f for f in settings['last_folders'] if self.is_valid_folders([f])]
+                    print(f"[DEBUG] Выбраны папки: {self.last_folders}")
+                    
                 return settings
         except (FileNotFoundError, json.JSONDecodeError):
             print(f"[DEBUG] Файл настроек не найден. Был создан новый.")
@@ -659,7 +702,7 @@ class PlaylistGenerator:
         random_divisor = random.choice(number)
         result = (random_part // random_divisor)
         
-        seed_num = int(seed_trimmed) if isinstance(seed_trimmed, str) else seed_trimmed
+        seed_num = int((seed_trimmed), 16) if isinstance(seed_trimmed, str) else seed_trimmed
         
         predictable_num = (seed_num + result + 1) % fact
         
@@ -797,7 +840,9 @@ class PlaylistGenerator:
             # Без реверса
             shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
             info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
-
+        
+        print(f"[DEBUG] Перемешивание завершено")
+        
         # Создание плейлиста
         self.save_m3u8_playlist(
             path=playlist_path,
@@ -814,7 +859,7 @@ class PlaylistGenerator:
         self.last_folder = valid_paths
         self.save_settings()
         self.seed_info.config(text=self.localization.tr("playlist_created").format(info=info_text), fg="green")
-    
+        
     
     def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None, playlist_format=None):
         """Создает M3U8 файл плейлиста"""
@@ -840,6 +885,7 @@ class PlaylistGenerator:
                     escaped_path = file_path.replace('\\', '/')
                     f.write(f"#EXTINF:-1,{os.path.basename(file_path)}\n")
                     f.write(f"{escaped_path}\n")
+            print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")        
         
         if playlist_format in ["txt"]:      
             with open(path, 'w', encoding='utf-8') as f:
@@ -860,7 +906,7 @@ class PlaylistGenerator:
                     file_path = os.path.normpath(file_path)
                     escaped_path = file_path.replace('\\', '/')
                     f.write(f"{escaped_path}\n")
-        
+            print(f"[DEBUG] Треклист создан и сохранен: {name}.{playlist_format}") 
         
     def apply_reverse_step(self, files, step):
         """Применяет реверс блоков без повторной фиксации генератора"""
@@ -902,7 +948,7 @@ class PlaylistGenerator:
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
-            #print(f"[DEBUG] Перемешано {i}<->{j}")
+            print(f"[DEBUG] Перемешано {i}<->{j}")
         return files
         
 if __name__ == "__main__":
@@ -914,9 +960,9 @@ if __name__ == "__main__":
     debug_mode = is_shift_pressed() or not getattr(sys, 'frozen', False)
     
     if debug_mode:
-        setup_console()
+        setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.3 by VolfLife    ")
+        print("    Playlist Generator v4.4 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
@@ -926,10 +972,7 @@ if __name__ == "__main__":
     
     
     try:
-        # Проверяем зажат ли Shift ИЛИ это не собранный exe
-        if is_shift_pressed() or not getattr(sys, 'frozen', False):
-            setup_console()
-        
+            
         # Теперь все print() будут выводиться в консоль
         print("Программа запущена с аргументами:", sys.argv)
     except Exception as e:

@@ -201,7 +201,7 @@ class PlaylistEditor:
                                     "original_path": normalized_path,  # Добавили сохранение оригинального пути
                                     "was_modified": False
                                 })    
-                
+                            
                 # Сохраняем отдельный список
                 self.original_lists[f"original_temp_list_{i}"] = temp_list
                 # Добавляем в объединенный список
@@ -782,7 +782,8 @@ class PlaylistEditor:
             
             if tags:
                 self.tree.item(item, tags=tuple(tags))
-        
+            print(f"[TRACK] {i}. {track['name']}    —   —   —   —   —   {tags}")
+        print(f"[DEBUG] Таблица обновлена")
         # Восстанавливаем выделение если указаны индексы
         if selection_indices is not None:
             children = self.tree.get_children()
@@ -793,7 +794,7 @@ class PlaylistEditor:
         # Обновляем внутренние списки
         self.full_paths = [t["path"] for t in self.display_tracks]
         self.display_names = [t["name"] for t in self.display_tracks]
-
+        
     
     def save_initial_state(self):
         """Явно сохраняет начальное состояние"""
@@ -862,18 +863,19 @@ class PlaylistEditor:
     def restore_state(self, state):
         """Восстанавливает состояние с полным обновлением интерфейса"""
         # Получаем текущие пути перед восстановлением
-        current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
+        current_names = {track['name'] for track in self.display_tracks} if self.display_tracks else set()
         
         # Обновляем основной список
         self.display_tracks = []
         for track in state['tracks']:
             new_track = track.copy()
             # Помечаем восстановленные треки (те, которых не было в current_paths)
-            if track['path'] not in current_paths:
+            if track['name'] not in current_names:
                 new_track['was_restored'] = True
+                
             else:
                 # Сохраняем существующий флаг restored если он есть
-                existing_track = next((t for t in self.display_tracks if t['path'] == track['path']), None)
+                existing_track = next((t for t in self.display_tracks if t['name'] == track['name']), None)
                 if existing_track and existing_track.get('was_restored', False):
                     new_track['was_restored'] = True
             self.display_tracks.append(new_track)
@@ -964,33 +966,37 @@ class PlaylistEditor:
         """Генерация предсказуемого основного сида на основе даты и n!"""
         import _pylong
         sys.set_int_max_str_digits(0)
-        # Вычисляем факториал
-        fact = math.factorial(num_tracks)
-        print(f"[DEBUG] Факториал {num_tracks}! = {fact} \n===================================================================")
-        
-        # Немного усложнено: дата + количество треков + случайное число из списка
-        date_part = int(date.timestamp())
-        random_number = random.getrandbits(256)
-        random_nbr = random.getrandbits(128)
-        random_nbrr = random.getrandbits(64)
-        random_nbrrr = random.getrandbits(4)
-        number = [1, random_nbr, random_nbrr, 1, random_nbrrr]
-        random_divisor = random.choice(number)
-        result = (random_number // random_divisor)
+        try: 
+            # Вычисляем факториал
+            fact = math.factorial(num_tracks)
+            print(f"[DEBUG] Факториал {num_tracks}! = {fact} \n===================================================================")
+            
+            # Немного усложнено: дата + количество треков + случайное число из списка
+            date_part = int(date.timestamp())
+            random_number = random.getrandbits(256)
+            random_nbr = random.getrandbits(128)
+            random_nbrr = random.getrandbits(64)
+            random_nbrrr = random.getrandbits(4)
+            number = [1, random_nbr, random_nbrr, 1, random_nbrrr]
+            random_divisor = random.choice(number)
+            result = (random_number // random_divisor)
 
-        predictable_num = (date_part * num_tracks + result + 1) % fact
+            predictable_num = (date_part * num_tracks + result + 1) % fact
+            
+            print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Дата = {date_part} \n Случайное число = {random_number} \n Делитель = {random_divisor} \n Разность = {result} \n Результат = {predictable_num}")
+            # Форматируем в соответствии с выбранным форматом
+            if self.seed_format_combobox.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
+                return str(predictable_num).zfill(len(str(fact)))
+            else:
+                # Для буквенно-цифрового формата используем хеш
+                hash_obj = hashlib.sha256(str(predictable_num).encode())
+                print(f"[DEBUG] Хеш = {hash_obj}")
+                return hash_obj.hexdigest()[:len(str(fact))]
         
-        print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Дата = {date_part} \n Случайное число = {random_number} \n Делитель = {random_divisor} \n Разность = {result} \n Результат = {predictable_num}")
-        # Форматируем в соответствии с выбранным форматом
-        if self.seed_format_combobox.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
-            return str(predictable_num).zfill(len(str(fact)))
-        else:
-            # Для буквенно-цифрового формата используем хеш
-            hash_obj = hashlib.sha256(str(predictable_num).encode())
-            print(f"[DEBUG] Хеш = {hash_obj}")
-            return hash_obj.hexdigest()[:len(str(fact))]
-        
+        except Exception as e:
+            self.seed_info.config(text=f"{self.localization.tr('error')}: {str(e)}", fg="red")
+            print(f"[DEBUG] Ошибка: {str(e)}")
 
     def apply_reverse_step(self, files, step):
         """Реверс блоков (идентично генератору)"""
@@ -1016,7 +1022,8 @@ class PlaylistEditor:
             # Сохраняем текущие состояния restored перед любыми изменениями
             current_restored_states = {track['original_path']: track.get('was_restored', False) 
                                  for track in self.display_tracks.copy()}
-                             
+            current_modified_states = {track['original_path']: track.get('was_modified', False) 
+                                 for track in self.display_tracks.copy()}                 
                              
             # Гарантируем наличие original_path и сохраняем флаги
             for track in base_list:
@@ -1047,12 +1054,6 @@ class PlaylistEditor:
             
             print(f"[DEBUG] Использованный сид = {seed_trimmed}")
            
-            # Восстанавливаем измененные пути
-            for track in base_list:
-                if track["original_path"] in self.modified_paths:
-                    track["path"] = self.modified_paths[track["original_path"]]
-                    track["was_modified"] = True
-                    
          
          
             # Перемешиваем sorted_list
@@ -1079,12 +1080,7 @@ class PlaylistEditor:
             for track in self.shuffled_list:
                 # Сохраняем restored состояние из сохраненного словаря
                 track["was_restored"] = current_restored_states.get(track["original_path"], False)
-                
-                # Обновляем modified состояние
-                if track["original_path"] in self.modified_paths:
-                    track["path"] = self.modified_paths[track["original_path"]]
-                    track["was_modified"] = True
-                
+                track["was_modified"] = current_modified_states.get(track["original_path"], False)
                 # Удаляем временный флаг перемещения
                 if 'was_moved' in track:
                     del track['was_moved']
@@ -1097,7 +1093,9 @@ class PlaylistEditor:
             # Обновляем информацию о сиде
             self.current_seed = seed_trimmed
             self.current_reverse_step = step if step > 0 else None
-                      
+                    
+            print(f"[DEBUG] Перемешивание завершено")
+            
             self.save_state()
             # Показываем сообщение
             if step > 0:
@@ -1107,9 +1105,10 @@ class PlaylistEditor:
             
             self.seed_info.config(text=info_text, fg="green")
             
+            
         except Exception as e:
             self.seed_info.config(text=f"{self.localization.tr('error')}: {str(e)}", fg="red")
-            
+            print(f"[DEBUG] Ошибка: {str(e)}") 
             
             
     def shuffle_files(self, files, seed_value):
@@ -1142,7 +1141,7 @@ class PlaylistEditor:
         for _ in range(num_swaps):
             i, j = random.sample(range(len(files)), 2)
             files[i], files[j] = files[j], files[i]
-            #print(f"[DEBUG] Перемешано {i}<->{j}")
+            print(f"[DEBUG] Перемешано {i}<->{j}")
         return files
 
 
@@ -1170,6 +1169,8 @@ class PlaylistEditor:
             current_tracks = []
             
             for idx, track in enumerate(source_list, 1):
+
+                
                 current_tracks.append({
                     "path": track["path"],
                     "name": os.path.basename(track["path"]),
@@ -1217,7 +1218,8 @@ class PlaylistEditor:
                         f.write(f"#EXTINF:-1,{track['name']}\n")
                         escaped_path = track['path'].replace('\\', '/')
                         f.write(f"{escaped_path}\n")
-            
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+                
             if playlist_format in ["txt"]:  
                 with open(save_path, 'w', encoding='utf-8') as f:
                     f.write("#Made with VolfLife's Playlist Generator\n")
@@ -1235,7 +1237,8 @@ class PlaylistEditor:
                     for track in current_tracks:
                         escaped_path = track['path'].replace('\\', '/')
                         f.write(f"{escaped_path}\n")
-
+                print(f"[DEBUG] Треклист сохранен: {playlist_name}.{playlist_format}") 
+                
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
                 self.temp_list = []
@@ -1381,6 +1384,7 @@ class PlaylistEditor:
             self.new_path_entry.delete(0, tk.END)
             self.new_path_entry.insert(0, folder_path)
     
+    
     def apply_new_paths(self):
         try:
             new_path = self.new_path_entry.get().strip()
@@ -1391,8 +1395,7 @@ class PlaylistEditor:
             if not new_path.endswith(os.sep):
                 new_path += os.sep
             
-            #self.save_state()
-            
+            # Создаем временный список если его еще нет
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
@@ -1400,30 +1403,23 @@ class PlaylistEditor:
             
             for idx in selected_indices:
                 track = self.temp_list[idx]
-                original_path = track.get("original_path", track["path"])  # Сохраняем оригинальный путь
+                original_path = track.get("original_path", track["path"])
                 filename = os.path.basename(original_path)
                 new_full_path = os.path.normpath(new_path + filename)
                 
                 # Обновляем словарь изменённых путей
                 self.modified_paths[original_path] = new_full_path
                 
-                # Сохраняем все существующие флаги
-                was_moved = track.get("was_moved", False)
-                was_restored = track.get("was_restored", False)
-                
                 # Обновляем трек
                 track["path"] = new_full_path
                 track["name"] = filename
                 track["was_modified"] = True
-                track["original_path"] = original_path
-                track["was_moved"] = was_moved  # Сохраняем состояние перемещения
-                track["was_restored"] = was_restored  # Сохраняем состояние восстановления
-            
-            
+                track["was_restored"] = False
+                track["original_path"] = original_path  # Сохраняем оригинальный путь
+                
             self.display_tracks = self.temp_list.copy()
             self.update_display()
             self.save_state()
-
             
             # Сбрасываем перемешанную версию
             self.shuffled_list = None
