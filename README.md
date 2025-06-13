@@ -8,13 +8,11 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Multi-language support
 
-	>*Note: Translations may contain minor errors*
-
 * Dual-functionality: Generator & Editor
 
 * Supported audio and video formats:
 
-	* Audio:	`mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff`
+	* Audio:	`.mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff`
 
 	* Video: 	`.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .mpg, .mpeg`
 
@@ -40,6 +38,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 ...
 ```
 
+>*Note: Translations may contain minor errors*
 
 ## Usage
 
@@ -53,24 +52,28 @@ ___
 
 Creates `.m3u8`/`.m3u`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
 
-1. Select your music folder(s)
+#### How to use
 
-2. Name your playlist
+1. Select music folder(s)
+
+2. Name playlist
 
 3. Enter a custom seed or leave blank for random generation
 
 4. Set reversal step size (optional)
 
-5. Enable shadow seed for advanced shuffling (optional)
+5. Enable shadow seed for advanced shuffle (optional)
 
-6. Click "Generate playlist" - the playlist will be saved in the program directory
+6. Choose file format (optional)
+
+7. Click "Generate playlist". It will be saved in the program’s directory
 
 ### Editor Mode
 ___
 
 ![Editor Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/editor_img.png)
 
-Modify existing playlists - works even with missing local files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file(s) onto the program shortcut.
+Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file(s) onto the program shortcut.
 
 #### Features:
 
@@ -84,8 +87,7 @@ Modify existing playlists - works even with missing local files. Launch by drag-
 
 	* Undo/redo actions
 	
-	* Edit track paths
-
+	* Edit track paths and names
 
 ## Compilation
 
@@ -93,10 +95,19 @@ Modify existing playlists - works even with missing local files. Launch by drag-
 
 2. Run in terminal:
 
-```
-pip install pyinstaller
-```
+	2.1.
+	```
+	pip install pyinstaller
+	```
 
-```
-pyinstaller --onefile --hidden-import=_pylong,fonttools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
-```
+  	2.2.
+   	```
+	pip install fonttools
+	```
+
+ 	2.3.
+	```
+	pyinstaller --onefile --hidden-import=_pylong --hidden-import=fontTools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
+	```
+
+ 3. The compiled `.exe` file will be ready in the *`dist`* folder
