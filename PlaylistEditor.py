@@ -420,6 +420,10 @@ class PlaylistEditor:
         self.tree.bind("<B1-Motion>", self.on_treeview_mouse_move)
         self.tree.bind("<ButtonRelease-1>", self.on_treeview_button_release)
         
+        # Добавляем привязку для Ctrl+A
+        self.tree.bind("<Control-a>", self.select_all_tracks)
+        self.tree.bind("<Control-A>", self.select_all_tracks)  # Для Caps Lock
+
         # Переменные для drag-and-drop
         self._drag_data = {"item": None, "y": 0}
     
@@ -530,7 +534,13 @@ class PlaylistEditor:
         if hasattr(self, 'tree_tooltip'):
             self.tree_tooltip.place_forget()    
     
-    
+    def select_all_tracks(self, event=None):
+        """Выделяет все треки в таблице"""
+        items = self.tree.get_children()
+        if items:
+            self.tree.selection_set(items)
+        return "break"  # Предотвращаем дальнейшую обработку события
+        
     def on_treeview_button_release(self, event):
         """Обработчик отпускания кнопки мыши с гарантированным сохранением"""
         if hasattr(self, '_drag_data') and self._drag_data and self._drag_data.get("items"):
@@ -546,7 +556,7 @@ class PlaylistEditor:
                 # Помечаем все перемещённые треки
                 for idx in current_indices:
                     if 0 <= idx < len(self.temp_list):  # Проверяем границы списка
-                        self.temp_list[idx]['was_moved'] = True
+                        self.temp_list[idx]['was_moved'] = False
                 
                 self.save_state()
                 print("[DRAG] Состояние сохранено после перетаскивания")
@@ -659,11 +669,16 @@ class PlaylistEditor:
             # Сохраняем флаги для обоих треков
             prev_restored = self.temp_list[index-1].get("was_restored", False)
             current_restored = self.temp_list[index].get("was_restored", False)
+            
+            # Обмениваем треки местами
             self.temp_list[index], self.temp_list[index-1] = self.temp_list[index-1], self.temp_list[index]
+            
             # Помечаем перемещенные треки
             self.temp_list[index-1]['was_moved'] = True
-            self.temp_list[index-1]['was_restored'] = False
-            #self.temp_list[index]['was_restored'] = current_restored
+            # Если трек был восстановлен, меняем тег на moved_restored
+            if prev_restored:
+                self.temp_list[index-1]['was_restored'] = False
+                self.temp_list[index]['was_restored'] = True
         
         self.display_tracks = self.temp_list
         
@@ -700,13 +715,16 @@ class PlaylistEditor:
             next_restored = self.temp_list[index+1].get("was_restored", False)
             current_restored = self.temp_list[index].get("was_restored", False)
             
+            # Обмениваем треки местами
             self.temp_list[index], self.temp_list[index+1] = self.temp_list[index+1], self.temp_list[index]
+            
             # Помечаем перемещенные треки
             self.temp_list[index+1]['was_moved'] = True
-            self.temp_list[index+1]['was_restored'] = False
-            #self.temp_list[index]['was_restored'] = current_restored
-            
-            
+            # Если трек был восстановлен, меняем тег на moved_restored
+            if next_restored:
+                self.temp_list[index+1]['was_restored'] = False
+                self.temp_list[index]['was_restored'] = True
+        
         self.display_tracks = self.temp_list
         
         # Перед обновлением сохраняем новые индексы выбранных элементов (со смещением на +1)
