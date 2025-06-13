@@ -778,6 +778,10 @@ class PlaylistEditor:
         self.tree.tag_configure('modified_moved', background='#E6D5FF') # Комбинация modified + moved E6D5FF
         self.tree.tag_configure('modified_restored', background='#FFD5E6') # Комбинация modified + restored FFD5E6
         self.tree.tag_configure('moved_restored', background='#D5F0FF') # Комбинация moved + restored D5F0FF
+        self.tree.tag_configure('modified_name', background='#FFDDCC') # Коралловый - измененное имя
+        self.tree.tag_configure('modified_name_moved', background='#f8d3e9') # Комбинация - modified_name + moved
+        self.tree.tag_configure('modified_name_path', background='#c6f5f0') # Бирюзовый
+        self.tree.tag_configure('modified_name_path_moved', background='#CCDAFF')
         self.tree.tag_configure('all', background='#E0E0E0') # Все три состояния
 
         # Вставляем треки с правильной нумерацией (начиная с 1)
@@ -789,23 +793,32 @@ class PlaylistEditor:
             is_modified = track.get('was_modified', False)
             is_moved = track.get('was_moved', False)
             is_restored = track.get('was_restored', False)
+            is_name_modified = track.get('was_name_modified', False)
             
             # Комбинируем теги для всех возможных сочетаний
             if is_modified and is_moved and is_restored:
                 tags.append('all')
+            elif is_moved and is_name_modified and is_modified:
+                tags.append('modified_name_path_moved')
+            elif is_moved and is_name_modified:
+                tags.append('modified_name_moved') 
+            elif is_modified and is_name_modified:
+                tags.append('modified_name_path')
+            elif is_name_modified:
+                tags.append('modified_name')
             elif is_modified and is_moved:
                 tags.append('modified_moved')
             elif is_modified and is_restored:
-                tags.append('modified_restored')
+                tags.append('modified_restored') 
             elif is_moved and is_restored:
                 tags.append('moved_restored')
             elif is_modified:
-                tags.append('modified')
+                tags.append('modified')   
+            elif is_restored:
+                tags.append('restored')    
             elif is_moved:
                 tags.append('moved')
-            elif is_restored:
-                tags.append('restored')
-            
+                
             if tags:
                 self.tree.item(item, tags=tuple(tags))
             print(f"[TRACK] {i}. {track['name']}    —   —   —   —   —   {tags}")
@@ -846,8 +859,11 @@ class PlaylistEditor:
                 'name': track['name'],
                 'num': track['num'],
                 'original_path': track.get('original_path', track['path']),
+                'original_name': track.get('original_name', track['name']),
                 'was_modified': track.get('was_modified', False),
-                'was_moved': track.get('was_moved', False)  # Сохраняем состояние перемещения
+                'was_name_modified': track.get('was_name_modified', False),
+                'was_moved': track.get('was_moved', False),
+                'was_restored': track.get('was_restored', False)
             } for track in self.display_tracks],
             'selection': list(self.tree.selection())
         }
@@ -881,7 +897,9 @@ class PlaylistEditor:
             if (t1['path'] != t2['path'] or 
                 t1['name'] != t2['name'] or
                 t1['original_path'] != t2['original_path'] or
-                t1['was_modified'] != t2['was_modified']):
+                t1.get('original_name', t1['name']) != t2.get('original_name', t2['name']) or
+                t1['was_modified'] != t2['was_modified'] or
+                t1.get('was_name_modified', False) != t2.get('was_name_modified', False)):
                 return False
         return True
 
@@ -889,26 +907,33 @@ class PlaylistEditor:
     def restore_state(self, state):
         """Восстанавливает состояние с полным обновлением интерфейса"""
         # Получаем текущие пути перед восстановлением
+        current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
         current_names = {track['name'] for track in self.display_tracks} if self.display_tracks else set()
         
         # Обновляем основной список
         self.display_tracks = []
         for track in state['tracks']:
             new_track = track.copy()
-            # Помечаем восстановленные треки (те, которых не было в current_paths)
-            if track['name'] not in current_names:
+            # Помечаем восстановленные треки (те, которых не было в текущем состоянии)
+            if (track['path'] not in current_paths) or (track['name'] not in current_names):
                 new_track['was_restored'] = True
-                
             else:
-                # Сохраняем существующий флаг restored если он есть
-                existing_track = next((t for t in self.display_tracks if t['name'] == track['name']), None)
+                # Для существующих треков сохраняем текущий флаг restored
+                existing_track = next(
+                    (t for t in self.display_tracks 
+                     if t['path'] == track['path'] and t['name'] == track['name']), 
+                    None
+                )
                 if existing_track and existing_track.get('was_restored', False):
                     new_track['was_restored'] = True
+                
+            
             self.display_tracks.append(new_track)
         
         # Обновляем временный список если он существует
-        if self.temp_list is not None:
-            self.temp_list = self.display_tracks.copy()
+        
+        self.temp_list = self.display_tracks.copy()
+        self.shuffled_list = None
         
         self.update_display()
         
@@ -926,8 +951,40 @@ class PlaylistEditor:
             self.show_message(self.localization.tr("nothing_to_undo"), "red")
             return
         
+        # Получаем текущие пути и имена перед отменой
+        current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
+        current_names = {track['name'] for track in self.display_tracks} if self.display_tracks else set()
+    
         self.history_index -= 1
-        self.restore_state(self.history[self.history_index])
+        state = self.history[self.history_index]
+        
+        # Восстанавливаем состояние
+        self.display_tracks = []
+        for track in state['tracks']:
+            new_track = {
+                'path': track['path'],
+                'name': track['name'],
+                'num': track['num'],
+                'original_path': track.get('original_path', track['path']),
+                'original_name': track.get('original_name', track['name']),
+                'was_modified': track.get('was_modified', False),
+                'was_name_modified': track.get('was_name_modified', False),
+                'was_moved': track.get('was_moved', False),
+                'was_restored': track.get('was_restored', False)  # Изначально сбрасываем флаг восстановления
+            }
+            
+            # Помечаем трек как восстановленный, если его не было в текущем состоянии
+            if (track['path'] not in current_paths) or (track['name'] not in current_names):
+                new_track['was_restored'] = True
+            self.display_tracks.append(new_track)
+        
+        # Обновляем временные списки
+        
+        self.temp_list = self.display_tracks.copy()
+        
+        self.shuffled_list = None  # Сбрасываем перемешанный список при отмене
+        
+        self.update_display()
         self.show_message(self.localization.tr("action_undone"), "green")
         self.update_undo_redo_buttons()
         print(f"[DEBUG] Действие отменено")
@@ -940,7 +997,30 @@ class PlaylistEditor:
             return
         
         self.history_index += 1
-        self.restore_state(self.history[self.history_index])
+        state = self.history[self.history_index]
+        
+        # Восстанавливаем состояние
+        self.display_tracks = []
+        for track in state['tracks']:
+            new_track = {
+                'path': track['path'],
+                'name': track['name'],
+                'num': track['num'],
+                'original_path': track.get('original_path', track['path']),
+                'original_name': track.get('original_name', track['name']),
+                'was_modified': track.get('was_modified', False),
+                'was_name_modified': track.get('was_name_modified', False),
+                'was_moved': track.get('was_moved', False),
+                'was_restored': track.get('was_restored', False)
+            }
+            self.display_tracks.append(new_track)
+        
+        # Обновляем временные списки
+        self.temp_list = self.display_tracks.copy()
+        
+        self.shuffled_list = None  # Сбрасываем перемешанный список при повторе
+        
+        self.update_display()
         self.show_message(self.localization.tr("action_redone"), "green")
         self.update_undo_redo_buttons()
         print(f"[DEBUG] Действие повторено")
@@ -963,7 +1043,11 @@ class PlaylistEditor:
                     "path": values[1],
                     "name": os.path.basename(values[1]),
                     "num": values[0],
-                    "was_modified": 'modified' in self.tree.item(item, 'tags')
+                    "was_modified": 'modified' in self.tree.item(item, 'tags'),
+                    "was_name_modified": 'modified_name' in self.tree.item(item, 'tags'),
+                    "original_path": values[1],  # По умолчанию оригинальный путь равен текущему
+                    "original_name": os.path.basename(values[1]),  # По умолчанию оригинальное имя равно текущему
+                    'was_restored': 'restored' in self.tree.item(item, 'tags')
                 }
                 self.display_tracks.append(track)
         
@@ -1012,7 +1096,7 @@ class PlaylistEditor:
             print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Дата = {date_part} \n Случайное число = {random_number} \n Делитель = {random_divisor} \n Разность = {result} \n Результат = {predictable_num}")
             # Форматируем в соответствии с выбранным форматом
             if self.seed_format_combobox.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin"]:
                 return str(predictable_num).zfill(len(str(fact)))
             else:
                 # Для буквенно-цифрового формата используем хеш
@@ -1050,9 +1134,11 @@ class PlaylistEditor:
                 track['original_path']: {
                     'was_restored': track.get('was_restored', False),
                     'was_modified': track.get('was_modified', False),
+                    'was_name_modified': track.get('was_name_modified', False),
                     'was_moved': track.get('was_moved', False),
                     'path': track['path'],
-                    'name': track['name']
+                    'name': track['name'],
+                    'original_name': track.get('original_name', track['name'])
                 } 
                 for track in self.display_tracks.copy()
             }            
@@ -1116,13 +1202,18 @@ class PlaylistEditor:
                 if original_path in track_states:
                     saved_state = track_states[original_path]
                     track["was_modified"] = saved_state['was_modified']
+                    track["was_name_modified"] = saved_state['was_name_modified']
                     track["was_moved"] = saved_state['was_moved']
                     track["was_restored"] = saved_state['was_restored']
+                    track["original_name"] = saved_state['original_name']
                     
                     # Для модифицированных треков сохраняем новый путь
                     if track["was_modified"] and original_path in self.modified_paths:
                         track["path"] = self.modified_paths[original_path]
-                
+                    
+                    if track["was_name_modified"]:
+                        track["name"] = saved_state['name']
+                    
                 # Удаляем временный флаг перемещения (если был установлен при сортировке)
                 if 'was_moved' in track and not track['was_moved']:
                     del track['was_moved']
@@ -1209,22 +1300,40 @@ class PlaylistEditor:
                 if 'was_moved' in track:
                     del track['was_moved'] 
                     
-            current_tracks = []
+            # Создаем копию текущего состояния перед сохранением
+            current_state = {
+                'tracks': [track.copy() for track in source_list],
+                'selection': list(self.tree.selection())
+            }
+
+            # Создаем список треков для сохранения
+            saved_tracks = []
             
             for idx, track in enumerate(source_list, 1):
-
+                # Сохраняем текущее состояние трека
+                new_track = track.copy()
+                new_track['num'] = idx
                 
-                current_tracks.append({
-                    "path": track["path"],
-                    "name": os.path.basename(track["path"]),
+                # Если имя было изменено, используем новое имя в пути
+                if track.get('was_name_modified', False):
+                    dir_path = os.path.dirname(track['path'])
+                    new_path = os.path.join(dir_path, track['name'])
+                else:
+                    new_path = track['path']
+                
+                saved_tracks.append({
+                    "path": new_path,
+                    "name": track['name'],
                     "num": idx,
-                    "original_path": track.get("original_path", track["path"]),  # Сохраняем оригинальный путь
+                    "original_path": track.get("original_path", track['path']),
+                    "original_name": track.get("original_name", track['name']),
                     "was_modified": track.get("was_modified", False),
-                    "was_moved": track.get("was_moved", False),  # Сохраняем состояние перемещения
-                    "was_restored": track.get("was_restored", False)  # Сохраняем состояние восстановления
+                    "was_name_modified": track.get("was_name_modified", False),
+                    "was_moved": track.get("was_moved", False),
+                    "was_restored": track.get("was_restored", False)
                 })
             
-            if not current_tracks:
+            if not saved_tracks:
                 raise ValueError(self.localization.tr("error_no_tracks"))
                 
             playlist_name = self.name_entry.get().strip()
@@ -1255,9 +1364,9 @@ class PlaylistEditor:
                         if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
                             f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                     
-                    f.write(f"#TRACKS:{len(current_tracks)}\n\n")
+                    f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
-                    for track in current_tracks:
+                    for track in saved_tracks:
                         f.write(f"#EXTINF:-1,{track['name']}\n")
                         escaped_path = track['path'].replace('\\', '/')
                         f.write(f"{escaped_path}\n")
@@ -1275,9 +1384,9 @@ class PlaylistEditor:
                         if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
                             f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                     
-                    f.write(f"#TRACKS:{len(current_tracks)}\n\n")
+                    f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
-                    for track in current_tracks:
+                    for track in saved_tracks:
                         escaped_path = track['path'].replace('\\', '/')
                         f.write(f"{escaped_path}\n")
                 print(f"[DEBUG] Треклист сохранен: {playlist_name}.{playlist_format}") 
@@ -1285,13 +1394,13 @@ class PlaylistEditor:
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
                 self.temp_list = []
-                for track in current_tracks:
+                for track in saved_tracks:
                     new_track = track.copy()
                     new_track["original_path"] = track.get("original_path", track["path"])
                     self.temp_list.append(new_track)
             
-            # Обновляем отображение из current_tracks, чтобы синхронизироваться
-            self.display_tracks = current_tracks.copy()
+            # Обновляем отображение из saved_tracks, чтобы синхронизироваться
+            self.display_tracks = saved_tracks.copy()
             self.update_display()
             
             # Формируем сообщение
@@ -1309,7 +1418,7 @@ class PlaylistEditor:
 
     
     def create_path_editor_window(self, event=None):
-        """Создает окно для изменения путей выделенных треков"""
+        """Создает окно для изменения путей и имен выделенных треков"""
         if event:  # Если вызвано через клик мыши
             item = self.tree.identify_row(event.y)
             if item:
@@ -1323,10 +1432,22 @@ class PlaylistEditor:
         
         # Создаем модальное окно
         self.path_editor = tk.Toplevel(self.root)
-        self.path_editor.title(self.localization.tr("edit_paths_window_title"))
+        self.path_editor.title(self.localization.tr("edit_track_window_title"))
         self.path_editor.transient(self.root)
         self.path_editor.grab_set()
         self.path_editor.resizable(False, False)
+        
+        # Устанавливаем иконку из FontLoader
+        if hasattr(self, 'font_loader') and hasattr(self.font_loader, 'icon_ico'):
+            try:
+                icon_path = os.path.abspath(self.font_loader.temp_icon_path)
+                self.path_editor.iconbitmap(icon_path)
+                print("[DEBUG] Иконка редактора путей успешно установлена")
+            except Exception as e:
+                print(f"[DEBUG] Ошибка установки иконки редактора путей: {e}")
+                if hasattr(self.font_loader, 'temp_icon_path'):
+                    print(f"[DEBUG] Путь к временной иконке: {self.font_loader.temp_icon_path}")
+                    print(f"[DEBUG] Файл существует: {os.path.exists(self.font_loader.temp_icon_path)}")
         
         # Центрируем окно
         window_width = 500
@@ -1337,37 +1458,57 @@ class PlaylistEditor:
         y = (screen_height // 2) - (window_height // 2)
         self.path_editor.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
+        # Создаем Notebook (вкладки)
+        notebook = ttk.Notebook(self.path_editor)
+        notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Вкладка для изменения пути
+        path_frame = ttk.Frame(notebook)
+        notebook.add(path_frame, text=self.localization.tr("edit_path_tab"))
+        self.create_path_editor_tab(path_frame, selected_items)
+        
+        # Вкладка для изменения имени (доступна только для 1 трека)
+        name_frame = ttk.Frame(notebook)
+        notebook.add(name_frame, text=self.localization.tr("edit_name_tab"), 
+                    state='normal' if len(selected_items) == 1 else 'disabled')
+        
+        if len(selected_items) == 1:
+                self.create_name_editor_tab(name_frame, selected_items)        
+        # Сохраняем выбранные элементы
+        self.selected_for_edit = selected_items
+
+    def create_path_editor_tab(self, parent, selected_items):
+        """Создает содержимое вкладки для изменения пути"""
         # Фрейм для таблицы
-        table_frame = ttk.Frame(self.path_editor, padding="10")
+        table_frame = ttk.Frame(parent)
         table_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Таблица с выделенными треками (только № и название)
-        self.path_editor_tree = ttk.Treeview(table_frame, columns=('num', 'name'), show='headings')
-        self.path_editor_tree.heading('num', text=self.localization.tr("track_number"))
-        self.path_editor_tree.heading('name', text=self.localization.tr("track_name"))
-        self.path_editor_tree.column('num', width=50, anchor='center')
-        self.path_editor_tree.column('name', width=400, anchor='w')
+        # Таблица с выделенными треками
+        tree = ttk.Treeview(table_frame, columns=('num', 'name'), show='headings')
+        tree.heading('num', text=self.localization.tr("track_number"))
+        tree.heading('name', text=self.localization.tr("track_name"))
+        tree.column('num', width=50, anchor='center')
+        tree.column('name', width=400, anchor='w')
         
         # Заполняем таблицу выделенными треками
         for item in selected_items:
             values = self.tree.item(item)['values']
             if len(values) >= 2:
-                self.path_editor_tree.insert('', 'end', values=(values[0], values[1]))
+                tree.insert('', 'end', values=(values[0], values[1]))
         
-        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.path_editor_tree.yview)
-        self.path_editor_tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
         
-        self.path_editor_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Фрейм для поля ввода пути
-        path_frame = ttk.Frame(self.path_editor, padding="10")
+        path_frame = ttk.Frame(parent, padding="10")
         path_frame.pack(fill=tk.X)
         
         ttk.Label(path_frame, text=self.localization.tr("new_path_label")).pack(anchor='w')
         
-
-         # Поле ввода пути
+        # Поле ввода пути
         self.new_path_entry = ttk.Entry(path_frame)
         self.new_path_entry.pack(fill=tk.X, pady=5)
         
@@ -1380,16 +1521,13 @@ class PlaylistEditor:
         )
         browse_btn.pack(side=tk.RIGHT, padx=(5, 0))
         
-        
         # Подсказка
-        self.example = ttk.Frame(self.path_editor, padding="10")
-        
         ttk.Label(path_frame, 
                  text=self.localization.tr("path_example_hint"), 
                  font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
         
         # Фрейм для кнопок
-        button_frame = ttk.Frame(self.path_editor, padding="10")
+        button_frame = ttk.Frame(parent, padding="10")
         button_frame.pack(fill=tk.X)
         
         ttk.Button(button_frame, 
@@ -1399,9 +1537,6 @@ class PlaylistEditor:
                   text=self.localization.tr("cancel_button"), 
                   command=self.path_editor.destroy).pack(side=tk.LEFT)
         
-        # Сохраняем выбранные элементы
-        self.selected_for_edit = selected_items
-        
         # Автозаполнение пути из первого выделенного трека
         if selected_items:
             first_item = selected_items[0]
@@ -1410,6 +1545,65 @@ class PlaylistEditor:
                 path = os.path.dirname(values[1])
                 self.new_path_entry.insert(0, path)
 
+    def create_name_editor_tab(self, parent, selected_items):
+        """Создает содержимое вкладки для изменения имени"""
+        # Фрейм для таблицы
+        table_frame = ttk.Frame(parent)
+        table_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Таблица с выделенными треками
+        tree = ttk.Treeview(table_frame, columns=('num', 'name'), show='headings')
+        tree.heading('num', text=self.localization.tr("track_number"))
+        tree.heading('name', text=self.localization.tr("track_name"))
+        tree.column('num', width=50, anchor='center')
+        tree.column('name', width=400, anchor='w')
+        
+        # Заполняем таблицу выделенными треками
+        for item in selected_items:
+            values = self.tree.item(item)['values']
+            if len(values) >= 2:
+                tree.insert('', 'end', values=(values[0], values[1]))
+        
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+        
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Фрейм для поля ввода имени
+        name_frame = ttk.Frame(parent, padding="10")
+        name_frame.pack(fill=tk.X)
+        
+        ttk.Label(name_frame, text=self.localization.tr("new_name_label")).pack(anchor='w')
+        
+        # Поле ввода имени
+        self.new_name_entry = ttk.Entry(name_frame)
+        self.new_name_entry.pack(fill=tk.X, pady=5)
+        
+        # Подсказка
+        ttk.Label(name_frame, 
+                 text=self.localization.tr("name_example_hint"), 
+                 font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
+        
+        # Фрейм для кнопок
+        button_frame = ttk.Frame(parent, padding="10")
+        button_frame.pack(fill=tk.X)
+        
+        ttk.Button(button_frame, 
+                  text=self.localization.tr("apply_button"), 
+                  command=self.apply_new_names).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, 
+                  text=self.localization.tr("cancel_button"), 
+                  command=self.path_editor.destroy).pack(side=tk.LEFT)
+        
+        # Автозаполнение имени из первого выделенного трека
+        #if selected_items:
+        #   first_item = selected_items[0]
+        #    values = self.tree.item(first_item)['values']
+        #    if len(values) >= 2:
+        #        name = os.path.basename(values[1])
+        #        self.new_name_entry.insert(0, name)
+        
 
     def browse_folder(self):
         """Открывает диалог выбора папки и вставляет путь в поле ввода"""
@@ -1447,7 +1641,7 @@ class PlaylistEditor:
             for idx in selected_indices:
                 track = self.temp_list[idx]
                 original_path = track.get("original_path", track["path"])
-                filename = os.path.basename(original_path)
+                filename = track["name"]
                 new_full_path = os.path.normpath(new_path + filename)
                 
                 # Обновляем словарь изменённых путей
@@ -1460,6 +1654,10 @@ class PlaylistEditor:
                 track["was_restored"] = False
                 track["original_path"] = original_path  # Сохраняем оригинальный путь
                 
+                # Если имя тоже было изменено, устанавливаем комбинированный тег
+                if track.get('was_name_modified', False):
+                    track["was_name_modified"] = True
+                    
             self.display_tracks = self.temp_list.copy()
             self.update_display()
             self.save_state()
@@ -1475,7 +1673,47 @@ class PlaylistEditor:
         except Exception as e:
             self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")
 
-        
+    def apply_new_names(self):
+        """Применяет новые имена к выделенным трекам"""
+        try:
+            new_name = self.new_name_entry.get().strip()
+            if not new_name:
+                raise ValueError(self.localization.tr("error_empty_name"))
+            
+            # Создаем временный список если его еще нет
+            if self.temp_list is None:
+                self.temp_list = [track.copy() for track in self.display_tracks]
+            
+            selected_indices = [self.tree.index(item) for item in self.selected_for_edit]
+            
+            for idx in selected_indices:
+                track = self.temp_list[idx]
+                # Сохраняем оригинальное имя если еще не сохранено
+                if 'original_name' not in track:
+                    track['original_name'] = track['name']
+                
+                # Обновляем трек
+                track['name'] = new_name
+                track['was_name_modified'] = True
+                
+                # Если путь тоже был изменен, устанавливаем комбинированный тег
+                if track.get('was_modified', False):
+                    track['was_modified'] = True
+                
+            self.display_tracks = self.temp_list.copy()
+            self.update_display()
+            self.save_state()
+            
+            # Сбрасываем перемешанную версию
+            self.shuffled_list = None
+            
+            self.show_message(self.localization.tr("names_updated"), "green")
+            if self.path_editor:
+                self.path_editor.destroy()
+                self.path_editor = None
+                
+        except Exception as e:
+            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")    
         
     def update_track_lists(self):
         """Обновляет внутренние списки треков на основе текущего состояния Treeview"""

@@ -45,7 +45,9 @@ def setup_logging_and_console():
             
         def write(self, message):
             self.file.write(message)
+            self.file.flush()  # Принудительно записываем в файл сразу
             self.console.write(message)
+            self.console.flush()
             
         def flush(self):
             self.file.flush()
@@ -59,19 +61,18 @@ def setup_logging_and_console():
         console_err = open('CONOUT$', 'w', encoding='utf-8')
         
         # Открываем файловые потоки
-        file_out = open(log_file, 'a', encoding='utf-8')
-        file_err = open(log_file, 'a', encoding='utf-8')
+        file_out = open(log_file, 'a', encoding='utf-8', buffering=1)  # buffering=1 для построчной записи
+        file_err = open(log_file, 'a', encoding='utf-8', buffering=1)
         
         # Создаем дублирующие потоки
         sys.stdout = DualOutput(file_out, console_out)
         sys.stderr = DualOutput(file_err, console_err)
     else:
         # Для других ОС просто пишем в файл
-        file_out = open(log_file, 'a', encoding='utf-8')
-        file_err = open(log_file, 'a', encoding='utf-8')
+        file_out = open(log_file, 'a', encoding='utf-8', buffering=1)
+        file_err = open(log_file, 'a', encoding='utf-8', buffering=1)
         sys.stdout = file_out
         sys.stderr = file_err
-
     
 def handle_exception(type, value, traceback):
     """Обработчик неотловленных исключений"""
@@ -291,8 +292,8 @@ class PlaylistGenerator:
         self.root.withdraw()
         try:
             editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            self.root.destroy()  # Закрываем основное окно только после успешного создания редактора
+            PlaylistEditor(editor_root, file_path, self.font_loader.icon_ico)
+            self.root.destroy()
             editor_root.mainloop()
         except Exception as e:
             print(self.localization.tr("error_open_editor").format(error=e))
@@ -366,7 +367,7 @@ class PlaylistGenerator:
             current_seed_format = self.seed_format.get()
             # Список форматов, при которых текущее значение не должно меняться
             numeric_formats = ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ"]
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin"]
             # Проверяем, находится ли текущее значение в списке форматов
             if current_seed_format in numeric_formats:
                 # Если текущее значение в списке, не меняем его
@@ -677,7 +678,7 @@ class PlaylistGenerator:
         print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Дата = {date_part} \n Размер = {total_size} \n Количество треков = {num_tracks} \n Базовый сид = {base_seed} \n Результат = {modified_seed}")
         # Форматируем в соответствии с выбранным форматом
         if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin"]:
             return str(modified_seed).zfill(len(str(fact)))
         else:
             # Для буквенно-цифрового формата используем хеш
@@ -710,7 +711,7 @@ class PlaylistGenerator:
         print(f"[DEBUG] ГЕНЕРАЦИЯ ТЕНЕВОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Случайное число = {random_part} \n Делитель = {random_divisor} \n Разность = {result} \n Основной сид = {seed_num} \n Результат = {predictable_num}")
         # Форматируем аналогично основному сиду
         if self.seed_format.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                        "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số"]:
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin"]:
             return str(predictable_num).zfill(len(str(fact)))
         else:
             # Для буквенно-цифрового формата используем хеш
@@ -962,7 +963,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.4 by VolfLife    ")
+        print("    Playlist Generator v4.5 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
