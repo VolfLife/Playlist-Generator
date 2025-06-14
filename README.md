@@ -12,9 +12,9 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Supported audio and video formats:
 
-	* Audio:	`.mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff`
+	* Audio:	`.mp3`, `.flac`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.wma`, `.opus`, `.aiff`
 
-	* Video: 	`.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .mpg, .mpeg`
+	* Video: 	`.mp4`, `.mkv`, `.avi`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`
 
 * Seed-based shuffling for reproducible results
 
@@ -31,14 +31,14 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 #Made by VolfLife's Playlist Generator
 #GENERATED:2025-03-29 01:24:00
 #PLAYLIST:my_playlist
-#SEED:89451...
-#SHADOW_SEED:11042...
+#SEED:7034926188901
+#SHADOW_SEED:1104258672009899
 #REVERSE_STEP:19
 #TRACKS:25
 ...
 ```
 
->*Note: Translations may contain minor errors*
+>*Note: Translations may contain errors*
 
 ## Usage
 
@@ -56,7 +56,7 @@ Creates `.m3u8`/`.m3u`/`.pls`/`.xspf`/`.txt` playlist from scratch. Simply launc
 
 1. Select music folder(s)
 
-2. Name playlist
+2. Enter a name playlist
 
 3. Enter a custom seed or leave blank for random generation
 
@@ -66,7 +66,7 @@ Creates `.m3u8`/`.m3u`/`.pls`/`.xspf`/`.txt` playlist from scratch. Simply launc
 
 6. Choose file format (optional)
 
-7. Click "Generate playlist". It will be saved in the program’s directory
+7. Click "Generate playlist" button. The playlist will be saved in the program’s directory
 
 ### Editor Mode
 ___
