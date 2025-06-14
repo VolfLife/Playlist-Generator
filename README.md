@@ -91,7 +91,7 @@ Edits and saves data from existing playlists without requiring local track files
 
 ## Compilation
 
-1. Install [Python](https://www.python.org/downloads/windows/) with pip
+1. Install [Python](https://www.python.org/downloads/windows/) + pip
 
 2. Run in terminal:
 
