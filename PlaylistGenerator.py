@@ -11,6 +11,8 @@ import string
 import json
 import locale
 import logging
+import urllib.parse
+import xml.sax.saxutils as saxutils
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -118,9 +120,15 @@ class PlaylistGenerator:
             if file_to_open.lower().endswith('.m3u'):
                 self.root.after(1, lambda: self.open_editor(file_to_open))
                 return
+            if file_to_open.lower().endswith('.pls'):
+                self.root.after(1, lambda: self.open_editor(file_to_open))
+                return
             if file_to_open.lower().endswith('.txt'):
                 self.root.after(1, lambda: self.open_editor(file_to_open))
                 return
+            if file_to_open.lower().endswith('.xspf'):
+                self.root.after(1, lambda: self.open_editor(file_to_open))
+                return    
         
         self.create_widgets()
         self.show_version_info()
@@ -206,7 +214,7 @@ class PlaylistGenerator:
                     self.save_settings()       
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u", "txt"]:
+                if saved_format in ["m3u8", "m3u", "txt", "pls", "xspf"]:
                     self.format_m3u8 = saved_format
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -312,11 +320,22 @@ class PlaylistGenerator:
             editor_root = tk.Tk()
             PlaylistEditor(editor_root, file_path)
             editor_root.mainloop()    
+        if file_path and file_path.lower().endswith('.pls'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()
         if file_path and file_path.lower().endswith('.txt'):
             self.root.destroy()  # Закрываем текущее окно
             editor_root = tk.Tk()
             PlaylistEditor(editor_root, file_path)
             editor_root.mainloop()    
+        if file_path and file_path.lower().endswith('.xspf'):
+            self.root.destroy()  # Закрываем текущее окно
+            editor_root = tk.Tk()
+            PlaylistEditor(editor_root, file_path)
+            editor_root.mainloop()
+        
         
     def change_format(self, event=None):
         """Сохраняет настройки выбранного формата файла"""
@@ -509,7 +528,7 @@ class PlaylistGenerator:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             language_frame,
-            values=["m3u8", "m3u", "txt"],
+            values=["m3u8", "m3u", "pls", "xspf", "txt"],
             state="readonly",
             width=5
         )
@@ -909,6 +928,75 @@ class PlaylistGenerator:
                     f.write(f"{escaped_path}\n")
             print(f"[DEBUG] Треклист создан и сохранен: {name}.{playlist_format}") 
         
+        if playlist_format in ["pls"]:
+            with open(path, 'w', encoding='utf-8') as f:
+                # Заголовок плейлиста
+                f.write("[playlist]\n")
+                f.write(f";Made with VolfLife's Playlist Generator\n")
+                f.write(f";GENERATED:{date_str}\n")
+                f.write(f";PLAYLIST:{name}\n")
+                f.write(f";SEED:{seed}\n")
+                f.write(f";SHADOW_SEED:{shadow_seed}\n")
+                
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f";REVERSE_STEP:{reverse_step}\n")
+                
+                f.write(f"NumberOfEntries={num_tracks}\n")
+                f.write("Version=2\n\n")  # Версия формата PLS
+
+                # Запись треков
+                for i, file_path in enumerate(files, 1):
+                    file_path = os.path.normpath(file_path)
+                    escaped_path = file_path.replace('\\', '/')
+                    basename = os.path.basename(file_path)
+                    
+                    f.write(f"File{i}={escaped_path}\n")
+                    f.write(f"Title{i}={basename}\n")
+                    f.write(f"Length{i}=-1\n")  # -1 = длительность определит плеер
+                    
+                    if i < num_tracks:  # Добавляем пустую строку между треками (кроме последнего)
+                        f.write("\n")
+
+            print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")
+        
+        if playlist_format in ["xspf"]:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
+                f.write(f'  <title>{name}</title>\n')
+                f.write('  <creator>VolfLife\'s Playlist Generator</creator>\n')
+                f.write(f'  <date>{date_str}</date>\n')
+                
+                # Метаданные
+                f.write('  <annotation>\n')
+                f.write(f'    GENERATED:{date_str}\n')
+                f.write(f'    SEED:{seed}\n')
+                if shadow_seed:
+                    f.write(f'    SHADOW_SEED:{shadow_seed}\n')
+                if reverse_step:
+                    f.write(f'    REVERSE_STEP:{reverse_step}\n')
+                f.write(f'    TRACKS:{num_tracks}\n')
+                f.write('  </annotation>\n')
+                
+                f.write('  <trackList>\n')
+                
+                for file_path in files:
+                    # Экранируем специальные XML символы в путях и названиях
+                    escaped_path = saxutils.escape(os.path.normpath(file_path).replace('\\', '/'))
+                    escaped_title = saxutils.escape(os.path.basename(file_path))
+                    
+                    # Формируем file:// URL без лишнего кодирования (кроме спецсимволов XML)
+                    file_url = f"file:///{escaped_path}"
+                    f.write('    <track>\n')
+                    f.write(f'      <location>{file_url}</location>\n')
+                    f.write(f'      <title>{escaped_title}</title>\n')
+                    f.write('    </track>\n')
+                
+                f.write('  </trackList>\n')
+                f.write('</playlist>\n')
+            
+            print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")
+    
     def apply_reverse_step(self, files, step):
         """Применяет реверс блоков без повторной фиксации генератора"""
         # Создаем копию списка, чтобы не менять оригинал
@@ -963,7 +1051,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.5 by VolfLife    ")
+        print("    Playlist Generator v4.6 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
@@ -990,7 +1078,7 @@ if __name__ == "__main__":
     file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
     
     # Если переданы файлы, открываем редактор
-    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt')) for fp in file_paths):
+    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', '.xspf')) for fp in file_paths):
         root.withdraw()  # Скрываем основное окно генератора
         editor_root = tk.Tk()
         PlaylistEditor(editor_root, file_paths)
