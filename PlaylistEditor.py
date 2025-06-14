@@ -1242,6 +1242,7 @@ class PlaylistEditor:
                         print(f"[DEBUG] Реверс = {step}")
                         for i in range(0, len(self.shuffled_list), step):
                             self.shuffled_list[i:i+step] = reversed(self.shuffled_list[i:i+step])
+                            
                 except ValueError:
                     self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")
                     return
@@ -1311,7 +1312,8 @@ class PlaylistEditor:
         seed_hash = abs(self.stable_hash(str(seed_value)))
         random.seed(seed_hash)
         files = files.copy()
-        
+        random.shuffle(files)
+        print(f"[DEBUG] Перемешанный список = {files}")
         # Генерация intensity из сида, если не задано
         if intensity is None:
             # Используем хеш сида как основу для 0.6-1.0

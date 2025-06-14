@@ -847,6 +847,7 @@ class PlaylistGenerator:
             info_text = self.localization.tr("seed_info_shadow").format(
                 seed=seed_trimmed, shadow_seed=shadow_seed_trimmed, step=reverse_step
             )
+            print(f"[DEBUG] Перестановленный список (теневой сид + {reverse_step} = {shuffled_files}")
         elif step > 0:
             # Ручной шаг реверса
             reverse_step = step
@@ -856,13 +857,14 @@ class PlaylistGenerator:
             info_text = self.localization.tr("seed_info_step").format(
                 seed=seed_trimmed, step=reverse_step
             )
+            print(f"[DEBUG] Перестановленный список с реверсом {reverse_step} = {shuffled_files}")
         else:
             # Без реверса
             shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
             info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
-        
+            print(f"[DEBUG] Перестановленный список = {shuffled_files}")
         print(f"[DEBUG] Перемешивание завершено")
-        
+       
         # Создание плейлиста
         self.save_m3u8_playlist(
             path=playlist_path,
@@ -1028,7 +1030,8 @@ class PlaylistGenerator:
         seed_hash = abs(self.stable_hash(str(seed_value)))
         random.seed(seed_hash)
         files = files.copy()
-        
+        random.shuffle(files)
+        print(f"[DEBUG] Перемешанный список = {files}")
         # Генерация intensity из сида, если не задано
         if intensity is None:
             # Используем хеш сида для генерации значения 0.6-1.0
