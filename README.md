@@ -73,7 +73,7 @@ ___
 
 ![Editor Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/editor_img.png)
 
-Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.txt` file(s) onto the program shortcut.
+Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.pls`/`.xspf`/`.txt` file(s) onto the program shortcut.
 
 #### Features:
 
