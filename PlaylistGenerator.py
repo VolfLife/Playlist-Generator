@@ -903,7 +903,11 @@ class PlaylistGenerator:
                 for file_path in files:
                     file_path = os.path.normpath(file_path)
                     escaped_path = file_path.replace('\\', '/')
-                    f.write(f"#EXTINF:-1,{os.path.basename(file_path)}\n")
+                    # Получаем имя файла без пути
+                    filename = os.path.basename(file_path)
+                    name_without_ext = os.path.splitext(filename)[0]
+                            
+                    f.write(f"#EXTINF:-1,{name_without_ext}\n")
                     f.write(f"{escaped_path}\n")
             print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")        
         
@@ -947,11 +951,13 @@ class PlaylistGenerator:
                 # Запись треков
                 for i, file_path in enumerate(files, 1):
                     file_path = os.path.normpath(file_path)
-                    escaped_path = file_path.replace('\\', '/')
-                    basename = os.path.basename(file_path)
+                    escaped_path = saxutils.escape(file_path.replace('\\', '/'))
+                    # Получаем имя файла без пути
+                    filename = os.path.basename(file_path)
+                    name_without_ext = saxutils.escape(os.path.splitext(filename)[0])
                     
                     f.write(f"File{i}={escaped_path}\n")
-                    f.write(f"Title{i}={basename}\n")
+                    f.write(f"Title{i}={name_without_ext}\n")
                     f.write(f"Length{i}=-1\n")  # -1 = длительность определит плеер
                     
                     if i < num_tracks:  # Добавляем пустую строку между треками (кроме последнего)
@@ -984,12 +990,14 @@ class PlaylistGenerator:
                     # Экранируем специальные XML символы в путях и названиях
                     escaped_path = saxutils.escape(os.path.normpath(file_path).replace('\\', '/'))
                     escaped_title = saxutils.escape(os.path.basename(file_path))
-                    
+ 
+                    name_without_ext = saxutils.escape(os.path.splitext(escaped_title)[0])
+                            
                     # Формируем file:// URL без лишнего кодирования (кроме спецсимволов XML)
                     file_url = f"file:///{escaped_path}"
                     f.write('    <track>\n')
                     f.write(f'      <location>{file_url}</location>\n')
-                    f.write(f'      <title>{escaped_title}</title>\n')
+                    f.write(f'      <title>{name_without_ext}</title>\n')
                     f.write('    </track>\n')
                 
                 f.write('  </trackList>\n')
