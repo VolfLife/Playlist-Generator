@@ -1033,7 +1033,7 @@ class PlaylistGenerator:
         if intensity is None:
             # Используем хеш сида для генерации значения 0.6-1.0
             hash_val = (seed_hash % 10_000_000_000) / 10_000_000_000
-            intensity = 0.6 + 0.3 * hash_val  # Растягиваем на диапазон 0.6-1.0
+            intensity = 0.6 + 0.4 * hash_val  # Растягиваем на диапазон 0.6-1.0
         else:
             # Ограничиваем заданное значение
             intensity = max(0.6, min(1.0, float(intensity)))

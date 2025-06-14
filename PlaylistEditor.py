@@ -1316,7 +1316,7 @@ class PlaylistEditor:
         if intensity is None:
             # Используем хеш сида как основу для 0.6-1.0
             hash_ratio = (seed_hash % 10_000_000_000) / 10_000_000_000  # 0.0-0.999...
-            intensity = 0.6 + 0.3 * hash_ratio  # Растягиваем на диапазон 0.6-1.0
+            intensity = 0.6 + 0.4 * hash_ratio  # Растягиваем на диапазон 0.6-1.0
         else:
             # Ограничиваем ручной ввод с сохранением точности
             intensity = max(0.6, min(1.0, float(intensity)))
@@ -1567,9 +1567,9 @@ class PlaylistEditor:
             try:
                 icon_path = os.path.abspath(self.font_loader.temp_icon_path)
                 self.path_editor.iconbitmap(icon_path)
-                print("[DEBUG] Иконка редактора путей успешно установлена")
+                print("[DEBUG] Иконка для редактора треков успешно установлена")
             except Exception as e:
-                print(f"[DEBUG] Ошибка установки иконки редактора путей: {e}")
+                print(f"[DEBUG] Ошибка установки иконки для редактора треков: {e}")
                 if hasattr(self.font_loader, 'temp_icon_path'):
                     print(f"[DEBUG] Путь к временной иконке: {self.font_loader.temp_icon_path}")
                     print(f"[DEBUG] Файл существует: {os.path.exists(self.font_loader.temp_icon_path)}")
