@@ -101,7 +101,7 @@ class PlaylistEditor:
                     # Для редактора не сохраняем, т.к. это может быть нежелательно
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf"]:
+                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf", "asx", "xspf+url"]:
                     self.format_m3u8 = saved_format 
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -171,12 +171,11 @@ class PlaylistEditor:
     def load_playlist(self):
         """Загружает несколько плейлистов и объединяет их"""
         supported_formats = {
-            # Аудио
-            '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff',
-            # Видео
-            '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg'
-        }
-        
+                # Аудио
+                '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.aif', '.alac', '.dsf', '.dff', '.mka', '.ac3', '.dts',
+                # Видео
+                '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.ts', '.m2ts', '.3gp', '.vob', '.ogv'
+            }
         for i, file_path in enumerate(self.file_paths, 1):
             temp_list = []
             try:
@@ -225,18 +224,78 @@ class PlaylistEditor:
                                     "was_modified": False
                                 })
                     
+                    elif ext in ('.asx'):
+                        # Обработка ASX формата
+                        try:
+                            from xml.etree import ElementTree as ET
+                            tree = ET.parse(file_path)
+                            root = tree.getroot()
+                            
+                            for entry_num, entry in enumerate(root.findall('.//Entry'), 1):
+                                ref = entry.find('Ref')
+                                if ref is not None:
+                                    href = ref.get('href', '').strip()
+                                    if not href:
+                                        continue
+                                    
+                                    # Декодирование URL-encoded путей (если нужно)
+                                    clean_path = urllib.parse.unquote(href) if '%' in href else href
+                                    clean_path = os.path.normpath(clean_path).replace('\\', '/').strip('"\' \t')
+                                    
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    
+                                    # Получаем название трека из тега Title или из имени файла
+                                    title = entry.findtext('Title', '').strip() or os.path.basename(clean_path)
+                                    
+                                    temp_list.append({
+                                        "path": clean_path,
+                                        "name": saxutils.unescape(title),  # Декодируем XML-entities
+                                        "num": entry_num,
+                                        "source": f"original_temp_list_{i}",
+                                        "original_path": clean_path,
+                                        "was_modified": False
+                                    })
+                                    
+                        except ET.ParseError as e:
+                            print(f"[ERROR] Ошибка разбора ASX файла {file_path}: {str(e)}")
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка обработки ASX файла {file_path}: {str(e)}")
+                    
                     elif ext == '.xspf':
                         # Обработка XSPF формата
                         import xml.etree.ElementTree as ET
+                        import re
+                        
                         try:
-                            tree = ET.parse(file_path)
-                            root = tree.getroot()
+                            # Сначала читаем файл как текст и экранируем проблемные символы
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            
+                            # Заменяем неэкранированные амперсанды (кроме XML-сущностей)
+                            content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                            
+                            # Парсим исправленный XML
+                            root = ET.fromstring(content)
                             ns = {'ns': 'http://xspf.org/ns/0/'}
                             
                             for track_num, track in enumerate(root.findall('.//ns:track', ns), 1):
-                                location = track.find('ns:location', ns).text
-                                if location.startswith('file:///'):
-                                    location = location[8:]  # Удаляем file:///
+                                location_element = track.find('ns:location', ns)
+                                
+                                if location_element is None or not location_element.text:
+                                    print(f"Warning: Empty <location> in track {track_num}")
+                                    continue
+                                
+                                # Получаем и очищаем location
+                                location = location_element.text.strip()
+                                
+                                # Сначала декодируем URL-кодирование
+                                location = urllib.parse.unquote(location)
+                                    
+                                # Удаляем file:/// если присутствует (с учетом возможного file://)
+                                if location.startswith(('file:///', 'file://')):
+                                    location = re.sub(r'^file:///*', '', location)
+                                  
                                 location = urllib.parse.unquote(location)  # Декодируем URL-кодирование
                                 
                                 # Получаем название трека (если есть)
@@ -244,6 +303,7 @@ class PlaylistEditor:
                                 display_name = os.path.basename(location)
                                 
                                 clean_path = location.strip('"\' \t')
+                                
                                 if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
                                     continue
                                 
@@ -280,7 +340,7 @@ class PlaylistEditor:
         # Генерируем имя плейлиста
         if self.file_paths:
             base_name = os.path.basename(self.file_paths[0])
-            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf']:
+            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx']:
                 if base_name.lower().endswith(ext):
                     base_name = base_name[:-len(ext)]
                     break
@@ -442,9 +502,9 @@ class PlaylistEditor:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             btn_frame,
-            values=["m3u8", "m3u", "pls", "xspf", "txt"],
+            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "txt"],
             state="readonly",
-            width=5
+            width=8
         )
         self.format_combobox.pack(side=tk.LEFT, padx=12)
         self.format_combobox.set(self.format_m3u8)
@@ -1473,10 +1533,8 @@ class PlaylistEditor:
 
                     # Запись треков
                     for i, track in enumerate(saved_tracks, 1):
-                        print(f"[DELETE] is not clean_path = {track['path']}")
                         # Нормализуем путь
                         clean_path = os.path.normpath(track['path'])
-                        print(f"[DELETE] clean_path = {clean_path}")
                         # Получаем имя файла
                         file_name = os.path.basename(clean_path)
                         name_without_ext = os.path.splitext(file_name)[0]
@@ -1488,7 +1546,36 @@ class PlaylistEditor:
                         if i < len(saved_tracks):  # Добавляем пустую строку между треками (кроме последнего)
                             f.write("\n")
                 print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+              
+
+            if playlist_format in ["asx"]:
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    # Заголовок ASX
+                    f.write('<ASX Version="3.0">\n')
+                    f.write(f'<!-- Generated by VolfLife\'s Playlist Generator on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -->\n')
+                    f.write(f'<Title>{saxutils.escape(playlist_name)}</Title>\n')
+                    f.write(f'<Abstract>SEED:{self.current_seed}</Abstract>\n')
+                    
+                    if self.current_reverse_step is not None and self.current_reverse_step > 0:
+                        f.write(f'<Abstract>REVERSE_STEP:{self.current_reverse_step}</Abstract>\n')
+                    
+                    f.write(f'<Abstract>TRACKS:{len(saved_tracks)}</Abstract>\n\n')
+                    
+                    # Запись треков
+                    for track in saved_tracks:
+                        clean_path = os.path.normpath(track['path'])
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
+                        
+                        f.write('<Entry>\n')
+                        f.write(f'  <Title>{saxutils.escape(name_without_ext)}</Title>\n')
+                        f.write(f'  <Ref href="{saxutils.escape(clean_path.replace("\\", "/"))}" />\n')
+                        f.write('</Entry>\n\n')
+                    
+                    f.write('</ASX>')
                 
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+              
                 
             if playlist_format in ["xspf"]:
                 with open(save_path, 'w', encoding='utf-8') as f:
@@ -1509,10 +1596,53 @@ class PlaylistEditor:
                     f.write('  <trackList>\n')
                     
                     for track in saved_tracks:                     
-                        print(f"[DELETE] is not clean_path = {track['path']}")
                         # Нормализуем путь
                         clean_path = os.path.normpath(track['path'])
-                        print(f"[DELETE] clean_path = {clean_path}")
+                        # Получаем имя файла
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
+                        
+                        # Формируем file:// URL с правильным кодированием
+                        file_url = "file:///" + clean_path.replace('\\', '/')
+                    
+                        f.write('    <track>\n')
+                        f.write(f'      <location>{file_url}</location>\n')
+                        f.write(f'      <title>{saxutils.escape(name_without_ext)}</title>\n')
+                        f.write(f'      <meta rel="filename">{saxutils.escape(file_name)}</meta>\n')  # Добавляем оригинальное имя файла
+                        f.write('    </track>\n')
+                    
+                    f.write('  </trackList>\n')
+                    f.write('</playlist>\n')
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+
+            
+            if playlist_format in ["xspf+url"]:
+                # Определяем путь для сохранения
+                script_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) \
+                          else os.path.dirname(os.path.abspath(__file__))
+                playlist_format = "xspf"      
+                save_path = os.path.join(script_dir, f"{playlist_name}.{playlist_format}")
+                
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                    f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
+                    f.write(f'  <title>{playlist_name}</title>\n')
+                    f.write('  <creator>VolfLife\'s Playlist Generator</creator>\n')
+                    f.write(f'  <date>{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</date>\n')
+                    
+                    # Метаданные
+                    if hasattr(self, 'current_seed'):
+                        f.write('  <annotation>\n')
+                        f.write(f'    SEED:{self.current_seed}\n')
+                        if hasattr(self, 'current_reverse_step'):
+                            f.write(f'    REVERSE_STEP:{self.current_reverse_step}\n')
+                        f.write('  </annotation>\n')
+                    
+                    f.write('  <trackList>\n')
+                    
+                    for track in saved_tracks:                     
+                        # Нормализуем путь
+                        clean_path = os.path.normpath(track['path'])
                         # Получаем имя файла
                         file_name = os.path.basename(clean_path)
                         name_without_ext = os.path.splitext(file_name)[0]
@@ -1530,7 +1660,7 @@ class PlaylistEditor:
                     f.write('</playlist>\n')
                 print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
 
-                
+            
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
                 self.temp_list = []
@@ -1686,7 +1816,7 @@ class PlaylistEditor:
                 dir_path = os.path.dirname(full_path)
                 self.new_path_entry.delete(0, tk.END)
                 self.new_path_entry.insert(0, dir_path)
-                print("Item data:", self.tree.item(first_item))
+                print(f"[DEBUG] Данные трека = {self.tree.item(first_item)}")
 
     def create_name_editor_tab(self, parent, selected_items):
         """Создает содержимое вкладки для изменения имени"""
