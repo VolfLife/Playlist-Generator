@@ -12,9 +12,9 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Supported audio and video formats:
 
-	* Audio:	`.mp3`, `.flac`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.wma`, `.opus`, `.aiff`
+	* Audio:	`.mp3`, `.flac`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.wma`, `.opus`, `.aiff`, `.aif`, `.alac`, `.dsf`, `.dff`, `.mka`, `.ac3`, `.dts`
 
-	* Video: 	`.mp4`, `.mkv`, `.avi`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`
+	* Video: 	`.mp4`, `.mkv`, `.avi`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`, `.ts`, `.m2ts`, `.3gp`, `.vob`, `.ogv`
 
 * Seed-based shuffling for reproducible results
 
@@ -50,7 +50,7 @@ ___
 
 ![Generator Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/generator_img.png)
 
-Creates `.m3u8`/`.m3u`/`.pls`/`.xspf`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
+Creates `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
 
 #### How to use
 
@@ -73,7 +73,7 @@ ___
 
 ![Editor Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/editor_img.png)
 
-Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.pls`/`.xspf`/`.txt` file(s) onto the program shortcut.
+Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.txt` file(s) onto the program shortcut.
 
 #### Features:
 
