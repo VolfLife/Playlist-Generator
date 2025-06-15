@@ -85,9 +85,9 @@ Edits and saves data from existing playlists without requiring local track files
 
   	* Delete tracks
 
-	* Undo/redo actions
-	
 	* Edit track paths and names
+	
+	* Undo/redo actions
 
 ## Compilation
 
