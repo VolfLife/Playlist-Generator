@@ -191,7 +191,7 @@ class PlaylistEditor:
                                 clean_path = line.strip('"\' \t')
                                 if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
                                     continue
-                                normalized_path = os.path.normpath(clean_path).replace('\\', '/')
+                                normalized_path = os.path.normpath(clean_path).replace('\\', '/').strip('"\' \t')
                                 temp_list.append({
                                     "path": normalized_path,
                                     "name": os.path.basename(normalized_path),
@@ -235,8 +235,8 @@ class PlaylistEditor:
                             
                             for track_num, track in enumerate(root.findall('.//ns:track', ns), 1):
                                 location = track.find('ns:location', ns).text
-                                if location.startswith('file://'):
-                                    location = location[7:]  # Удаляем file://
+                                if location.startswith('file:///'):
+                                    location = location[8:]  # Удаляем file:///
                                 location = urllib.parse.unquote(location)  # Декодируем URL-кодирование
                                 
                                 # Получаем название трека (если есть)
@@ -246,7 +246,7 @@ class PlaylistEditor:
                                 clean_path = location.strip('"\' \t')
                                 if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
                                     continue
-                                    
+                                
                                 normalized_path = os.path.normpath(clean_path).replace('\\', '/')
                                 temp_list.append({
                                     "path": normalized_path,
@@ -1421,16 +1421,18 @@ class PlaylistEditor:
                     
                     f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
-                    for track in saved_tracks:
-                        # Получаем имя файла без пути
-                        filename = track['name']
+                    for track in saved_tracks:                        
+                        # Нормализуем путь
+                        clean_path = os.path.normpath(track['path'])
                         
-                        name_without_ext = os.path.splitext(filename)[0]
-                    
-                        f.write(f"#EXTINF:-1,{name_without_ext}\n")
-                        escaped_path = track['path'].replace('\\', '/')
-                        f.write(f"{escaped_path}\n")
+                        # Получаем имя файла
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
+                        
+                        f.write(f"#EXTINF:-1,{saxutils.escape(name_without_ext)}\n")
+                        f.write(f"{clean_path.replace('\\', '/')}\n")
                 print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+                
                 
             if playlist_format in ["txt"]:  
                 with open(save_path, 'w', encoding='utf-8') as f:
@@ -1451,6 +1453,7 @@ class PlaylistEditor:
                         f.write(f"{escaped_path}\n")
                 print(f"[DEBUG] Треклист сохранен: {playlist_name}.{playlist_format}") 
             
+            
             if playlist_format in ["pls"]:
                 with open(save_path, 'w', encoding='utf-8') as f:
                     # Заголовок плейлиста
@@ -1470,19 +1473,23 @@ class PlaylistEditor:
 
                     # Запись треков
                     for i, track in enumerate(saved_tracks, 1):
-                        escaped_path = track['path'].replace('\\', '/')
-                        # Получаем имя файла без пути
-                        filename = track['name']
+                        print(f"[DELETE] is not clean_path = {track['path']}")
+                        # Нормализуем путь
+                        clean_path = os.path.normpath(track['path'])
+                        print(f"[DELETE] clean_path = {clean_path}")
+                        # Получаем имя файла
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
                         
-                        name_without_ext = os.path.splitext(filename)[0]
-                        
-                        f.write(f"File{i}={escaped_path}\n")
-                        f.write(f"Title{i}={name_without_ext}\n")
+                        f.write(f"File{i}={clean_path.replace('\\', '/')}\n")
+                        f.write(f"Title{i}={saxutils.escape(name_without_ext)}\n")
                         f.write(f"Length{i}=-1\n")  # -1 = длительность определит плеер
                         
                         if i < len(saved_tracks):  # Добавляем пустую строку между треками (кроме последнего)
                             f.write("\n")
-            
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+                
+                
             if playlist_format in ["xspf"]:
                 with open(save_path, 'w', encoding='utf-8') as f:
                     f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -1501,23 +1508,29 @@ class PlaylistEditor:
                     
                     f.write('  <trackList>\n')
                     
-                    for track in saved_tracks:
-                        # Экранируем специальные XML символы в путях и названиях
-                        escaped_path = saxutils.escape(os.path.normpath(track['path']).replace('\\', '/'))
-                        escaped_title = saxutils.escape(os.path.basename(track['name']))
+                    for track in saved_tracks:                     
+                        print(f"[DELETE] is not clean_path = {track['path']}")
+                        # Нормализуем путь
+                        clean_path = os.path.normpath(track['path'])
+                        print(f"[DELETE] clean_path = {clean_path}")
+                        # Получаем имя файла
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
                         
-                        name_without_ext = saxutils.escape(os.path.splitext(escaped_title)[0])
-                        
-                        # Формируем file:// URL без лишнего кодирования (кроме спецсимволов XML)
-                        file_url = f"file://{escaped_path}"
+                        # Формируем file:// URL с правильным кодированием
+                        file_url = "file:///" + urllib.parse.quote(clean_path.replace('\\', '/'))
+                    
                         f.write('    <track>\n')
                         f.write(f'      <location>{file_url}</location>\n')
-                        f.write(f'      <title>{name_without_ext}</title>\n')
+                        f.write(f'      <title>{saxutils.escape(name_without_ext)}</title>\n')
+                        f.write(f'      <meta rel="filename">{saxutils.escape(file_name)}</meta>\n')  # Добавляем оригинальное имя файла
                         f.write('    </track>\n')
                     
                     f.write('  </trackList>\n')
                     f.write('</playlist>\n')
-                        
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+
+                
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
                 self.temp_list = []
