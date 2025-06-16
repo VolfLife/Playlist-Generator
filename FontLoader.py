@@ -82,6 +82,8 @@ class FontLoader:
         except:
             return None
 
+
+
     def __del__(self):
         """Автоматическое удаление временного шрифта при завершении"""
         if self.temp_font_path and os.path.exists(self.temp_font_path):
@@ -89,6 +91,7 @@ class FontLoader:
                 os.remove(self.temp_font_path)
             except:
                 pass
+              
               
               
     def _load_icon(self):

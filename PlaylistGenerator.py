@@ -110,11 +110,9 @@ class PlaylistGenerator:
         self.format_combobox = None  # Виджет Combobox
         self.load_settings()
         self.root.title(self.localization.tr("window_title_generator"))
-
         
         self.create_widgets()
         self.show_version_info()
-
         
         if self.last_folders:
             if len(self.last_folders) == 1:
@@ -237,7 +235,6 @@ class PlaylistGenerator:
         except IOError as e:
             print(self.localization.tr("error_save_settings").format(error=e))
     
-   
     
     def open_github(self, event=None):
         """Обработчик клика по GitHub ссылке"""
@@ -1093,7 +1090,7 @@ if __name__ == "__main__":
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
         print("====== : РЕЖИМ ОТЛАДКИ АКТИВИРОВАН : ======")
-      
+    
     try:
             
         # Теперь все print() будут выводиться в консоль
@@ -1106,18 +1103,17 @@ if __name__ == "__main__":
         messagebox.showerror("Ошибка", f"Произошла ошибка: {str(e)}")
         sys.exit(1)
         
-    
-    # Создаем FontLoader заранее
-    font_loader = FontLoader()
+    # Создаем FontLoader заране	    
+    font_loader = FontLoader()		
     icon_path = font_loader.icon_ico  # Получаем путь к иконке
-        
+    
     # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
     file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
     
     # Если переданы файлы, открываем редактор
     if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', 'asx', '.xspf')) for fp in file_paths):
         editor_root = tk.Tk()
-        PlaylistEditor(editor_root, file_paths, icon_path)
+        PlaylistEditor(editor_root, file_paths)
         editor_root.mainloop()
     else:
         # Иначе открываем генератор

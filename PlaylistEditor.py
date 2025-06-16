@@ -16,9 +16,9 @@ from Localization import Localization
 from FontLoader import FontLoader            
 
 class PlaylistEditor:
-    def __init__(self, root, file_paths=None, font_loader=None):
+    def __init__(self, root, file_paths=None):
         self.root = root
-        self.font_loader = FontLoader()
+        self.font_loader = FontLoader()		
         self.icon_path = self.font_loader.icon_ico
         self.localization = Localization()
         self.visited_github = False
@@ -80,6 +80,7 @@ class PlaylistEditor:
             raise
         
         self.root.iconbitmap(self.icon_path)
+
         
     def load_language_settings(self):
         """Загружает настройки языка с той же логикой"""
