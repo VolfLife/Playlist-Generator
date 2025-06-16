@@ -16,8 +16,10 @@ from Localization import Localization
 from FontLoader import FontLoader            
 
 class PlaylistEditor:
-    def __init__(self, root, file_paths=None):
+    def __init__(self, root, file_paths=None, font_loader=None):
         self.root = root
+        self.font_loader = FontLoader()
+        self.icon_path = self.font_loader.icon_ico
         self.localization = Localization()
         self.visited_github = False
         self.github_link = None
@@ -55,7 +57,6 @@ class PlaylistEditor:
         self.selected_for_edit = []
         
         try:
-            self.font_loader = FontLoader(root)
             self.symbol_font = self.font_loader.symbol_font
             self.create_widgets(root)
             self.load_playlist()
@@ -78,7 +79,7 @@ class PlaylistEditor:
             self.root.destroy()
             raise
         
-
+        self.root.iconbitmap(self.icon_path)
         
     def load_language_settings(self):
         """Загружает настройки языка с той же логикой"""
@@ -317,7 +318,7 @@ class PlaylistEditor:
                                     "was_modified": False
                                 })
                         except ET.ParseError as e:
-                            print(f"Error parsing XSPF file {file_path}: {str(e)}")
+                            print(f"[ERROR] Ошибка разбора XSPF файла {file_path}: {str(e)}")
                             continue
 
                 # Сохраняем отдельный список
@@ -328,13 +329,14 @@ class PlaylistEditor:
                 self.seed_info.config(text=self.localization.tr("multiple_playlists_loaded").format(count=f"{count}"), fg="green")
                 
             except Exception as e:
-                print(f"Error loading playlist {file_path}: {str(e)}")
+                print(f"[ERROR] Ошибка загрузки плейлиста {file_path}: {str(e)}")
                 continue
         
         
         # Обновляем отображение
         self.display_tracks = self.original_list.copy()
         self.update_display()
+        print(f"Загружено плейлистов = {count}")
         self.save_initial_state()
         
         # Генерируем имя плейлиста

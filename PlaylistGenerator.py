@@ -90,7 +90,7 @@ def handle_exception(type, value, traceback):
 
 
 class PlaylistGenerator:
-    def __init__(self, root, file_to_open=None):
+    def __init__(self, root, file_to_open=None, font_loader=None, icon_path=None):
         
         self.debug_mode = is_shift_pressed() or not getattr(sys, 'frozen', False)
         
@@ -100,6 +100,8 @@ class PlaylistGenerator:
         
         
         self.root = root
+        self.font_loader = font_loader or FontLoader()
+        self.icon_path = icon_path
         self.localization = Localization()
         self.last_folders = []
         self.visited_github = False
@@ -109,29 +111,6 @@ class PlaylistGenerator:
         self.load_settings()
         self.root.title(self.localization.tr("window_title_generator"))
 
-        
-        # Обработка переданного файла ДО создания виджетов
-        if file_to_open:
-            self.root.withdraw()
-            file_to_open = file_to_open.strip('"')
-            if file_to_open.lower().endswith('.m3u8'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return  # Прерываем инициализацию основного окна                   
-            if file_to_open.lower().endswith('.m3u'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return
-            if file_to_open.lower().endswith('.pls'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return
-            if file_to_open.lower().endswith('.asx'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return    
-            if file_to_open.lower().endswith('.txt'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return
-            if file_to_open.lower().endswith('.xspf'):
-                self.root.after(1, lambda: self.open_editor(file_to_open))
-                return    
         
         self.create_widgets()
         self.show_version_info()
@@ -168,8 +147,7 @@ class PlaylistGenerator:
         
         # Обновляем поле ввода с последними папками
         self.update_folder_entry()
-        self.font_loader = FontLoader(root)
-        self.icon_ico = self.font_loader.icon_ico
+        self.root.iconbitmap(self.icon_path)
     
     def is_valid_folders(self, paths):
         """Проверяет, существуют ли все папки в списке"""
@@ -295,54 +273,6 @@ class PlaylistGenerator:
         self.github_link.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-5)
         self.github_link.bind("<Button-1>", self.open_github)
         
-            
-    
-    def open_editor(self, file_path):
-        """Открывает редактор и корректно закрывает текущее окно"""
-        # Скрываем основное окно генератора
-        self.root.withdraw()
-        try:
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path, self.font_loader.icon_ico)
-            self.root.destroy()
-            editor_root.mainloop()
-        except Exception as e:
-            print(self.localization.tr("error_open_editor").format(error=e))
-            self.root.destroy()
-    
-    
-    def process_dropped_file(self, file_path):
-        """Обработка переданного файла при запуске"""
-        if file_path and file_path.lower().endswith('.m3u8'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()
-        if file_path and file_path.lower().endswith('.m3u'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()    
-        if file_path and file_path.lower().endswith('.pls'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()
-        if file_path and file_path.lower().endswith('.txt'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()    
-        if file_path and file_path.lower().endswith('.xspf'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()
-        if file_path and file_path.lower().endswith('.asx'):
-            self.root.destroy()  # Закрываем текущее окно
-            editor_root = tk.Tk()
-            PlaylistEditor(editor_root, file_path)
-            editor_root.mainloop()
         
     def change_format(self, event=None):
         """Сохраняет настройки выбранного формата файла"""
@@ -1158,15 +1088,12 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.8 by VolfLife    ")
+        print("    Playlist Generator v4.9 by VolfLife    ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
         print("====== : РЕЖИМ ОТЛАДКИ АКТИВИРОВАН : ======")
-        print(f"Аргументы: {sys.argv}")
-    
-    
-    
+      
     try:
             
         # Теперь все print() будут выводиться в консоль
@@ -1179,20 +1106,22 @@ if __name__ == "__main__":
         messagebox.showerror("Ошибка", f"Произошла ошибка: {str(e)}")
         sys.exit(1)
         
-    root = tk.Tk()
     
+    # Создаем FontLoader заранее
+    font_loader = FontLoader()
+    icon_path = font_loader.icon_ico  # Получаем путь к иконке
+        
     # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
     file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
     
     # Если переданы файлы, открываем редактор
     if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', 'asx', '.xspf')) for fp in file_paths):
-        root.withdraw()  # Скрываем основное окно генератора
         editor_root = tk.Tk()
-        PlaylistEditor(editor_root, file_paths)
-        root.destroy()  # Закрываем генератор
+        PlaylistEditor(editor_root, file_paths, icon_path)
         editor_root.mainloop()
     else:
         # Иначе открываем генератор
-        app = PlaylistGenerator(root, file_paths[0] if file_paths else None)
+        root = tk.Tk()
+        app = PlaylistGenerator(root, file_paths[0] if file_paths else None, font_loader, icon_path)
         root.mainloop()
     

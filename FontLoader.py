@@ -7,8 +7,7 @@ from tkinter import font, ttk
 from ctypes import wintypes
 
 class FontLoader:
-    def __init__(self, root):
-        self.root = root
+    def __init__(self):
         self.temp_font_path = None
         self.temp_icon_path = None  # Добавляем атрибут для пути к временной иконке
         self.symbol_font = self._load_font()
@@ -105,8 +104,7 @@ class FontLoader:
             if not temp_icon_path:
                 return
             self.temp_icon_path = temp_icon_path  # Сохраняем путь к временной иконке
-            # 3. Установить иконку
-            self.root.iconbitmap(self.temp_icon_path)
+            return temp_icon_path
             print(f"[DEBUG] Установлена иконка: {self.temp_icon_path}")
         except Exception as e:
             print(f"[DEBUG] Ошибка загрузки иконки: {e}")
