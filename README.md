@@ -12,9 +12,9 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Supported audio and video formats:
 
-	* Audio:	`.mp3`, `.flac`, `.ogg`, `.wav`, `.m4a`, `.aac`, `.wma`, `.opus`, `.aiff`, `.aif`, `.alac`, `.dsf`, `.dff`, `.mka`, `.ac3`, `.dts`
+	* Audio:	`.mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff, .aif, .alac, .dsf, .dff, .mka, .ac3, .dts`
 
-	* Video: 	`.mp4`, `.mkv`, `.avi`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`, `.ts`, `.m2ts`, `.3gp`, `.vob`, `.ogv`
+	* Video: 	`.mp4, .mkv, .avi, .mov, .wmv, .flv, .webm, .m4v, .mpg, .mpeg, .ts, .m2ts, .3gp, .vob, .ogv`
 
 * Seed-based shuffling for reproducible results
 
@@ -52,21 +52,23 @@ ___
 
 Creates `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
 
-#### How to use
+#### How to use:
 
 1. Select music folder(s)
 
-2. Enter a name playlist
+2. Enter name playlist
 
 3. Enter a custom seed or leave blank for random generation
 
-4. Set reversal step size (optional)
+4. Configure optional settings:
 
-5. Enable shadow seed for advanced shuffle (optional)
+	- **Reversal Step**: Set block size for reverse shuffling (if needed)
 
-6. Choose file format (optional)
+ 	- **Shadow Seed**: Enable for advanced shuffle algorithm 
 
-7. Click "Generate playlist" button. The playlist will be saved in the program’s directory
+	- **Format**: Select output format (`.m3u`/`.pls`/etc.)
+
+5. Click "Generate playlist" button. The playlist will be saved in the program’s directory
 
 ### Editor Mode
 ___
@@ -91,23 +93,18 @@ Edits and saves data from existing playlists without requiring local track files
 
 ## Compilation
 
-1. Install [Python](https://www.python.org/downloads/windows/) + pip
+1. Install [Python 3.11+](https://www.python.org/downloads/windows/) and pip
 
-2. Run in terminal:
+2. Run the following commands in your terminal/command prompt:
 
-	2.1.
+	2.1. Install required packages
 	```
-	pip install pyinstaller
-	```
-
-  	2.2.
-   	```
-	pip install fonttools
+	pip install pyinstaller fonttools
 	```
 
- 	2.3.
+ 	2.2. Compile the application
 	```
 	pyinstaller --onefile --hidden-import=_pylong --hidden-import=fontTools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
 	```
 
- 3. The compiled `.exe` file will be ready in the *`dist`* folder
+ 3. The compiled `.exe` file will be generated in the *`dist`* folder
