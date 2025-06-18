@@ -138,7 +138,7 @@ class Localization:
                 "new_name_label": "Новое имя трека:",
                 "name_example_hint": "Например: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Имя трека не может быть пустым",
-                "names_updated": "Имя трека был изменен",
+                "names_updated": "Имя трека был изменен"
             },
             "es-es": {
                 "window_title_generator": "Generador de listas de reproducción",
