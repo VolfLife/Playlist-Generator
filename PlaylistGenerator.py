@@ -1065,7 +1065,7 @@ class PlaylistGenerator:
             intensity = max(0.6, min(1.0, float(intensity)))
         
         # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = max(0, int(len(files) * intensity))
+        num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
         print(f"[DEBUG] Генерация intensity из сида = {intensity}")
         print(f"[DEBUG] Количество перестановок = {num_swaps}")
         for _ in range(num_swaps):
@@ -1085,7 +1085,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.9 by VolfLife    ")
+        print("    Playlist Generator v4.10 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")

@@ -167,7 +167,7 @@ class PlaylistEditor:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 3) - (height // 3)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
-        self.root.minsize(540, 650)
+        self.root.minsize(540, 668)
 
         
     def load_playlist(self):
@@ -414,33 +414,101 @@ class PlaylistEditor:
         self.github_link.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-5)
         self.github_link.bind("<Button-1>", self.open_github)
 
+    def clear_search_entry(self, event=None):
+        # Очищаем поле ввода и список папок, сохраняем настройки
+        self.search_entry.delete(0, tk.END)
+        
+        # Сбрасываем флаг found у всех треков
+        for track in self.display_tracks:
+            track['found'] = False
+        
+        # Обновляем отображение
+        self.update_display()
+        self.hide_search_tooltip()
+    
+    def on_search_key_release(self, event):
+        """Обработчик ввода текста в поле поиска"""
+        search_term = self.search_entry.get().lower()
+        #values = self.tree.item(first_item)['values']
+        # Обновляем флаг found у всех треков
+        for track in self.display_tracks:
+            track['found'] = search_term in track['name'].lower()
+            track["modified"]: track.get("was_modified", False)
+            track["name_modified"]: track.get("was_name_modified", False)
+            track["moved"]: track.get("was_moved", False)
+            track["restored"]: track.get("was_restored", False)
+        # Обновляем отображение
+        self.update_display()
 
-
+    def clear_search(self):
+        """Очищает поле поиска и сбрасывает фильтрацию"""
+        self.search_entry.delete(0, tk.END)
+        
+        # Сбрасываем флаг found у всех треков
+        for track in self.display_tracks:
+            track['found'] = False
+            track["modified"]: track.get("was_modified", False)
+            track["name_modified"]: track.get("was_name_modified", False)
+            track["moved"]: track.get("was_moved", False)
+            track["restored"]: track.get("was_restored", False)
+        # Обновляем отображение
+        self.update_display()    
+    
+    
     def create_widgets(self, root):
         """Создает интерфейс редактора"""
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Используем загруженный шрифт
+        style = ttk.Style(root)
+        
+        # Указываем только имя семейства шрифта (без объекта Font)
+        style.configure('Symbol.TButton', 
+                      font=(self.font_loader.symbol_font, 9),
+                      padding=2)
+
+        # Фрейм для поиска
+        search_frame = ttk.Frame(main_frame)
+        search_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        # Поле поиска
+        ttk.Label(search_frame, text="f", style='Symbol.TButton', width=3).pack(side=tk.LEFT, padx=(0, 5)) #self.localization.tr("search_label")
+        self.search_entry = ttk.Entry(search_frame)
+        self.search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.search_entry.bind("<KeyRelease>", self.on_search_key_release)
+        # Добавляем обработчик правой кнопки мыши для очистки
+        self.search_entry.bind("<Button-3>", self.clear_search_entry)
+        
+        # Кнопка очистки поиска
+        #clear_search_btn = ttk.Button(search_frame, text="c", style='Symbol.TButton', width=3, command=self.clear_search)
+        #clear_search_btn.pack(side=tk.LEFT)
+        
+        # Добавляем подсказку при наведении курсора
+        self.search_tooltip = tk.Label(self.root, text=self.localization.tr("tree_tooltip"), 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.search_tooltip.place_forget()
+        self.search_entry.bind("<Enter>", self.show_search_tooltip)
+        self.search_entry.bind("<Leave>", self.hide_search_tooltip)
         
         
         # Фрейм для таблицы с ползунком
         table_frame = ttk.Frame(main_frame)
         table_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
         table_frame.grid_propagate(False) 
-        #table_frame.config(height=600)
         
-        # Таблица треков с ползунком
+        # Уменьшаем количество видимых строк в таблице на 1, чтобы компенсировать добавление поля поиска
         self.tree = ttk.Treeview(
             table_frame, 
             columns=('num', 'name'), 
             show='headings', 
             selectmode='extended',
-            height=17  # Количество видимых строк
+            height=17  # Количество видимых строк (было 17)
             )
         self.tree.heading('num', text=self.localization.tr("track_number"))
         self.tree.heading('name', text=self.localization.tr("track_name"))
         self.tree.column('num', width=50, anchor='center')
         self.tree.column('name', width=440, anchor='w')
-        
         
         # Добавляем подсказку при наведении курсора
         self.tree_tooltip = tk.Label(self.root, text=self.localization.tr("tree_tooltip"), 
@@ -455,6 +523,9 @@ class PlaylistEditor:
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Инициализируем таблицу
+        self.update_display()        
         
         for i, name in enumerate(self.display_names, 1):
             self.tree.insert('', 'end', values=(i, name))
@@ -565,20 +636,12 @@ class PlaylistEditor:
         self.github_link.lift()  # Поднимаем на передний план
  
 
-        # Используем загруженный шрифт
-        style = ttk.Style(root)
-        
-        # Указываем только имя семейства шрифта (без объекта Font)
-        style.configure('Symbol.TButton', 
-                      font=(self.font_loader.symbol_font, 9),
-                      padding=2)
-
         
         # Кнопки управления
         self.redo_btn = ttk.Button(
             btn_frame, 
             text="e", 
-            width=2,
+            width=5,
             style='Symbol.TButton',
             command=self.redo_action, 
             state='disabled'
@@ -589,7 +652,7 @@ class PlaylistEditor:
         self.undo_btn = ttk.Button(
             btn_frame, 
             text="d", 
-            width=2,
+            width=5,
             style='Symbol.TButton',
             command=self.undo_action
             )
@@ -599,7 +662,7 @@ class PlaylistEditor:
         self.delete_btn = ttk.Button(
             btn_frame, 
             text="c", 
-            width=2,
+            width=5,
             style='Symbol.TButton',
             command=self.delete_tracks
             )
@@ -608,7 +671,7 @@ class PlaylistEditor:
         self.move_down_btn = ttk.Button(
             btn_frame, 
             text="b", 
-            width=2,
+            width=5,
             style='Symbol.TButton',
             command=self.move_down
             )
@@ -618,7 +681,7 @@ class PlaylistEditor:
         self.move_up_btn = ttk.Button(
             btn_frame,
             text="a", 
-            width=2, 
+            width=5, 
             style='Symbol.TButton',
             command=self.move_up
             )
@@ -640,7 +703,7 @@ class PlaylistEditor:
         
         # Центрируем подсказку относительно поля ввода
         x = entry_x + 20 + (entry_width - tooltip_width) // 2
-        y = self.tree.winfo_y() + 395  # Фиксированный отступ по Y
+        y = self.tree.winfo_y() + 413  # Фиксированный отступ по Y
         
         # Устанавливаем позицию
         self.tree_tooltip.place(x=x, y=y)
@@ -650,6 +713,32 @@ class PlaylistEditor:
         if hasattr(self, 'tree_tooltip'):
             self.tree_tooltip.place_forget()    
     
+    def show_search_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = self.localization.tr("folder_entry_tooltip")
+        self.search_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.search_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.tree.winfo_x()  # Позиция поля ввода
+        entry_width = self.tree.winfo_width()  # Ширина поля
+        tooltip_width = self.search_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + 20 + (entry_width - tooltip_width) // 2
+        y = self.tree.winfo_y() + 31  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.search_tooltip.place(x=x, y=y)
+
+    def hide_search_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'tree_tooltip'):
+            self.search_tooltip.place_forget()    
+    
+    
     def select_all_tracks(self, event=None):
         """Выделяет все треки в таблице"""
         items = self.tree.get_children()
@@ -657,150 +746,178 @@ class PlaylistEditor:
             self.tree.selection_set(items)
         return "break"  # Предотвращаем дальнейшую обработку события
         
+        
+
     def on_treeview_button_release(self, event):
-        """Обработчик отпускания кнопки мыши с гарантированным сохранением"""
-        if hasattr(self, '_drag_data') and self._drag_data and self._drag_data.get("items"):
-            # Проверяем, изменились ли позиции
-            original_indices = set(self._drag_data["indices"])
-            current_indices = set(self.tree.index(i) for i in self.tree.selection())
-            
-            if original_indices != current_indices:
-                # Создаем временный список если его еще нет
-                if self.temp_list is None:
-                    self.temp_list = [track.copy() for track in self.display_tracks]
-                
-                # Помечаем все перемещённые треки
-                for idx in current_indices:
-                    if 0 <= idx < len(self.temp_list):  # Проверяем границы списка
-                        self.temp_list[idx]['was_moved'] = False
-                
+        """Обработчик отпускания кнопки мыши"""
+        if hasattr(self, '_drag_data') and self._drag_data:
+            if abs(event.y - self._drag_data["y"]) >= 5:  # Было реальное перемещение
                 self.save_state()
                 print("[DRAG] Состояние сохранено после перетаскивания")
-        
         self._drag_data = None
-        self.save_state()
 
+            
+            
     def on_treeview_mouse_move(self, event):
-        """Обработчик перемещения мыши при перетаскивании"""
+        """Обработчик перемещения мыши с обменом позиций"""
         if not self._drag_data or not self._drag_data["items"]:
             return
         
         y = event.y
         delta_y = y - self._drag_data["y"]
-        if abs(delta_y) < 5:  # Минимальное перемещение для начала drag
+        if abs(delta_y) < 5:  # Минимальное перемещение
             return
         
-        # Определяем целевой элемент
         target_item = self.tree.identify_row(y)
+        if not target_item:
+            return
+        
         children = list(self.tree.get_children())
+        target_index = children.index(target_item)
+        moving_index = self._drag_data["display_indices"][0]
         
-        if target_item:
-            target_index = children.index(target_item)
+        # Если позиция не изменилась - игнорируем
+        if target_index == moving_index:
+            return
+        
+        # Получаем реальные индексы
+        moving_real_index = self._drag_data["real_indices"][0]
+        target_values = self.tree.item(target_item, 'values')
+        target_real_index = int(target_values[0]) - 1 if target_values else moving_real_index
+        
+        # Меняем треки местами в основном списке
+        if 0 <= moving_real_index < len(self.display_tracks) and 0 <= target_real_index < len(self.display_tracks):
+            # Создаем временный список если его еще нет
+            if self.temp_list is None:
+                self.temp_list = [track.copy() for track in self.display_tracks]
+            
+            # Меняем местами
+            self.temp_list[moving_real_index], self.temp_list[target_real_index] = \
+                self.temp_list[target_real_index], self.temp_list[moving_real_index]
+            
+            # Помечаем оба трека как перемещенные
+            #self.temp_list[moving_real_index]['was_moved'] = True
+            self.temp_list[target_real_index]['was_moved'] = True
+            
+            self.display_tracks = self.temp_list.copy()
+            
+            # Обновляем отображение
+            self.update_display()
+            
+            # Обновляем данные для drag
+            self._drag_data["y"] = y
+            self._drag_data["display_indices"] = [target_index]
+            self._drag_data["real_indices"] = [target_real_index]
+    
+\
+    def on_treeview_button_press(self, event):
+        """Обработчик нажатия кнопки мыши"""
+        item = self.tree.identify_row(event.y)
+        if item:
+            if event.state & (0x0004 | 0x0001):  # Ctrl или Shift
+                self._drag_data = None
+                return
+            
+            if item not in self.tree.selection():
+                self.tree.selection_set(item)
+            
+            values = self.tree.item(item, 'values')
+            if values and len(values) > 0:
+                real_index = int(values[0]) - 1  # Реальный индекс из первого столбца
+                self._drag_data = {
+                    "items": [item],
+                    "y": event.y,
+                    "real_indices": [real_index],
+                    "display_indices": [self.tree.index(item)]
+                }
         else:
-            target_index = len(children)  # Если курсор ниже всех элементов
+            self._drag_data = None
+
         
-        # Получаем индексы перемещаемых элементов
-        moving_indices = sorted(self._drag_data["indices"])
+    def move_up(self):
+        """Перемещает выделенные треки вверх с учетом фильтрации"""
+        selected = self.tree.selection()
+        if not selected:
+            self.show_message(self.localization.tr("error_no_selection"), "red")
+            return
         
-        # Если целевая позиция внутри выделения - игнорируем
-        if target_index >= moving_indices[0] and target_index <= moving_indices[-1] + 1:
+        # Получаем все видимые элементы
+        visible_items = list(self.tree.get_children())
+        if not visible_items:
             return
         
         # Создаем временный список если его еще нет
         if self.temp_list is None:
             self.temp_list = [track.copy() for track in self.display_tracks]
         
-        # Извлекаем перемещаемые треки и помечаем их как перемещённые
-        moving_tracks = []
-        for i in moving_indices:
-            track = self.temp_list[i].copy()
-            track['was_moved'] = True  # Помечаем трек как перемещённый
-            moving_tracks.append(track)
+        # Собираем данные о выделенных треках
+        selected_data = []
+        for item in selected:
+            values = self.tree.item(item, 'values')
+            if values and len(values) >= 2:
+                display_num = int(values[0])  # Отображаемый номер
+                real_index = display_num - 1   # Реальный индекс
+                if 0 <= real_index < len(self.temp_list):
+                    selected_data.append({
+                        'item': item,
+                        'display_num': display_num,
+                        'real_index': real_index,
+                        'name': values[1],
+                        'visible_index': visible_items.index(item)  # Позиция в отображении
+                    })
         
-        # Удаляем их из исходных позиций (в обратном порядке)
-        for i in reversed(moving_indices):
-            del self.temp_list[i]
+        if not selected_data:
+            return
         
-        # Корректируем целевую позицию с учетом удаленных элементов
-        if target_index > moving_indices[-1]:
-            target_index -= len(moving_indices)
+        # Сортируем по позиции в отображении
+        selected_data.sort(key=lambda x: x['visible_index'])
         
-        # Вставляем треки в новую позицию
-        for i, track in enumerate(moving_tracks):
-            self.temp_list.insert(target_index + i, track)
+        # Проверяем, можно ли переместить вверх
+        if selected_data[0]['visible_index'] == 0:
+            return
         
-        # Обновляем отображение
+        # Для каждого выделенного трека находим предыдущий видимый трек
+        for data in selected_data:
+            current_visible_idx = data['visible_index']
+            prev_item = visible_items[current_visible_idx - 1]
+            
+            # Получаем данные предыдущего трека
+            prev_values = self.tree.item(prev_item, 'values')
+            if not prev_values or len(prev_values) < 2:
+                continue
+                
+            prev_real_index = int(prev_values[0]) - 1
+            current_real_index = data['real_index']
+            
+            # Меняем местами в temp_list
+            self.temp_list[current_real_index], self.temp_list[prev_real_index] = \
+                self.temp_list[prev_real_index], self.temp_list[current_real_index]
+            
+            # Обновляем отображаемые номера
+            self.temp_list[current_real_index]['num'] = prev_real_index + 1
+            self.temp_list[prev_real_index]['num'] = current_real_index + 1
+            
+            # Помечаем как перемещенные
+            self.temp_list[prev_real_index]['was_moved'] = True
+        
+        # Обновляем основной список
         self.display_tracks = self.temp_list.copy()
         
-        # Вычисляем новые индексы выделения
-        new_selection_indices = list(range(target_index, target_index + len(moving_tracks)))
-        self.update_display(selection_indices=new_selection_indices)
+        # Обновляем отображение
+        self.update_display()
         
-        # Обновляем данные для drag
-        self._drag_data["y"] = y
-        self._drag_data["indices"] = new_selection_indices
-
-    def on_treeview_button_press(self, event):
-        """Обработчик нажатия кнопки мыши для начала перетаскивания"""
-        item = self.tree.identify_row(event.y)
-        if item:
-            # Если Ctrl или Shift нажат, не начинаем перетаскивание
-            if event.state & (0x0004 | 0x0001):  # 0x0004 - Ctrl, 0x0001 - Shift
-                self._drag_data = None
-                return
-            
-            # Если элемент не выделен - выделяем только его
-            if item not in self.tree.selection():
-                self.tree.selection_set(item)
-            
-            # Сохраняем позиции всех выделенных элементов
-            self._drag_data = {
-                "items": self.tree.selection(),
-                "y": event.y,
-                "indices": [self.tree.index(i) for i in self.tree.selection()]
-            }
-        else:
-            self._drag_data = None
-
-    
-    def move_up(self):
-        selected = self.tree.selection()
-        if not selected:
-            self.show_message(self.localization.tr("error_no_selection"), "red")
-            return
+        # Восстанавливаем выделение по именам треков
+        new_selection = []
+        for item in self.tree.get_children():
+            values = self.tree.item(item, 'values')
+            if values and len(values) >= 2:
+                for data in selected_data:
+                    if values[1] == data['name']:
+                        new_selection.append(item)
+                        break
         
-        positions = sorted([int(self.tree.index(item)) for item in selected])
-        if positions[0] == 0:
-            return
-        
-        if self.temp_list is None:
-            self.temp_list = []
-            for track in self.display_tracks:
-                new_track = track.copy()
-                new_track["was_modified"] = track.get("was_modified", False)
-                new_track["was_restored"] = track.get("was_restored", False)
-                self.temp_list.append(new_track)
-        
-        for index in positions:
-            # Сохраняем флаги для обоих треков
-            prev_restored = self.temp_list[index-1].get("was_restored", False)
-            current_restored = self.temp_list[index].get("was_restored", False)
-            
-            # Обмениваем треки местами
-            self.temp_list[index], self.temp_list[index-1] = self.temp_list[index-1], self.temp_list[index]
-            
-            # Помечаем перемещенные треки
-            self.temp_list[index-1]['was_moved'] = True
-            # Если трек был восстановлен, меняем тег на moved_restored
-            if prev_restored:
-                self.temp_list[index-1]['was_restored'] = False
-                self.temp_list[index]['was_restored'] = True
-        
-        self.display_tracks = self.temp_list
-        
-        # Перед обновлением сохраняем новые индексы выбранных элементов (со смещением на -1)
-        new_selection_indices = [i-1 for i in positions]
-        self.update_display(selection_indices=new_selection_indices)
+        if new_selection:
+            self.tree.selection_set(new_selection)
         
         self.show_message(self.localization.tr("moved_up"), "green")
         self.manual_edit = True
@@ -808,80 +925,143 @@ class PlaylistEditor:
         self.save_state()
 
     def move_down(self):
+        """Перемещает выделенные треки вниз с учетом фильтрации"""
         selected = self.tree.selection()
         if not selected:
             self.show_message(self.localization.tr("error_no_selection"), "red")
             return
         
-        positions = sorted([int(self.tree.index(item)) for item in selected], reverse=True)
-        max_index = len(self.tree.get_children()) - 1
-        if positions[0] == max_index:
+        # Получаем все видимые элементы
+        visible_items = list(self.tree.get_children())
+        if not visible_items:
             return
         
+        # Создаем временный список если его еще нет
         if self.temp_list is None:
-            self.temp_list = []
-            for track in self.display_tracks:
-                new_track = track.copy()
-                new_track["was_modified"] = track.get("was_modified", False)
-                new_track["was_restored"] = track.get("was_restored", False)
-                self.temp_list.append(new_track)
+            self.temp_list = [track.copy() for track in self.display_tracks]
         
-        for index in positions:
-            # Сохраняем флаги для обоих треков
-            next_restored = self.temp_list[index+1].get("was_restored", False)
-            current_restored = self.temp_list[index].get("was_restored", False)
+        # Собираем данные о выделенных треках
+        selected_data = []
+        for item in selected:
+            values = self.tree.item(item, 'values')
+            if values and len(values) >= 2:
+                display_num = int(values[0])  # Отображаемый номер
+                real_index = display_num - 1   # Реальный индекс
+                if 0 <= real_index < len(self.temp_list):
+                    selected_data.append({
+                        'item': item,
+                        'display_num': display_num,
+                        'real_index': real_index,
+                        'name': values[1],
+                        'visible_index': visible_items.index(item)  # Позиция в отображении
+                    })
+        
+        if not selected_data:
+            return
+        
+        # Сортируем по позиции в отображении (в обратном порядке)
+        selected_data.sort(key=lambda x: x['visible_index'], reverse=True)
+        
+        # Проверяем, можно ли переместить вниз
+        if selected_data[0]['visible_index'] == len(visible_items) - 1:
+            return
+        
+        # Для каждого выделенного трека находим следующий видимый трек
+        for data in selected_data:
+            current_visible_idx = data['visible_index']
+            next_item = visible_items[current_visible_idx + 1]
             
-            # Обмениваем треки местами
-            self.temp_list[index], self.temp_list[index+1] = self.temp_list[index+1], self.temp_list[index]
+            # Получаем данные следующего трека
+            next_values = self.tree.item(next_item, 'values')
+            if not next_values or len(next_values) < 2:
+                continue
+                
+            next_real_index = int(next_values[0]) - 1
+            current_real_index = data['real_index']
             
-            # Помечаем перемещенные треки
-            self.temp_list[index+1]['was_moved'] = True
-            # Если трек был восстановлен, меняем тег на moved_restored
-            if next_restored:
-                self.temp_list[index+1]['was_restored'] = False
-                self.temp_list[index]['was_restored'] = True
+            # Меняем местами в temp_list
+            self.temp_list[current_real_index], self.temp_list[next_real_index] = \
+                self.temp_list[next_real_index], self.temp_list[current_real_index]
+            
+            # Обновляем отображаемые номера
+            self.temp_list[current_real_index]['num'] = next_real_index + 1
+            self.temp_list[next_real_index]['num'] = current_real_index + 1
+            
+            # Помечаем как перемещенные
+            self.temp_list[next_real_index]['was_moved'] = True
         
-        self.display_tracks = self.temp_list
+        # Обновляем основной список
+        self.display_tracks = self.temp_list.copy()
         
-        # Перед обновлением сохраняем новые индексы выбранных элементов (со смещением на +1)
-        new_selection_indices = [i+1 for i in positions]
-        self.update_display(selection_indices=new_selection_indices)
+        # Обновляем отображение
+        self.update_display()
+        
+        # Восстанавливаем выделение по именам треков
+        new_selection = []
+        for item in self.tree.get_children():
+            values = self.tree.item(item, 'values')
+            if values and len(values) >= 2:
+                for data in selected_data:
+                    if values[1] == data['name']:
+                        new_selection.append(item)
+                        break
+        
+        if new_selection:
+            self.tree.selection_set(new_selection)
         
         self.show_message(self.localization.tr("moved_down"), "green")
         self.manual_edit = True
         self.update_undo_redo_buttons()
         self.save_state()
-        
 
+    
     def delete_tracks(self):
         selected = self.tree.selection()
         if not selected:
             self.show_message(self.localization.tr("error_no_selection"), "red")
             return
         
+        # Создаем временный список если его еще нет
         if self.temp_list is None:
-            self.temp_list = []
-            for track in self.display_tracks:
-                new_track = track.copy()
-                new_track["was_modified"] = track.get("was_modified", False)
-                new_track["was_restored"] = track.get("was_restored", False)  # Сохраняем флаг восстановления
-                self.temp_list.append(new_track)
+            self.temp_list = [track.copy() for track in self.display_tracks]
         
-        indices = sorted([self.tree.index(item) for item in selected], reverse=True)
-        for index in indices:
-            del self.temp_list[index]
+        # Получаем реальные индексы в исходном списке
+        indices_to_delete = []
+        for item in selected:
+            item_values = self.tree.item(item, 'values')
+            if item_values and len(item_values) > 0:
+                # Номер трека из первого столбца таблицы (нумерация с 1)
+                track_num = int(item_values[0]) - 1
+                if 0 <= track_num < len(self.temp_list):
+                    indices_to_delete.append(track_num)
         
-        self.display_tracks = self.temp_list
-        self.update_display()
-        self.show_message(
-            self.localization.tr("deleted_tracks").format(count=len(selected)), 
-            "green"
-        )
-        self.manual_edit = True
-        self.update_undo_redo_buttons()
+        # Удаляем в обратном порядке, чтобы индексы не сдвигались
+        for index in sorted(indices_to_delete, reverse=True):
+            if 0 <= index < len(self.temp_list):
+                del self.temp_list[index]
+        
+        # Обновляем основной список
+        self.display_tracks = self.temp_list.copy()
+        
+        # Сохраняем состояние перед обновлением отображения
         self.save_state()
         
-    
+        # Обновляем отображение (без сохранения выделения)
+        self.update_display()
+        
+        # Показываем сообщение
+        deleted_count = len(indices_to_delete)
+        self.show_message(
+            self.localization.tr("deleted_tracks").format(count=deleted_count), 
+            "green"
+        )
+        
+        # Обновляем флаги и кнопки
+        self.manual_edit = True
+        self.update_undo_redo_buttons()
+        
+        # Сбрасываем перемешанную версию
+        self.shuffled_list = None    
           
     def update_display(self, selection_indices=None):
         """Обновляет отображение треков в таблице с правильной нумерацией"""
@@ -898,10 +1078,19 @@ class PlaylistEditor:
         self.tree.tag_configure('modified_name_moved', background='#f8d3e9') # Комбинация - modified_name + moved
         self.tree.tag_configure('modified_name_path', background='#c6f5f0') # Бирюзовый
         self.tree.tag_configure('modified_name_path_moved', background='#CCDAFF')
+        self.tree.tag_configure('found', background='white')  # Голубой для найденных элементов
         self.tree.tag_configure('all', background='#E0E0E0') # Все три состояния
 
-        # Вставляем треки с правильной нумерацией (начиная с 1)
-        for i, track in enumerate(self.display_tracks, 1):
+        # Получаем поисковый запрос
+        search_term = self.search_entry.get().lower()
+        print(f"[DEBUG] ТАБЛИЦА ===================================================================\n[TRACK] :")
+        # Вставляем треки с оригинальной нумерацией
+        for i, track in enumerate(self.display_tracks, 1):  # i - оригинальный номер
+            # Пропускаем треки, которые не соответствуют поисковому запросу (если он есть)
+            if search_term and not track.get('found', False):
+                continue
+               
+            # Используем оригинальный номер (i) вместо visible_index
             item = self.tree.insert('', 'end', values=(i, track['name'], track['path'].replace('\\', '/')))
             
             # Определяем теги в зависимости от состояния трека
@@ -910,6 +1099,7 @@ class PlaylistEditor:
             is_moved = track.get('was_moved', False)
             is_restored = track.get('was_restored', False)
             is_name_modified = track.get('was_name_modified', False)
+            is_found = track.get('found', False)
             
             # Комбинируем теги для всех возможных сочетаний
             if is_modified and is_moved and is_restored:
@@ -934,11 +1124,13 @@ class PlaylistEditor:
                 tags.append('restored')    
             elif is_moved:
                 tags.append('moved')
+            elif is_found:
+                tags.append('found')
                 
             if tags:
                 self.tree.item(item, tags=tuple(tags))
             print(f"[TRACK] {i}. {track['name']}    —   —   —   —   —   {tags}")
-        print(f"[DEBUG] Таблица обновлена")
+            print(f"[TRACK] :")
         # Восстанавливаем выделение если указаны индексы
         if selection_indices is not None:
             children = self.tree.get_children()
@@ -946,10 +1138,11 @@ class PlaylistEditor:
                 if 0 <= idx < len(children):
                     self.tree.selection_add(children[idx])
         
-        # Обновляем внутренние списки
+        # Обновляем внутренние списки (без изменений)
         self.full_paths = [t["path"] for t in self.display_tracks]
-        self.display_names = [t["name"] for t in self.display_tracks]
-        
+        self.display_names = [t["name"] for t in self.display_tracks]        
+    
+    
     
     def save_initial_state(self):
         """Явно сохраняет начальное состояние"""
@@ -979,9 +1172,10 @@ class PlaylistEditor:
                 'was_modified': track.get('was_modified', False),
                 'was_name_modified': track.get('was_name_modified', False),
                 'was_moved': track.get('was_moved', False),
-                'was_restored': track.get('was_restored', False)
+                'was_restored': track.get('was_restored', False),
+                'found': track.get('found', False)
             } for track in self.display_tracks],
-            'selection': list(self.tree.selection())
+            'selection': [int(self.tree.index(item)) for item in self.tree.selection()]
         }
         
         # Проверяем, нужно ли сохранять (если не force_save и состояние не изменилось)
@@ -1024,130 +1218,108 @@ class PlaylistEditor:
         """Восстанавливает состояние с полным обновлением интерфейса"""
         # Получаем текущие пути перед восстановлением
         current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
-        current_names = {track['name'] for track in self.display_tracks} if self.display_tracks else set()
         
         # Обновляем основной список
         self.display_tracks = []
         for track in state['tracks']:
             new_track = track.copy()
-            # Помечаем восстановленные треки (те, которых не было в текущем состоянии)
-            if (track['path'] not in current_paths) or (track['name'] not in current_names):
-                new_track['was_restored'] = True
-            else:
-                # Для существующих треков сохраняем текущий флаг restored
-                existing_track = next(
-                    (t for t in self.display_tracks 
-                     if t['path'] == track['path'] and t['name'] == track['name']), 
-                    None
-                )
-                if existing_track and existing_track.get('was_restored', False):
-                    new_track['was_restored'] = True
-                
             
+            # Сохраняем флаг found из текущего состояния если трек существует
+            existing_track = next(
+                (t for t in self.display_tracks 
+                 if t['path'] == track['path']), 
+                None
+            )
+            if existing_track:
+                new_track['found'] = existing_track.get('found', False)
+            else:
+                # Для новых треков устанавливаем found в зависимости от текущего фильтра
+                search_term = self.search_entry.get().lower()
+                new_track['found'] = not search_term or search_term in new_track['name'].lower()
+                
+            # Помечаем восстановленные треки
+            if track['path'] not in current_paths:
+                new_track['was_restored'] = True
+                
             self.display_tracks.append(new_track)
         
-        # Обновляем временный список если он существует
-        
+        # Обновляем временные списки
         self.temp_list = self.display_tracks.copy()
         self.shuffled_list = None
         
+        # Обновляем отображение с сохранением фильтра
+        search_term = self.search_entry.get()
         self.update_display()
+        if search_term:
+            self.search_entry.delete(0, tk.END)
+            self.search_entry.insert(0, search_term)
+            self.on_search_key_release(None)
         
-        # Восстанавливаем выделение
-        if state['selection']:
+        # Восстанавливаем выделение с проверкой типов
+        if state.get('selection'):
             try:
-                self.tree.selection_set(state['selection'])
-            except tk.TclError:
-                pass  # Игнорируем если элементы больше не существуют
-                
+                children = self.tree.get_children()
+                for idx in state['selection']:
+                    # Преобразуем индекс в int если нужно
+                    idx_int = int(idx) if isinstance(idx, str) else idx
+                    if 0 <= idx_int < len(children):
+                        self.tree.selection_add(children[idx_int])
+            except (ValueError, tk.TclError):
+                pass  # Игнорируем ошибки преобразования или несуществующие индексы
+            
             
     def undo_action(self):
-        """Отменяет последнее действие с улучшенной логикой"""
+        """Отменяет последнее действие с поддержкой фильтрации"""
         if self.history_index <= 0:
             self.show_message(self.localization.tr("nothing_to_undo"), "red")
             return
         
-        # Получаем текущие пути и имена перед отменой
-        current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
-        current_names = {track['name'] for track in self.display_tracks} if self.display_tracks else set()
-    
+        # Сохраняем текущий поисковый запрос
+        current_search = self.search_entry.get()
+        
         self.history_index -= 1
         state = self.history[self.history_index]
         
         # Восстанавливаем состояние
-        self.display_tracks = []
-        for track in state['tracks']:
-            new_track = {
-                'path': track['path'],
-                'name': track['name'],
-                'num': track['num'],
-                'original_path': track.get('original_path', track['path']),
-                'original_name': track.get('original_name', track['name']),
-                'was_modified': track.get('was_modified', False),
-                'was_name_modified': track.get('was_name_modified', False),
-                'was_moved': track.get('was_moved', False),
-                'was_restored': track.get('was_restored', False)  # Изначально сбрасываем флаг восстановления
-            }
-            
-            # Помечаем трек как восстановленный, если его не было в текущем состоянии
-            if (track['path'] not in current_paths) or (track['name'] not in current_names):
-                new_track['was_restored'] = True
-            self.display_tracks.append(new_track)
+        self.restore_state(state)
         
-        # Обновляем временные списки
+        # Восстанавливаем поисковый запрос если он был
+        if current_search:
+            self.search_entry.delete(0, tk.END)
+            self.search_entry.insert(0, current_search)
+            self.on_search_key_release(None)
         
-        self.temp_list = self.display_tracks.copy()
-        
-        self.shuffled_list = None  # Сбрасываем перемешанный список при отмене
-        
-        self.update_display()
         self.show_message(self.localization.tr("action_undone"), "green")
         self.update_undo_redo_buttons()
-        print(f"[DEBUG] Действие отменено")
-        print(f"[HISTORY] Состояние: (всего: {len(self.history)}, позиция: {self.history_index})")
 
     def redo_action(self):
-        """Повторяет отмененное действие с улучшенной логикой"""
+        """Повторяет отмененное действие с поддержкой фильтрации"""
         if self.history_index >= len(self.history) - 1:
             self.show_message(self.localization.tr("nothing_to_redo"), "red")
             return
+        
+        # Сохраняем текущий поисковый запрос
+        current_search = self.search_entry.get()
         
         self.history_index += 1
         state = self.history[self.history_index]
         
         # Восстанавливаем состояние
-        self.display_tracks = []
-        for track in state['tracks']:
-            new_track = {
-                'path': track['path'],
-                'name': track['name'],
-                'num': track['num'],
-                'original_path': track.get('original_path', track['path']),
-                'original_name': track.get('original_name', track['name']),
-                'was_modified': track.get('was_modified', False),
-                'was_name_modified': track.get('was_name_modified', False),
-                'was_moved': track.get('was_moved', False),
-                'was_restored': track.get('was_restored', False)
-            }
-            self.display_tracks.append(new_track)
+        self.restore_state(state)
         
-        # Обновляем временные списки
-        self.temp_list = self.display_tracks.copy()
+        # Восстанавливаем поисковый запрос если он был
+        if current_search:
+            self.search_entry.delete(0, tk.END)
+            self.search_entry.insert(0, current_search)
+            self.on_search_key_release(None)
         
-        self.shuffled_list = None  # Сбрасываем перемешанный список при повторе
-        
-        self.update_display()
         self.show_message(self.localization.tr("action_redone"), "green")
         self.update_undo_redo_buttons()
-        print(f"[DEBUG] Действие повторено")
-        print(f"[HISTORY] Состояние: (всего: {len(self.history)}, позиция: {self.history_index})")
-    
+
     def update_undo_redo_buttons(self):
         """Обновляет состояние кнопок с учетом новой логики"""
         self.undo_btn['state'] = 'normal' if self.history_index > 0 else 'disabled'
         self.redo_btn['state'] = 'normal' if self.history_index < len(self.history) - 1 else 'disabled'
-
-
 
     def update_internal_lists(self):
         """Обновляет внутренние списки на основе текущего состояния Treeview"""
@@ -1155,23 +1327,28 @@ class PlaylistEditor:
         for item in self.tree.get_children():
             values = self.tree.item(item)['values']
             if len(values) >= 2:
+                # Получаем оригинальный номер из первого столбца
+                track_num = int(values[0]) - 1  # преобразуем в индекс (нумерация с 1)
+                
+                # Создаем трек с сохранением всех атрибутов
                 track = {
-                    "path": values[1],
-                    "name": os.path.basename(values[1]),
+                    "path": values[2] if len(values) > 2 else values[1],
+                    "name": values[1],
                     "num": values[0],
                     "was_modified": 'modified' in self.tree.item(item, 'tags'),
                     "was_name_modified": 'modified_name' in self.tree.item(item, 'tags'),
-                    "original_path": values[1],  # По умолчанию оригинальный путь равен текущему
-                    "original_name": os.path.basename(values[1]),  # По умолчанию оригинальное имя равно текущему
-                    'was_restored': 'restored' in self.tree.item(item, 'tags')
+                    "was_moved": 'moved' in self.tree.item(item, 'tags'),
+                    "was_restored": 'restored' in self.tree.item(item, 'tags'),
+                    "found": 'found' in self.tree.item(item, 'tags'),
+                    "original_path": self.temp_list[track_num]['original_path'] if self.temp_list and 0 <= track_num < len(self.temp_list) else values[2] if len(values) > 2 else values[1],
+                    "original_name": self.temp_list[track_num]['original_name'] if self.temp_list and 0 <= track_num < len(self.temp_list) else values[1]
                 }
                 self.display_tracks.append(track)
         
-        # Обновляем временный список, если он существует
-        if self.temp_list is not None:
-            self.temp_list = self.display_tracks.copy()
-
-
+        # Обновляем временный список
+        self.temp_list = self.display_tracks.copy()
+    
+    
     def get_treeview_state(self):
         """Возвращает текущее состояние Treeview в унифицированном формате"""
         return [self.tree.item(item)['values'] for item in self.tree.get_children()]
@@ -1252,6 +1429,7 @@ class PlaylistEditor:
                     'was_modified': track.get('was_modified', False),
                     'was_name_modified': track.get('was_name_modified', False),
                     'was_moved': track.get('was_moved', False),
+                    'found': track.get('found', False),
                     'path': track['path'],
                     'name': track['name'],
                     'original_name': track.get('original_name', track['name'])
@@ -1323,7 +1501,7 @@ class PlaylistEditor:
                     track["was_moved"] = saved_state['was_moved']
                     track["was_restored"] = saved_state['was_restored']
                     track["original_name"] = saved_state['original_name']
-                    
+                    track["found"] = saved_state['found']
                     # Для модифицированных треков сохраняем новый путь
                     if track["was_modified"] and original_path in self.modified_paths:
                         track["path"] = self.modified_paths[original_path]
@@ -1387,7 +1565,7 @@ class PlaylistEditor:
             intensity = max(0.6, min(1.0, float(intensity)))
             
         # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = max(0, int(len(files) * intensity))
+        num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
         print(f"[DEBUG] Генерация intensity из сида = {intensity}")
         print(f"[DEBUG] Количество перестановок = {num_swaps}")
         for _ in range(num_swaps):
@@ -1448,7 +1626,8 @@ class PlaylistEditor:
                     "was_modified": track.get("was_modified", False),
                     "was_name_modified": track.get("was_name_modified", False),
                     "was_moved": track.get("was_moved", False),
-                    "was_restored": track.get("was_restored", False)
+                    "was_restored": track.get("was_restored", False),
+                    'found': track.get('found', False)
                 })
             
             if not saved_tracks:
@@ -1912,35 +2091,41 @@ class PlaylistEditor:
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
-            selected_indices = [self.tree.index(item) for item in self.selected_for_edit]
+            # Получаем ID выделенных элементов в Treeview
+            selected_items = self.tree.selection()
             
-            for idx in selected_indices:
-                track = self.temp_list[idx]
-                original_path = track.get("original_path", track["path"])
-                filename = track["name"]
-                new_full_path = os.path.normpath(new_path + filename)
-                
-                # Обновляем словарь изменённых путей
-                self.modified_paths[original_path] = new_full_path
-                
-                # Обновляем трек
-                track["path"] = new_full_path
-                track["name"] = filename
-                track["was_modified"] = True
-                track["was_restored"] = False
-                track["original_path"] = original_path  # Сохраняем оригинальный путь
-                
-                # Если имя тоже было изменено, устанавливаем комбинированный тег
-                if track.get('was_name_modified', False):
-                    track["was_name_modified"] = True
+            for item in selected_items:
+                # Получаем реальный индекс через теги или данные
+                item_values = self.tree.item(item, 'values')
+                if not item_values or len(item_values) < 2:
+                    continue
                     
+                # Находим трек по номеру (первое значение в строке)
+                track_num = int(item_values[0]) - 1  # -1 потому что нумерация с 1
+                
+                if 0 <= track_num < len(self.temp_list):
+                    track = self.temp_list[track_num]
+                    original_path = track.get("original_path", track["path"])
+                    filename = track["name"]
+                    new_full_path = os.path.normpath(new_path + filename)
+                    
+                    # Обновляем словарь изменённых путей
+                    self.modified_paths[original_path] = new_full_path
+                    
+                    # Обновляем трек
+                    track["path"] = new_full_path
+                    track["was_modified"] = True
+                    track["was_restored"] = False
+                    track["original_path"] = original_path
+                    
+                    if track.get('was_name_modified', False):
+                        track["was_name_modified"] = True
+                        
             self.display_tracks = self.temp_list.copy()
-            self.update_display()
+            self.update_display(selection_indices=[self.tree.index(item) for item in selected_items])
             self.save_state()
             
-            # Сбрасываем перемешанную версию
             self.shuffled_list = None
-            
             self.show_message(self.localization.tr("paths_updated"), "green")
             if self.path_editor:
                 self.path_editor.destroy()
@@ -1956,52 +2141,40 @@ class PlaylistEditor:
             if not new_name:
                 raise ValueError(self.localization.tr("error_empty_name"))
             
-            # Создаем временный список если его еще нет
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
-            selected_indices = [self.tree.index(item) for item in self.selected_for_edit]
+            selected_items = self.tree.selection()
             
-            for idx in selected_indices:
-                track = self.temp_list[idx]
-                # Сохраняем оригинальное имя если еще не сохранено
-                if 'original_name' not in track:
-                    track['original_name'] = track['name']
+            for item in selected_items:
+                item_values = self.tree.item(item, 'values')
+                if not item_values or len(item_values) < 2:
+                    continue
+                    
+                track_num = int(item_values[0]) - 1
                 
-                # Обновляем трек
-                track['name'] = new_name
-                track['was_name_modified'] = True
-                
-                # Если путь тоже был изменен, устанавливаем комбинированный тег
-                if track.get('was_modified', False):
-                    track['was_modified'] = True
-                
+                if 0 <= track_num < len(self.temp_list):
+                    track = self.temp_list[track_num]
+                    if 'original_name' not in track:
+                        track['original_name'] = track['name']
+                    
+                    track['name'] = new_name
+                    track['was_name_modified'] = True
+                    
+                    if track.get('was_modified', False):
+                        track['was_modified'] = True
+                    
             self.display_tracks = self.temp_list.copy()
-            self.update_display()
+            self.update_display(selection_indices=[self.tree.index(item) for item in selected_items])
             self.save_state()
             
-            # Сбрасываем перемешанную версию
             self.shuffled_list = None
-            
             self.show_message(self.localization.tr("names_updated"), "green")
             if self.path_editor:
                 self.path_editor.destroy()
                 self.path_editor = None
                 
         except Exception as e:
-            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")    
+            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")
         
-    def update_track_lists(self):
-        """Обновляет внутренние списки треков на основе текущего состояния Treeview"""
-        self.full_paths = []
-        self.display_names = []
-        
-        for item in self.tree.get_children():
-            values = self.tree.item(item)['values']
-            if len(values) >= 2:
-                self.full_paths.append(values[1])
-                self.display_names.append(values[1])  # Используем полный путь для имени
-        
-        # Сохраняем изменения в оригинальных путях
-        self.original_paths = self.full_paths.copy()
         
