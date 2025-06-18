@@ -167,7 +167,7 @@ class PlaylistEditor:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 3) - (height // 3)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
-        self.root.minsize(540, 668)
+        self.root.minsize(540, 679)
 
         
     def load_playlist(self):
@@ -503,7 +503,7 @@ class PlaylistEditor:
             columns=('num', 'name'), 
             show='headings', 
             selectmode='extended',
-            height=17  # Количество видимых строк (было 17)
+            height=18  # Количество видимых строк (было 17)
             )
         self.tree.heading('num', text=self.localization.tr("track_number"))
         self.tree.heading('name', text=self.localization.tr("track_name"))
@@ -703,7 +703,7 @@ class PlaylistEditor:
         
         # Центрируем подсказку относительно поля ввода
         x = entry_x + 20 + (entry_width - tooltip_width) // 2
-        y = self.tree.winfo_y() + 413  # Фиксированный отступ по Y
+        y = self.tree.winfo_y() + 424  # Фиксированный отступ по Y
         
         # Устанавливаем позицию
         self.tree_tooltip.place(x=x, y=y)
