@@ -193,7 +193,7 @@ class PlaylistGenerator:
                     self.save_settings()       
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u", "txt", "pls", "asx", "xspf", "xspf+url"]:
+                if saved_format in ["m3u8", "m3u", "txt", "pls", "asx", "xspf", "xspf+url", "json"]:
                     self.format_m3u8 = saved_format
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -462,7 +462,7 @@ class PlaylistGenerator:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             language_frame,
-            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "txt"],
+            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "json", "txt"],
             state="readonly",
             width=8
         )
@@ -1028,8 +1028,39 @@ class PlaylistGenerator:
                 f.write('</playlist>\n')
             
             print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")
+        
+        if playlist_format in ["json"]:          
+            from datetime import datetime
+            playlist_data = {
+                "meta": {
+                    "name": name,
+                    "generator": "VolfLife's Playlist Generator",
+                    "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "seed": seed,
+                    "shadow_seed": shadow_seed,
+                    "reverse_step": reverse_step if reverse_step and reverse_step > 0 else None,
+                    "num_tracks": num_tracks
+                },
+                "tracks": []
+            }
+
+            for file_path in files:
+                file_path = os.path.normpath(file_path)
+                playlist_data["tracks"].append({
+                    "path": file_path.replace('\\', '/'),
+                    "filename": os.path.basename(file_path),
+                    "title": os.path.splitext(os.path.basename(file_path))[0]
+                })
+
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(playlist_data, f, indent=4, ensure_ascii=False)
+            
+            print(f"[DEBUG] Плейлист создан и сохранен: {name}.{playlist_format}")
+        
+        
     
-    
+
+        
     def apply_reverse_step(self, files, step):
         """Применяет реверс блоков без повторной фиксации генератора"""
         # Создаем копию списка, чтобы не менять оригинал
@@ -1111,7 +1142,7 @@ if __name__ == "__main__":
     file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
     
     # Если переданы файлы, открываем редактор
-    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', 'asx', '.xspf')) for fp in file_paths):
+    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', '.asx', '.xspf', '.json', '.wax', '.wvx')) for fp in file_paths):
         editor_root = tk.Tk()
         PlaylistEditor(editor_root, file_paths)
         editor_root.mainloop()

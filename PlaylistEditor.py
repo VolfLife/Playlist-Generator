@@ -103,7 +103,7 @@ class PlaylistEditor:
                     # Для редактора не сохраняем, т.к. это может быть нежелательно
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf", "asx", "xspf+url"]:
+                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf", "asx", "xspf+url", "json"]:
                     self.format_m3u8 = saved_format 
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -321,7 +321,217 @@ class PlaylistEditor:
                         except ET.ParseError as e:
                             print(f"[ERROR] Ошибка разбора XSPF файла {file_path}: {str(e)}")
                             continue
-
+                    
+                    
+                    elif ext == '.wax':
+                        # Обработка WAX формата (SMIL-based)
+                        import xml.etree.ElementTree as ET
+                        import re
+                        import urllib.parse
+                        
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            
+                            # Экранируем специальные символы в XML
+                            content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                            
+                            # Парсим XML с учетом namespace
+                            namespaces = {
+                                'smil': 'http://www.w3.org/2001/SMIL20/Language'
+                            }
+                            root = ET.fromstring(content)
+                            
+                            track_num = 1
+                            for media in root.findall('.//smil:media', namespaces):
+                                if 'src' not in media.attrib or not media.attrib['src']:
+                                    print(f"Warning: Empty src attribute in track {track_num}")
+                                    continue
+                                
+                                # Обрабатываем путь
+                                location = media.attrib['src'].strip()
+                                
+                                # Удаляем file:///
+                                if location.startswith('file:///'):
+                                    location = location[8:]  # Удаляем file:///
+                                elif location.startswith('file://'):
+                                    location = location[7:]  # Удаляем file://
+                                
+                                # Декодируем URL-кодирование
+                                location = urllib.parse.unquote(location)
+                                
+                                # Получаем имя трека из параметров (если есть)
+                                title = None
+                                original_filename = None
+                                for param in media.findall('smil:param', namespaces):
+                                    if param.get('name') == 'title':
+                                        title = param.get('value')
+                                    elif param.get('name') == 'originalFilename':
+                                        original_filename = param.get('value')
+                                
+                                # Определяем display_name
+                                if title:
+                                    display_name = title
+                                elif original_filename:
+                                    display_name = os.path.splitext(original_filename)[0]
+                                else:
+                                    display_name = os.path.basename(location)
+                                
+                                # Нормализуем путь
+                                clean_path = os.path.normpath(location).replace('\\', '/')
+                                
+                                # Пропускаем неподдерживаемые форматы
+                                if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                    continue
+                                
+                                # Добавляем трек в список
+                                temp_list.append({
+                                    "path": clean_path,
+                                    "name": os.path.basename(location),
+                                    "num": track_num,
+                                    "source": f"original_temp_list_{i}",
+                                    "original_path": clean_path,
+                                    "was_modified": False
+                                })
+                                
+                                track_num += 1
+                                
+                        except ET.ParseError as e:
+                            print(f"[ERROR] Ошибка разбора WAX файла {file_path}: {str(e)}")
+                            continue
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка обработки WAX файла {file_path}: {str(e)}")
+                            continue                    
+                    
+                    
+                    elif ext == '.wvx':
+                        # Обработка WVX формата (SMIL-based)
+                        import xml.etree.ElementTree as ET
+                        import re
+                        import urllib.parse
+                        
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            
+                            # Экранируем специальные символы в XML
+                            content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                            
+                            # Парсим XML
+                            root = ET.fromstring(content)
+                            
+                            track_num = 1
+                            for media in root.findall('.//media'):
+                                if 'src' not in media.attrib or not media.attrib['src']:
+                                    print(f"Warning: Empty src attribute in track {track_num}")
+                                    continue
+                                
+                                # Обрабатываем путь
+                                location = media.attrib['src'].strip()
+                                
+                                # Удаляем file:/// и декодируем URL
+                                if location.startswith('file:///'):
+                                    location = urllib.parse.unquote(location[8:])
+                                elif location.startswith('file://'):
+                                    location = urllib.parse.unquote(location[7:])
+                                elif location.startswith(('http://', 'https://', 'mms://')):
+                                    # Для онлайн-ресурсов оставляем как есть
+                                    pass
+                                else:
+                                    location = urllib.parse.unquote(location)
+                                
+                                # Получаем метаданные
+                                title = media.attrib.get('title')
+                                artist = media.attrib.get('artist')
+                                album = media.attrib.get('albumTitle')
+                                
+                                # Формируем отображаемое имя
+                                if title and artist:
+                                    display_name = f"{artist} - {title}"
+                                elif title:
+                                    display_name = title
+                                else:
+                                    display_name = os.path.basename(location)
+                                
+                                # Для локальных файлов нормализуем путь
+                                if not location.startswith(('http://', 'https://', 'mms://')):
+                                    clean_path = os.path.normpath(location).replace('\\', '/')
+                                else:
+                                    clean_path = location
+                                
+                                # Пропускаем неподдерживаемые форматы для локальных файлов
+                                if not location.startswith(('http://', 'https://', 'mms://')):
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                
+                                # Добавляем трек в список
+                                temp_list.append({
+                                    "path": clean_path,
+                                    "name": os.path.basename(location),
+                                    "num": track_num,
+                                    "source": f"original_temp_list_{i}",
+                                    "original_path": clean_path,
+                                    "was_modified": False,
+                                    "metadata": {
+                                        "artist": artist,
+                                        "title": title,
+                                        "album": album
+                                    }
+                                })
+                                
+                                track_num += 1
+                                
+                        except ET.ParseError as e:
+                            print(f"[ERROR] Ошибка разбора WVX файла {file_path}: {str(e)}")
+                            continue
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка обработки WVX файла {file_path}: {str(e)}")
+                            continue
+                    
+                    
+                    elif ext == '.json':
+                        # Обработка JSON формата
+                        try:
+                            playlist_data = json.load(f)
+                            
+                            # Проверяем структуру JSON
+                            if not isinstance(playlist_data, dict):
+                                raise ValueError("Invalid JSON playlist format: expected dictionary")
+                            
+                            # Получаем треки из разных возможных структур JSON
+                            tracks = playlist_data.get('tracks') or playlist_data.get('items') or []
+                            
+                            for track in tracks:
+                                # Поддержка разных форматов пути в JSON
+                                file_path = track.get('path') or track.get('file') or track.get('location') or ''
+                                
+                                if not file_path:
+                                    continue
+                                
+                                # Нормализация пути
+                                clean_path = os.path.normpath(file_path.strip('"\' \t')).replace('\\', '/')
+                                
+                                # Проверка расширения файла
+                                if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                    continue
+                                
+                                # Добавляем трек во временный список
+                                temp_list.append({
+                                    "path": clean_path,
+                                    "name": os.path.basename(clean_path),
+                                    "num": track.get('position') or track.get('track_number') or len(temp_list) + 1,
+                                    "source": f"original_temp_list_{i}",
+                                    "original_path": clean_path,
+                                    "was_modified": False,
+                                    "was_moved": False,
+                                    "was_restored": False,
+                                    "original_name": track.get('title') or track.get('name') or os.path.basename(clean_path)
+                                })
+                        except json.JSONDecodeError as e:
+                            print(f"[ERROR] Ошибка разбора JSON файла {filename}: {str(e)}")
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка обработки JSON файла {filename}: {str(e)}")
+                    
                 # Сохраняем отдельный список
                 self.original_lists[f"original_temp_list_{i}"] = temp_list
                 self.original_list.extend(temp_list)
@@ -343,7 +553,7 @@ class PlaylistEditor:
         # Генерируем имя плейлиста
         if self.file_paths:
             base_name = os.path.basename(self.file_paths[0])
-            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx']:
+            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx', '.json', '.wax', '.wvx']:
                 if base_name.lower().endswith(ext):
                     base_name = base_name[:-len(ext)]
                     break
@@ -576,7 +786,7 @@ class PlaylistEditor:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             btn_frame,
-            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "txt"],
+            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "json", "txt"],
             state="readonly",
             width=8
         )
@@ -1577,6 +1787,7 @@ class PlaylistEditor:
 
 
     def save_playlist(self):
+        import datetime
         """Сохранение плейлиста с учетом текущего состояния"""
         try:
             # Определяем, какие треки использовать для сохранения
@@ -1841,6 +2052,34 @@ class PlaylistEditor:
                     f.write('  </trackList>\n')
                     f.write('</playlist>\n')
                 print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+
+            
+            if playlist_format in ["json"]:          
+                from datetime import datetime
+                playlist_data = {
+                    "meta": {
+                        "name": name,
+                        "generator": "VolfLife's Playlist Generator",
+                        "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "seed": self.current_seed,
+                        "reverse_step": current_reverse_step if current_reverse_step and current_reverse_step > 0 else None,
+                        "num_tracks": len(saved_tracks)
+                    },
+                    "tracks": []
+                }
+
+                for file_path in files:
+                    file_path = os.path.normpath(file_path)
+                    playlist_data["tracks"].append({
+                        "path": file_path.replace('\\', '/'),
+                        "filename": os.path.basename(file_path),
+                        "title": os.path.splitext(os.path.basename(file_path))[0]
+                    })
+
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    json.dump(playlist_data, f, indent=4, ensure_ascii=False)
+                print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
+                
 
             
             # Обновляем temp_list с сохранением original_path
