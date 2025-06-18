@@ -50,7 +50,7 @@ ___
 
 ![Generator Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/generator_img.png)
 
-Creates `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
+Creates `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.json`/`.txt` playlist from scratch. Simply launch the executable to enter generator mode.
 
 #### How to use:
 
@@ -75,11 +75,13 @@ ___
 
 ![Editor Interface](https://github.com/VolfLife/Playlist-Generator/blob/main/screenshots/editor_img.png)
 
-Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.pls`/`.asx`/`.xspf`/`.txt` file(s) onto the program shortcut.
+Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping `.m3u8`/`.m3u`/`.pls`/`.asx`/`.wax`/`.wvx`/`.xspf`/`.json`/`.txt` file(s) onto the program shortcut.
 
 #### Features:
 
 * All generator mixing options (excluding shadow seed)
+
+* Quick track search/filter by name
 
 * Manual track management:
 
