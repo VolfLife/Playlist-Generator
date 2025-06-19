@@ -103,7 +103,7 @@ class PlaylistEditor:
                     # Для редактора не сохраняем, т.к. это может быть нежелательно
                 
                 # Устанавливаем значение напрямую, если оно есть в списке
-                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf", "asx", "xspf+url", "json"]:
+                if saved_format in ["m3u8", "m3u", "pls", "txt", "xspf", "asx", "xspf+url", "json", "wpl", "xml"]:
                     self.format_m3u8 = saved_format 
                     print(f"[DEBUG] Загружен формат: {saved_format}")
                 else:
@@ -172,6 +172,7 @@ class PlaylistEditor:
         
     def load_playlist(self):
         """Загружает несколько плейлистов и объединяет их"""
+        import urllib
         supported_formats = {
                 # Аудио
                 '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.aif', '.alac', '.dsf', '.dff', '.mka', '.ac3', '.dts',
@@ -532,6 +533,169 @@ class PlaylistEditor:
                         except Exception as e:
                             print(f"[ERROR] Ошибка обработки JSON файла {filename}: {str(e)}")
                     
+                    elif ext == '.wpl':
+                        # Обработка WPL формата
+                        try:
+                            from xml.etree import ElementTree as ET
+                            tree = ET.parse(file_path)
+                            root = tree.getroot()
+                            
+                            # Находим все media-элементы в последовательности
+                            for entry_num, media in enumerate(root.findall('.//media'), 1):
+                                src = media.get('src', '').strip()
+                                if not src:
+                                    continue
+                                
+                                # Очистка пути (удаление лишних кавычек, пробелов)
+                                clean_path = os.path.normpath(src).replace('\\', '/').strip('"\' \t')
+                                
+                                # Проверка поддерживаемого формата файла
+                                if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                    continue
+                                
+                                # Получаем название трека из атрибута title или имени файла
+                                title = media.get('title', '').strip() or os.path.basename(clean_path)
+                                
+                                temp_list.append({
+                                    "path": clean_path,
+                                    "name": saxutils.unescape(title),  # Декодируем XML-entities
+                                    "num": entry_num,
+                                    "source": f"original_temp_list_{i}",
+                                    "original_path": clean_path,
+                                    "was_modified": False
+                                })
+                                
+                        except ET.ParseError as e:
+                            print(f"[ERROR] Ошибка разбора WPL файла {file_path}: {str(e)}")
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка обработки WPL файла {file_path}: {str(e)}")
+        
+        
+                    elif ext == '.xml':
+                        try:
+                            from xml.etree import ElementTree as ET
+                            import re
+                            
+                            # Читаем весь файл для обработки
+                            content = f.read()
+                            
+                            # Экранируем невалидные XML-символы
+                            content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                            
+                            # Удаляем все meta-теги с rel="filename" до парсинга
+                            content = re.sub(r'<meta\s+rel="filename"[^>]*>.*?</meta>', '', content, flags=re.IGNORECASE|re.DOTALL)
+                            
+                            try:
+                                root = ET.fromstring(content)
+                            except ET.ParseError:
+                                # Пробуем добавить корневой тег для неполных XML
+                                content = f'<root>{content}</root>'
+                                root = ET.fromstring(content)
+                            
+                            # Словарь для хранения найденных треков
+                            found_tracks = []
+                            
+                            # 1. Пытаемся обработать как iTunes Library
+                            if root.find('.//dict/dict') is not None:
+                                print("Detected iTunes Library format")
+                                tracks = []
+                                current_track = {}
+                                
+                                for elem in root.findall('.//dict/dict/dict'):
+                                    key = None
+                                    for child in elem:
+                                        if child.tag == 'key':
+                                            key = child.text
+                                        elif key:
+                                            current_track[key.lower()] = child.text if child.text else ''
+                                            key = None
+                                    
+                                    if 'location' in current_track:
+                                        location = current_track['location']
+                                        location = re.sub(r'^file:///*', '', location)
+                                        location = urllib.parse.unquote(location)
+                                        location = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                        
+                                        name = current_track.get('name', os.path.basename(location))
+                                        found_tracks.append((location, name))
+                                    
+                                    current_track = {}
+                            
+                            # 2. Пытаемся обработать как XSPF
+                            elif root.find('.//track') is not None or root.find('.//Track') is not None:
+                                print("Detected XSPF format")
+                                for track in root.findall('.//track') + root.findall('.//Track'):
+                                    location = None
+                                    title = None
+                                    
+                                    # Получаем location
+                                    loc_elem = track.find('location') or track.find('Location')
+                                    if loc_elem is not None and loc_elem.text:
+                                        location = loc_elem.text.strip()
+                                        location = re.sub(r'^file:///*', '', location)
+                                        location = urllib.parse.unquote(location)
+                                        location = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                    
+                                    # Получаем title
+                                    title_elem = track.find('title') or track.find('Title')
+                                    if title_elem is not None and title_elem.text:
+                                        title = title_elem.text.strip()
+                                    
+                                    if location:
+                                        found_tracks.append((
+                                            location,
+                                            title if title else os.path.splitext(os.path.basename(location))[0]
+                                        ))
+                            
+                            # 3. Общий поиск медиа-путей в XML
+                            else:
+                                print("Detected generic XML format")
+                                def find_paths(element):
+                                    paths = []
+                                    # Проверяем атрибуты
+                                    for attr, value in element.attrib.items():
+                                        if any(value.lower().endswith(ext) for ext in supported_formats):
+                                            clean_path = re.sub(r'^file:///*', '', value)
+                                            clean_path = urllib.parse.unquote(clean_path)
+                                            paths.append(clean_path)
+                                    
+                                    # Проверяем текст элемента
+                                    if element.text and any(element.text.strip().lower().endswith(ext) for ext in supported_formats):
+                                        clean_path = re.sub(r'^file:///*', '', element.text.strip())
+                                        clean_path = urllib.parse.unquote(clean_path)
+                                        paths.append(clean_path)
+                                    
+                                    # Рекурсивно проверяем дочерние элементы
+                                    for child in element:
+                                        paths.extend(find_paths(child))
+                                    
+                                    return paths
+                                
+                                paths = find_paths(root)
+                                found_tracks = [(path, os.path.splitext(os.path.basename(path))[0]) for path in paths]
+                            
+                            # Добавляем найденные треки в temp_list
+                            for track_num, (location, title) in enumerate(found_tracks, 1):
+                                if any(location.lower().endswith(ext) for ext in supported_formats):
+                                    normalized_path = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                    temp_list.append({
+                                        "path": normalized_path,
+                                        "name": os.path.basename(location),
+                                        "num": track_num,
+                                        "source": f"original_temp_list_{i}",
+                                        "original_path": normalized_path,
+                                        "was_modified": False
+                                    })
+                                    print(f"Added track: {title} | {normalized_path}")
+                            
+                            print(f"Total tracks added from XML: {len(temp_list)}")
+                            
+                        except Exception as e:
+                            print(f"[ERROR] Ошибка загрузки XML плейлиста {file_path}: {str(e)}")
+                            import traceback
+                            traceback.print_exc()
+
+        
                 # Сохраняем отдельный список
                 self.original_lists[f"original_temp_list_{i}"] = temp_list
                 self.original_list.extend(temp_list)
@@ -542,18 +706,19 @@ class PlaylistEditor:
             except Exception as e:
                 print(f"[ERROR] Ошибка загрузки плейлиста {file_path}: {str(e)}")
                 continue
-        
+
+
         
         # Обновляем отображение
         self.display_tracks = self.original_list.copy()
         self.update_display()
-        print(f"Загружено плейлистов = {count}")
+        print(f"[DEBUG] Загружено плейлистов = {count}")
         self.save_initial_state()
         
         # Генерируем имя плейлиста
         if self.file_paths:
             base_name = os.path.basename(self.file_paths[0])
-            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx', '.json', '.wax', '.wvx']:
+            for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx', '.json', '.wax', '.wvx', '.wpl', '.xml']:
                 if base_name.lower().endswith(ext):
                     base_name = base_name[:-len(ext)]
                     break
@@ -786,7 +951,7 @@ class PlaylistEditor:
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             btn_frame,
-            values=["m3u8", "m3u", "pls", "asx", "xspf", "xspf+url", "json", "txt"],
+            values=["m3u8", "m3u", "pls", "wpl", "asx", "xspf", "xspf+url", "json", "xml", "txt"],
             state="readonly",
             width=8
         )
@@ -1599,7 +1764,7 @@ class PlaylistEditor:
             print(f"[DEBUG] ГЕНЕРАЦИЯ ОСНОВНОГО СИДА \n=================================================================== \n Количество треков = {num_tracks} \n Дата = {date_part} \n Случайное число = {random_number} \n Делитель = {random_divisor} \n Разность = {result} \n Результат = {predictable_num}")
             # Форматируем в соответствии с выбранным форматом
             if self.seed_format_combobox.get() in ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
-                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin"]:
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin", "Μόνο αριθμοί", "Само цифри", "Tik skaičiai", "Tikai cipari", "Numri biss", "Само бројки", "Iba číslice", "מספרים בלבד", "எண்கள் மட்டும்", "అంకెలు మాత్రమే", "Nombor sahaja", "ቁጥሮች ብቻ", "Nambari pekee", "Izinombolo kuphela"]:
                 return str(predictable_num).zfill(len(str(fact)))
             else:
                 # Для буквенно-цифрового формата используем хеш
@@ -1682,7 +1847,10 @@ class PlaylistEditor:
             tracks = [track.copy() for track in self.sorted_list]  # Глубокое копирование
             self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
             
-                
+            print("[DEBUG] : Перестановленный список ============================")
+            for i, track in enumerate(self.shuffled_list, 1):
+                print(f"{i}. {track['name']}")
+            print("===================================================================")            
             # Применяем реверс если нужно
             step = 0
             if step_value.strip():
@@ -1693,7 +1861,10 @@ class PlaylistEditor:
                         print(f"[DEBUG] Реверс = {step}")
                         for i in range(0, len(self.shuffled_list), step):
                             self.shuffled_list[i:i+step] = reversed(self.shuffled_list[i:i+step])
-                            
+                            print(f"[DEBUG] : Перестановленный список с реверсом {step} ============================")
+                            for i, track in enumerate(self.shuffled_list, 1):
+                                print(f"{i}. {track['name']}")
+                            print("===================================================================")             
                 except ValueError:
                     self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")
                     return
@@ -1733,7 +1904,7 @@ class PlaylistEditor:
             self.current_seed = seed_trimmed
             self.current_reverse_step = step if step > 0 else None
                     
-            print(f"[DEBUG] Перемешивание завершено")
+            print(f"[SUCCES] Перемешивание завершено")
             
             self.save_state()
             # Показываем сообщение
@@ -1763,8 +1934,19 @@ class PlaylistEditor:
         seed_hash = abs(self.stable_hash(str(seed_value)))
         random.seed(seed_hash)
         files = files.copy()
+        
+        print(f"[DEBUG] : Текущий список ============================")
+        for i, track in enumerate(files, 1):
+            print(f"{i}. {track['name']}")
+        print("===================================================================")
+        
         random.shuffle(files)
-        print(f"[DEBUG] Перемешанный список = {files}")
+        
+        print(f"[DEBUG] : Перемешанный список ============================")
+        for i, track in enumerate(files, 1):
+            print(f"{i}. {track['name']}")
+        print("===================================================================")
+        
         # Генерация intensity из сида, если не задано
         if intensity is None:
             # Используем хеш сида как основу для 0.6-1.0
@@ -2058,29 +2240,104 @@ class PlaylistEditor:
                 from datetime import datetime
                 playlist_data = {
                     "meta": {
-                        "name": name,
+                        "name": playlist_name,
                         "generator": "VolfLife's Playlist Generator",
                         "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "seed": self.current_seed,
-                        "reverse_step": current_reverse_step if current_reverse_step and current_reverse_step > 0 else None,
+                        "reverse_step": self.current_reverse_step if self.current_reverse_step and self.current_reverse_step > 0 else None,
                         "num_tracks": len(saved_tracks)
                     },
                     "tracks": []
                 }
 
-                for file_path in files:
-                    file_path = os.path.normpath(file_path)
+                for track in saved_tracks:
+                    file_path = os.path.normpath(track['path'])
                     playlist_data["tracks"].append({
                         "path": file_path.replace('\\', '/'),
                         "filename": os.path.basename(file_path),
-                        "title": os.path.splitext(os.path.basename(file_path))[0]
+                        "title": os.path.splitext(os.path.basename(track['path']))[0]
                     })
 
                 with open(save_path, 'w', encoding='utf-8') as f:
                     json.dump(playlist_data, f, indent=4, ensure_ascii=False)
                 print(f"[DEBUG] Плейлист сохранен: {playlist_name}.{playlist_format}")
                 
+            
+            if playlist_format in ["wpl"]:
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    f.write('<?wpl version="1.0"?>\n')
+                    f.write('<smil>\n')
+                    f.write('  <head>\n')
+                    f.write('    <meta name="Generator" content="VolfLife\'s Playlist Generator"/>\n')
+                    f.write(f'    <meta name="ItemCount" content="{len(saved_tracks)}"/>\n')
+                    f.write(f'    <title>{playlist_name}</title>\n')
+                    
+                    # Метаданные в виде комментариев (альтернатива для WPL)
+                    f.write('    <!--\n')
+                    f.write(f'      GENERATED:{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n')
+                    f.write(f'      SEED:{self.current_seed}\n')
+                    if self.current_reverse_step:
+                        f.write(f'      REVERSE_STEP:{self.current_reverse_step}\n')
+                    f.write('    -->\n')
+                    
+                    f.write('  </head>\n')
+                    f.write('  <body>\n')
+                    f.write('    <seq>\n')
+                    
+                    for track in saved_tracks:
+                        # Нормализуем путь и экранируем спецсимволы XML
+                        clean_path = os.path.normpath(track['path'])
+                        escaped_path = saxutils.escape(clean_path.replace('\\', '/'))
+                        
+                        # Записываем путь к файлу
+                        f.write(f'      <media src="{escaped_path}"/>\n')
+                    
+                    f.write('    </seq>\n')
+                    f.write('  </body>\n')
+                    f.write('</smil>\n')
+                
+                print(f"[DEBUG] Плейлист создан и сохранен: {playlist_name}.{playlist_format}")
 
+            
+            if playlist_format == 'xml':
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                    f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
+                    f.write('  <title>{}</title>\n'.format(saxutils.escape(playlist_name)))
+                    f.write('  <creator>VolfLife\'s Playlist Generator</creator>\n')
+                    f.write('  <date>{}</date>\n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    
+                    # Метаданные
+                    f.write('  <annotation>\n')
+                    f.write('    GENERATED:{}\n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    if self.current_seed:
+                        f.write('    SEED:{}\n'.format(self.current_seed))
+                    if self.current_reverse_step:
+                        f.write('    REVERSE_STEP:{}\n'.format(self.current_reverse_step))
+                    f.write('    TRACKS:{}\n'.format(len(saved_tracks)))
+                    f.write('  </annotation>\n')
+                    
+                    f.write('  <trackList>\n')
+                    
+                    for i, track in enumerate(saved_tracks, 1):
+                        # Нормализуем путь
+                        clean_path = os.path.normpath(track['path'])
+                        file_name = os.path.basename(clean_path)
+                        name_without_ext = os.path.splitext(file_name)[0]
+                        
+                        f.write('    <track>\n')
+                        f.write('      <location>{}</location>\n'.format(
+                            urllib.parse.quote(saxutils.escape(clean_path.replace('\\', '/')))))
+                        f.write('      <title>{}</title>\n'.format(
+                            saxutils.escape(name_without_ext)))
+                        f.write('      <meta rel="trackNumber">{}</meta>\n'.format(i))
+                        f.write('    </track>\n')
+                    
+                    f.write('  </trackList>\n')
+                    f.write('</playlist>\n')
+                
+                print(f"[DEBUG] Плейлист создан и сохранен: {playlist_name}.{playlist_format}")
+            
             
             # Обновляем temp_list с сохранением original_path
             if self.temp_list is None:
