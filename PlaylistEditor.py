@@ -1120,71 +1120,262 @@ class PlaylistEditor:
         if items:
             self.tree.selection_set(items)
         return "break"  # Предотвращаем дальнейшую обработку события
-        
-        
 
-    def on_treeview_button_release(self, event):
-        """Обработчик отпускания кнопки мыши"""
-        if hasattr(self, '_drag_data') and self._drag_data:
-            if abs(event.y - self._drag_data["y"]) >= 5:  # Было реальное перемещение
-                self.save_state()
-                print("[DRAG] Состояние сохранено после перетаскивания")
-        self._drag_data = None
 
-            
-            
     def on_treeview_mouse_move(self, event):
-        """Обработчик перемещения мыши с обменом позиций"""
-        if not self._drag_data or not self._drag_data["items"]:
+        """Обработчик перемещения с групповым обменом позиций"""
+        if not hasattr(self, '_drag_data') or not self._drag_data or not self._drag_data["items"]:
             return
         
         y = event.y
         delta_y = y - self._drag_data["y"]
-        if abs(delta_y) < 5:  # Минимальное перемещение
+        if abs(delta_y) < 1:  # Минимальное перемещение
             return
         
         target_item = self.tree.identify_row(y)
         if not target_item:
             return
         
-        children = list(self.tree.get_children())
-        target_index = children.index(target_item)
-        moving_index = self._drag_data["display_indices"][0]
-        
-        # Если позиция не изменилась - игнорируем
-        if target_index == moving_index:
+        visible_items = list(self.tree.get_children())
+        try:
+            target_index = visible_items.index(target_item)
+            moving_indices = sorted([visible_items.index(item) for item in self._drag_data["items"]])
+        except ValueError:
             return
         
-        # Получаем реальные индексы
-        moving_real_index = self._drag_data["real_indices"][0]
-        target_values = self.tree.item(target_item, 'values')
-        target_real_index = int(target_values[0]) - 1 if target_values else moving_real_index
+        # Определяем направление перемещения
+        is_moving_down = target_index > moving_indices[-1]
+        is_moving_up = target_index < moving_indices[0]
         
-        # Меняем треки местами в основном списке
-        if 0 <= moving_real_index < len(self.display_tracks) and 0 <= target_real_index < len(self.display_tracks):
+        if not (is_moving_down or is_moving_up):
+            return
+        
+        # Находим границы группы
+        first_idx = moving_indices[0]
+        last_idx = moving_indices[-1]
+        
+        # Определяем соседа для обмена
+        if is_moving_down:
+            neighbor_idx = last_idx + 1
+        else:  # is_moving_up
+            neighbor_idx = first_idx - 1
+        
+        # Проверяем границы
+        if neighbor_idx < 0 or neighbor_idx >= len(visible_items):
+            return
+        
+        # Получаем реальные индексы из display_tracks
+        try:
+            # Для всех выделенных элементов
+            moving_real_indices = []
+            for item in self._drag_data["items"]:
+                values = self.tree.item(item, 'values')
+                if values and len(values) > 0:
+                    moving_real_indices.append(int(values[0]) - 1)
+            
+            # Для соседнего элемента
+            neighbor_item = visible_items[neighbor_idx]
+            neighbor_values = self.tree.item(neighbor_item, 'values')
+            if not neighbor_values:
+                return
+            neighbor_real_idx = int(neighbor_values[0]) - 1
+        except:
+            return
+        
+        # Создаем новую версию display_tracks
+        new_display = [track.copy() for track in self.display_tracks]
+        
+        if is_moving_down:
+            # Движение вниз - сдвигаем выделенные элементы вниз
+            # 1. Сначала перемещаем соседа вверх на место первого выделенного
+            new_display[moving_real_indices[0]] = self.display_tracks[neighbor_real_idx].copy()
+            new_display[moving_real_indices[0]]['num'] = moving_real_indices[0] + 1
+            
+            # 2. Затем сдвигаем выделенные элементы вниз
+            for i in range(len(moving_real_indices) - 1):
+                new_display[moving_real_indices[i+1]] = self.display_tracks[moving_real_indices[i]].copy()
+                new_display[moving_real_indices[i+1]]['num'] = moving_real_indices[i+1] + 1
+                new_display[moving_real_indices[i+1]]['was_moved'] = True
+                
+            # 3. Последний выделенный занимает место соседа
+            new_display[neighbor_real_idx] = self.display_tracks[moving_real_indices[-1]].copy()
+            new_display[neighbor_real_idx]['num'] = neighbor_real_idx + 1
+            new_display[neighbor_real_idx]['was_moved'] = True
+            
+        else:  # is_moving_up
+            # Движение вверх - сдвигаем выделенные элементы вверх
+            # 1. Сначала перемещаем соседа вниз на место последнего выделенного
+            new_display[moving_real_indices[-1]] = self.display_tracks[neighbor_real_idx].copy()
+            new_display[moving_real_indices[-1]]['num'] = moving_real_indices[-1] + 1
+            
+            # 2. Затем сдвигаем выделенные элементы вверх
+            for i in range(len(moving_real_indices) - 1, 0, -1):
+                new_display[moving_real_indices[i-1]] = self.display_tracks[moving_real_indices[i]].copy()
+                new_display[moving_real_indices[i-1]]['num'] = moving_real_indices[i-1] + 1
+                new_display[moving_real_indices[i-1]]['was_moved'] = True
+                
+            # 3. Первый выделенный занимает место соседа
+            new_display[neighbor_real_idx] = self.display_tracks[moving_real_indices[0]].copy()
+            new_display[neighbor_real_idx]['num'] = neighbor_real_idx + 1
+            new_display[neighbor_real_idx]['was_moved'] = True
+        
+        self.temp_list = new_display
+        # Применяем изменения
+        self.display_tracks = self.temp_list.copy()
+        self._drag_data["y"] = y
+        
+        # Обновляем отображение и выделение
+        self.update_display()
+        self._restore_selection()
+        
+    
+    def _group_move(self, visible_items, target_index, moving_indices):
+        """Групповое перемещение выделенных треков"""
+        moving_count = len(moving_indices)
+        group_first = moving_indices[0]
+        group_last = moving_indices[-1]
+        
+        # Определяем новую позицию для группы
+        if target_index > group_last:
+            new_pos = target_index - moving_count + 1
+        else:
+            new_pos = target_index
+        
+        # Проверяем границы
+        if new_pos < 0 or new_pos + moving_count > len(visible_items):
+            return
+        
+        # Создаем временный список если его еще нет
+        if self.temp_list is None:
+            self.temp_list = [track.copy() for track in self.display_tracks]
+        
+        # Получаем реальные индексы группы
+        group_real_indices = []
+        for i in moving_indices:
+            values = self.tree.item(visible_items[i], 'values')
+            if values and len(values) > 0:
+                group_real_indices.append(int(values[0]) - 1)
+        
+        # Вычисляем сдвиг
+        shift = new_pos - group_first if new_pos > group_first else new_pos - group_first
+        
+        # Применяем сдвиг ко всем элементам между старой и новой позицией
+        for i in range(min(group_first, new_pos), max(group_last, new_pos + moving_count - 1) + 1):
+            item = visible_items[i]
+            values = self.tree.item(item, 'values')
+            if values and len(values) > 0:
+                real_idx = int(values[0]) - 1
+                if group_first <= i <= group_last:
+                    # Элемент из перемещаемой группы
+                    new_real_idx = real_idx + shift
+                    if 0 <= new_real_idx < len(self.temp_list):
+                        self.temp_list[new_real_idx] = self.display_tracks[real_idx].copy()
+                        self.temp_list[new_real_idx]['num'] = new_real_idx + 1
+                        self.temp_list[new_real_idx]['was_moved'] = True
+                else:
+                    # Соседний элемент
+                    new_real_idx = real_idx - (moving_count if shift > 0 else -moving_count)
+                    if 0 <= new_real_idx < len(self.temp_list):
+                        self.temp_list[new_real_idx] = self.display_tracks[real_idx].copy()
+                        self.temp_list[new_real_idx]['num'] = new_real_idx + 1
+        
+        self.display_tracks = self.temp_list.copy()
+
+
+    def _pairwise_swap(self, visible_items, target_index, moving_indices):
+        """Попарный обмен с соседними элементами (оригинальная логика)"""
+        # Определяем направление перемещения
+        is_moving_down = target_index > moving_indices[-1]
+        
+        # Для каждого перемещаемого элемента находим соседний для обмена
+        for display_idx in reversed(moving_indices) if is_moving_down else moving_indices:
+            neighbor_idx = display_idx + 1 if is_moving_down else display_idx - 1
+            
+            # Проверяем границы
+            if neighbor_idx < 0 or neighbor_idx >= len(visible_items):
+                continue
+            
+            # Получаем реальные индексы
+            try:
+                moving_item = visible_items[display_idx]
+                neighbor_item = visible_items[neighbor_idx]
+                
+                moving_values = self.tree.item(moving_item, 'values')
+                neighbor_values = self.tree.item(neighbor_item, 'values')
+                
+                if not moving_values or not neighbor_values:
+                    continue
+                    
+                moving_real_idx = int(moving_values[0]) - 1
+                neighbor_real_idx = int(neighbor_values[0]) - 1
+            except:
+                continue
+            
             # Создаем временный список если его еще нет
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
             # Меняем местами
-            self.temp_list[moving_real_index], self.temp_list[target_real_index] = \
-                self.temp_list[target_real_index], self.temp_list[moving_real_index]
+            if 0 <= moving_real_idx < len(self.temp_list) and 0 <= neighbor_real_idx < len(self.temp_list):
+                self.temp_list[moving_real_idx], self.temp_list[neighbor_real_idx] = \
+                    self.temp_list[neighbor_real_idx], self.temp_list[moving_real_idx]
+                
+                # Обновляем номера
+                self.temp_list[moving_real_idx]['num'] = moving_real_idx + 1
+                self.temp_list[neighbor_real_idx]['num'] = neighbor_real_idx + 1
+                
+                # Помечаем как перемещенные
+                self.temp_list[neighbor_real_idx]['was_moved'] = True
+        
+        self.display_tracks = self.temp_list.copy()
+
+
+    def _update_after_move(self, visible_items):
+        """Обновление отображения и выделения после перемещения"""
+        # Обновляем отображение
+        self.update_display()
+        
+        # Восстанавливаем выделение по сохраненным именам
+        if hasattr(self, '_drag_data') and self._drag_data and "names" in self._drag_data:
+            new_selection = []
+            new_display_indices = []
+            new_real_indices = []
             
-            # Помечаем оба трека как перемещенные
-            #self.temp_list[moving_real_index]['was_moved'] = True
-            self.temp_list[target_real_index]['was_moved'] = True
+            for item in self.tree.get_children():
+                values = self.tree.item(item, 'values')
+                if values and len(values) > 1 and values[1] in self._drag_data["names"]:
+                    new_selection.append(item)
+                    new_display_indices.append(visible_items.index(item))
+                    new_real_indices.append(int(values[0]) - 1)
             
-            self.display_tracks = self.temp_list.copy()
+            if new_selection:
+                self.tree.selection_set(new_selection)
+                # Обновляем данные drag
+                self._drag_data["items"] = new_selection
+                self._drag_data["display_indices"] = new_display_indices
+                self._drag_data["real_indices"] = new_real_indices            
             
-            # Обновляем отображение
-            self.update_display()
+
+    def _restore_selection(self):
+        """Восстанавливает выделение по именам треков"""
+        if hasattr(self, '_drag_data') and self._drag_data and "names" in self._drag_data:
+            new_selection = []
+            visible_items = list(self.tree.get_children())
             
-            # Обновляем данные для drag
-            self._drag_data["y"] = y
-            self._drag_data["display_indices"] = [target_index]
-            self._drag_data["real_indices"] = [target_real_index]
-    
-\
+            for item in visible_items:
+                values = self.tree.item(item, 'values')
+                if values and len(values) > 1 and values[1] in self._drag_data["names"]:
+                    new_selection.append(item)
+            
+            if new_selection:
+                self.tree.selection_set(new_selection)
+                # Обновляем данные drag
+                visible_items = list(self.tree.get_children())
+                self._drag_data["items"] = new_selection
+                self._drag_data["display_indices"] = [visible_items.index(item) for item in new_selection]
+                self._drag_data["real_indices"] = [int(self.tree.item(item, 'values')[0]) - 1 for item in new_selection]
+            
+            
     def on_treeview_button_press(self, event):
         """Обработчик нажатия кнопки мыши"""
         item = self.tree.identify_row(event.y)
@@ -1193,20 +1384,49 @@ class PlaylistEditor:
                 self._drag_data = None
                 return
             
-            if item not in self.tree.selection():
+            selected_items = self.tree.selection()
+            if item not in selected_items:
+                selected_items = [item]
                 self.tree.selection_set(item)
             
-            values = self.tree.item(item, 'values')
-            if values and len(values) > 0:
-                real_index = int(values[0]) - 1  # Реальный индекс из первого столбца
+            # Собираем данные о выделенных треках
+            real_indices = []
+            display_indices = []
+            names = []
+            visible_items = list(self.tree.get_children())
+            
+            for item in selected_items:
+                try:
+                    values = self.tree.item(item, 'values')
+                    if values and len(values) > 0:
+                        real_indices.append(int(values[0]) - 1)
+                        display_indices.append(visible_items.index(item))
+                        if len(values) > 1:
+                            names.append(values[1])
+                except:
+                    continue
+            
+            if real_indices:
                 self._drag_data = {
-                    "items": [item],
+                    "items": selected_items,
                     "y": event.y,
-                    "real_indices": [real_index],
-                    "display_indices": [self.tree.index(item)]
+                    "real_indices": real_indices,
+                    "display_indices": display_indices,
+                    "names": names  # Для восстановления выделения
                 }
+                
         else:
             self._drag_data = None
+            
+            
+    def on_treeview_button_release(self, event=None):
+        """Обработчик отпускания кнопки мыши после перетаскивания"""
+        if hasattr(self, '_drag_data') and self._drag_data:
+            self.save_state()
+        # Сбрасываем данные перетаскивания
+        self._drag_data = None
+        if hasattr(self, '_last_move_y'):
+            del self._last_move_y
 
         
     def move_up(self):
