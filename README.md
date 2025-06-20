@@ -10,6 +10,12 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Dual-functionality: Generator & Editor
 
+* Supported playlist formats:
+
+	* For generating:	 `.m3u8, .m3u, .pls, .wpl, .asx, .xspf, .json, .xml, .txt`
+
+	* For editing: 		`.m3u8, .m3u, .pls, .wpl, .asx, .wax, .wvx, .xspf, .json, .xml, .txt`
+
 * Supported audio and video formats:
 
 	* Audio:	`.mp3, .flac, .ogg, .wav, .m4a, .aac, .wma, .opus, .aiff, .aif, .alac, .dsf, .dff, .mka, .ac3, .dts`
@@ -18,11 +24,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 * Seed-based shuffling for reproducible results
 
-* Advanced mixing options:
-
-	* Shadow seed for complex shuffling
-
-	* Reversal step algorithm
+* Reversal step algorithm for complex shuffling
 
 * Preserves playlist metadata:
 
@@ -42,7 +44,7 @@ An intuitive and simple tool for generating and editing randomly shuffled playli
 
 ## Usage
 
-The program operates in two modes: GENERATOR or EDITOR.
+The program operates in two modes: Generator or Editor.
 
 
 ### Generator Mode
@@ -52,7 +54,6 @@ ___
 
 Creates a playlist from scratch. Simply launch the executable to enter generator mode.
 
-Supported formats for generating: `.m3u8, .m3u, .pls, .wpl, .asx, .xspf, .json, .xml, .txt`
 
 #### How to use:
 
@@ -64,7 +65,7 @@ Supported formats for generating: `.m3u8, .m3u, .pls, .wpl, .asx, .xspf, .json, 
 
 4. Configure optional settings:
 
-	- **Reversal Step**: Set block size for reverse shuffling (if needed)
+	- **Reversal Step**: Set block size for reverse shuffling
 
  	- **Shadow Seed**: Enable for advanced shuffle algorithm 
 
@@ -79,7 +80,6 @@ ___
 
 Edits and saves data from existing playlists without requiring local track files. Launch by drag-and-dropping playlist file(s) onto the program shortcut.
 
-Supported formats for editing: `.m3u8, .m3u, .pls, .wpl, .asx, .wax, .wvx, .xspf, .json, .xml, .txt`
 
 #### Features:
 
