@@ -167,7 +167,7 @@ class PlaylistEditor:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 3) - (height // 3)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
-        self.root.minsize(540, 679)
+        self.root.minsize(540, 687)
 
         
     def load_playlist(self):
@@ -869,7 +869,7 @@ class PlaylistEditor:
         
         # Фрейм для таблицы с ползунком
         table_frame = ttk.Frame(main_frame)
-        table_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        table_frame.pack(fill=tk.BOTH, expand=False, pady=(0, 15))
         table_frame.grid_propagate(False) 
         
         # Уменьшаем количество видимых строк в таблице на 1, чтобы компенсировать добавление поля поиска
@@ -961,7 +961,7 @@ class PlaylistEditor:
         
         # Поле для сообщений
         message_frame = ttk.Frame(main_frame)
-        message_frame.pack(fill=tk.X, pady=(6, 10))
+        message_frame.pack(fill=tk.X, pady=(12, 12))
         
         # Фиксируем высоту фрейма сообщений
         message_frame.pack_propagate(False)  # Отключаем автоматическое изменение размера
@@ -1812,32 +1812,31 @@ class PlaylistEditor:
     def restore_state(self, state):
         """Восстанавливает состояние с полным обновлением интерфейса"""
         # Получаем текущие пути перед восстановлением
-        current_paths = {track['path'] for track in self.display_tracks} if self.display_tracks else set()
+        current_paths = {track['path']: track for track in self.display_tracks} if self.display_tracks else {}
         
         # Обновляем основной список
         self.display_tracks = []
         for track in state['tracks']:
-            new_track = track.copy()
-            
-            # Сохраняем флаг found из текущего состояния если трек существует
-            existing_track = next(
-                (t for t in self.display_tracks 
-                 if t['path'] == track['path']), 
-                None
-            )
-            if existing_track:
-                new_track['found'] = existing_track.get('found', False)
-            else:
-                # Для новых треков устанавливаем found в зависимости от текущего фильтра
-                search_term = self.search_entry.get().lower()
-                new_track['found'] = not search_term or search_term in new_track['name'].lower()
+                new_track = track.copy()
                 
-            # Помечаем восстановленные треки
-            if track['path'] not in current_paths:
-                new_track['was_restored'] = True
+                # Проверяем, существует ли трек в текущем состоянии
+                existing_track = current_paths.get(track['path'])
                 
-            self.display_tracks.append(new_track)
-        
+                if existing_track:
+                    # Сохраняем флаги из текущего состояния
+                    new_track['found'] = existing_track.get('found', False)
+                    # Сохраняем тег 'was_restored', если он был у существующего трека
+                    if existing_track.get('was_restored', False):
+                        new_track['was_restored'] = True
+                else:
+                    # Для новых треков устанавливаем found в зависимости от текущего фильтра
+                    search_term = self.search_entry.get().lower()
+                    new_track['found'] = not search_term or search_term in new_track['name'].lower()
+                    # Помечаем восстановленные треки
+                    new_track['was_restored'] = True
+                    
+                self.display_tracks.append(new_track)        
+                
         # Обновляем временные списки
         self.temp_list = self.display_tracks.copy()
         self.shuffled_list = None
