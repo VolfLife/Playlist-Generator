@@ -67,7 +67,7 @@ Creates a playlist from scratch. Simply launch the executable to enter generator
 
 	- **Reversal Step**: Set block size for reverse shuffling
 
- 	- **Shadow Seed**: Enable for advanced shuffle algorithm 
+ 	- **Shadow Seed**: Enable for advanced shuffle algorithm
 
 	- **Format**: Select output format (`.m3u`/`.pls`/etc.)
 
