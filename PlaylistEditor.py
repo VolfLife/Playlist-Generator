@@ -1220,7 +1220,7 @@ class PlaylistEditor:
                 new_display[neighbor_real_idx]['num'] = neighbor_real_idx + 1
                 
                 # Помечаем как перемещенные
-                new_display[moving_real_index]['was_moved'] = True
+                #new_display[moving_real_index]['was_moved'] = True
                 new_display[neighbor_real_idx]['was_moved'] = True
                 
             else:  # is_moving_up
@@ -1233,7 +1233,7 @@ class PlaylistEditor:
                 new_display[neighbor_real_idx]['num'] = neighbor_real_idx + 1
                 
                 # Помечаем как перемещенные
-                new_display[moving_real_index]['was_moved'] = True
+                #new_display[moving_real_index]['was_moved'] = True
                 new_display[neighbor_real_idx]['was_moved'] = True
             
             # Применяем изменения
