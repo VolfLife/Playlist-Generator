@@ -2,6 +2,8 @@
 
 An intuitive and simple tool for generating and editing randomly shuffled playlists.
 
+To download the program, go to the [Releases](https://github.com/VolfLife/Playlist-Generator/releases/latest) page.
+
 ## Key Features
 
 * Clean, minimalist interface
