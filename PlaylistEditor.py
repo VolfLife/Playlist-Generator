@@ -790,6 +790,7 @@ class PlaylistEditor:
         self.github_link.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-5)
         self.github_link.bind("<Button-1>", self.open_github)
 
+
     def clear_search_entry(self, event=None):
         # Очищаем поле ввода и список папок, сохраняем настройки
         self.search_entry.delete(0, tk.END)
@@ -802,19 +803,28 @@ class PlaylistEditor:
         self.update_display()
         self.hide_search_tooltip()
     
+    
     def on_search_key_release(self, event):
         """Обработчик ввода текста в поле поиска"""
         search_term = self.search_entry.get().lower()
-        #values = self.tree.item(first_item)['values']
-        # Обновляем флаг found у всех треков
-        for track in self.display_tracks:
-            track['found'] = search_term in track['name'].lower()
-            track["modified"]: track.get("was_modified", False)
-            track["name_modified"]: track.get("was_name_modified", False)
-            track["moved"]: track.get("was_moved", False)
-            track["restored"]: track.get("was_restored", False)
+        if not search_term:
+            for track in self.display_tracks:
+                track['found'] = False
+                track["modified"]: track.get("was_modified", False)
+                track["name_modified"]: track.get("was_name_modified", False)
+                track["moved"]: track.get("was_moved", False)
+                track["restored"]: track.get("was_restored", False)
+        else:
+            # Обновляем флаг found у всех треков
+            for track in self.display_tracks:
+                track['found'] = search_term in track['name'].lower()
+                track["modified"]: track.get("was_modified", False)
+                track["name_modified"]: track.get("was_name_modified", False)
+                track["moved"]: track.get("was_moved", False)
+                track["restored"]: track.get("was_restored", False)
         # Обновляем отображение
         self.update_display()
+
 
     def clear_search(self):
         """Очищает поле поиска и сбрасывает фильтрацию"""
