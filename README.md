@@ -96,6 +96,8 @@ Edits and saves data from existing playlists without requiring local track files
   	* Delete tracks
 
 	* Edit track paths and names
+
+	* Import from folders
 	
 	* Undo/redo actions
 
