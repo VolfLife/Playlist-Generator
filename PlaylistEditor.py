@@ -826,20 +826,72 @@ class PlaylistEditor:
         self.update_display()
 
 
-    def clear_search(self):
-        """Очищает поле поиска и сбрасывает фильтрацию"""
-        self.search_entry.delete(0, tk.END)
+    def add_tracks(self):
+        """Добавляет поддерживаемые аудио и видео файлы из выбранного каталога"""
+        from tkinter import filedialog
         
-        # Сбрасываем флаг found у всех треков
-        for track in self.display_tracks:
-            track['found'] = False
-            track["modified"]: track.get("was_modified", False)
-            track["name_modified"]: track.get("was_name_modified", False)
-            track["moved"]: track.get("was_moved", False)
-            track["restored"]: track.get("was_restored", False)
-        # Обновляем отображение
-        self.update_display()    
-    
+        # Открываем диалог выбора каталога
+        folder_path = filedialog.askdirectory(title=self.localization.tr("select_folder_to_add_tracks"))
+        if not folder_path:
+            return  # Пользователь отменил выбор
+            
+        # Получаем список поддерживаемых форматов
+        supported_formats = {
+                # Аудио
+                '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.aif', '.alac', '.dsf', '.dff', '.mka', '.ac3', '.dts',
+                # Видео
+                '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.ts', '.m2ts', '.3gp', '.vob', '.ogv'
+            }
+        
+        try:
+            # Сканируем каталог и находим поддерживаемые файлы
+            new_tracks = []
+            for root, _, files in os.walk(folder_path):
+                for file in files:
+                    file_ext = os.path.splitext(file)[1].lower()
+                    if file_ext in supported_formats:
+                        full_path = os.path.join(root, file)
+                        normalized_path = os.path.normpath(full_path).replace('\\', '/')
+                        
+                        new_track = {
+                            "path": normalized_path,
+                            "name": file,
+                            "num": len(self.display_tracks) + len(new_tracks) + 1,
+                            "source": "added_from_folder",
+                            "original_path": normalized_path,
+                            "was_modified": False,
+                            "was_name_modified": False,
+                            "was_moved": False,
+                            "was_restored": False,
+                            "found": False,
+                            "was_added": True
+                        }
+                        new_tracks.append(new_track)
+            
+            if not new_tracks:
+                self.show_message(self.localization.tr("no_supported_files_found"), "red")
+                return
+                
+            # Добавляем новые треки к текущему списку
+            self.temp_list = [track.copy() for track in self.display_tracks]
+            
+            # Добавляем новые треки
+            self.temp_list.extend(new_tracks)
+            self.display_tracks = self.temp_list.copy()
+            self.shuffled_list = None
+            # Обновляем отображение
+            self.update_display()
+            self.save_state()
+            count = len(new_tracks)
+            # Показываем сообщение о успешном добавлении
+            self.show_message(
+                self.localization.tr("tracks_added_successfully").format(count=len(new_tracks)), 
+                "green"
+            )
+            
+        except Exception as e:
+            self.show_message(f"{self.localization.tr('error_adding_tracks')}: {str(e)}", "red")
+        
     
     def create_widgets(self, root):
         """Создает интерфейс редактора"""
@@ -866,9 +918,9 @@ class PlaylistEditor:
         # Добавляем обработчик правой кнопки мыши для очистки
         self.search_entry.bind("<Button-3>", self.clear_search_entry)
         
-        # Кнопка очистки поиска
-        #clear_search_btn = ttk.Button(search_frame, text="c", style='Symbol.TButton', width=3, command=self.clear_search)
-        #clear_search_btn.pack(side=tk.LEFT)
+        # Кнопка добавления треков
+        add_tracks = ttk.Button(search_frame, text="g", style='Symbol.TButton', width=3, command=self.add_tracks)
+        add_tracks.pack(side=tk.LEFT)
         
         # Добавляем подсказку при наведении курсора
         self.search_tooltip = tk.Label(self.root, text=self.localization.tr("tree_tooltip"), 
@@ -919,24 +971,28 @@ class PlaylistEditor:
         # Фрейм для полей ввода
         input_frame = ttk.Frame(main_frame)
         input_frame.pack(fill=tk.X, pady=5)
-        
+
+        # Настройка веса колонки для растягивания
+        input_frame.columnconfigure(1, weight=1)  # Это важно для растягивания Entry полей
+
         # Поле имени плейлиста
         tk.Label(input_frame, text=self.localization.tr("playlist_name_label")).grid(row=0, column=0, sticky="w", padx=5, pady=3)
-        self.name_entry = ttk.Entry(input_frame, width=45)
+        self.name_entry = ttk.Entry(input_frame)
         self.name_entry.grid(row=0, column=1, padx=5, pady=3, sticky="ew")
         self.name_entry.insert(0, self.playlist_name)
-        
-        # Поле сида (увеличенная ширина)
+
+        # Поле сида
         tk.Label(input_frame, text=self.localization.tr("seed_label")).grid(row=1, column=0, sticky="w", padx=5, pady=3)
-        self.seed_entry = ttk.Entry(input_frame, width=45)
+        self.seed_entry = ttk.Entry(input_frame)
         self.seed_entry.grid(row=1, column=1, padx=5, pady=3, sticky="ew")
-        
-        # Остальные элементы без изменений
+
+        # Поле шага реверса
         tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
             row=2, column=0, sticky="w", padx=5, pady=3)
-        self.step_entry = ttk.Entry(input_frame, width=5)
+        self.step_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
         self.step_entry.insert(0, "")
         self.step_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
+        
         
         tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
             row=3, column=0, sticky="w", padx=5, pady=3)
@@ -1249,13 +1305,14 @@ class PlaylistEditor:
             # Применяем изменения
             self.display_tracks = new_display
             self.temp_list = self.display_tracks
+            self.shuffled_list = None
             self._drag_data["y"] = y
             
             # Обновляем отображение
             self.update_display()
             
             # Восстанавливаем выделение по имени трека
-            self._restore_selection_by_names([moving_name])
+            self._restore_selection_by_identifiers(self._drag_data["identifiers"])
         
         else:
             # Для неотсортированных списков
@@ -1321,13 +1378,14 @@ class PlaylistEditor:
                 # Применяем изменения
                 self.display_tracks = new_display
                 self.temp_list = self.display_tracks
+                self.shuffled_list = None
                 self._drag_data["y"] = y
                 
                 # Обновляем отображение
                 self.update_display()
                 
                 # Восстанавливаем выделение по имени
-                self._restore_selection_by_names([moving_name])
+                self._restore_selection_by_identifiers(self._drag_data["identifiers"])
 
             else:
                 # Логика для нескольких треков (блочное перемещение)
@@ -1442,6 +1500,7 @@ class PlaylistEditor:
                 # Применяем изменения
                 self.display_tracks = new_display
                 self.temp_list = self.display_tracks
+                self.shuffled_list = None
                 self.update_display()
                 
                 # Обновляем реальные индексы в block_items
@@ -1449,30 +1508,13 @@ class PlaylistEditor:
                     item_data['real_index'] = insert_index + i
                 
                 # Восстанавливаем выделение по именам
-                self._restore_selection_by_names(self._drag_data['names'])
+                self._restore_selection_by_identifiers(self._drag_data['identifiers'])
             
-            
-    def _restore_selection_by_names(self, names):
-        """Восстанавливает выделение по именам треков"""
-        if not names:
-            return
-        
-        new_selection = []
-        visible_items = list(self.tree.get_children())
-        
-        for item in visible_items:
-            values = self.tree.item(item, 'values')
-            if values and len(values) > 1 and values[1] in names:
-                new_selection.append(item)
-        
-        if new_selection:
-            self.tree.selection_set(new_selection)
-            # Обновляем данные drag
-            self._drag_data["items"] = new_selection
-
             
     def on_treeview_button_press(self, event):
         """Обработчик нажатия кнопки мыши"""
+        import uuid  # Добавляем импорт модуля UUID
+        
         item = self.tree.identify_row(event.y)
         if item:
             if event.state & (0x0004 | 0x0001):  # Ctrl или Shift
@@ -1487,17 +1529,23 @@ class PlaylistEditor:
             # Собираем данные о выделенных треках
             real_indices = []
             display_indices = []
-            names = []
+            identifiers = []  # Используем уникальные идентификаторы
             visible_items = list(self.tree.get_children())
             
             for item in selected_items:
                 try:
                     values = self.tree.item(item, 'values')
                     if values and len(values) > 0:
-                        real_indices.append(int(values[0]) - 1)
+                        real_index = int(values[0]) - 1
+                        real_indices.append(real_index)
                         display_indices.append(visible_items.index(item))
-                        if len(values) > 1:
-                            names.append(values[1])
+                        
+                        # Генерируем уникальный временный идентификатор для каждого трека
+                        if 0 <= real_index < len(self.display_tracks):
+                            track = self.display_tracks[real_index]
+                            if 'drag_id' not in track:
+                                track['drag_id'] = uuid.uuid4().hex  # Генерируем уникальный UUID
+                            identifiers.append(track['drag_id'])
                 except:
                     continue
             
@@ -1507,16 +1555,44 @@ class PlaylistEditor:
                     "y": event.y,
                     "real_indices": real_indices,
                     "display_indices": display_indices,
-                    "names": names  # Для восстановления выделения
+                    "identifiers": identifiers  # Сохраняем уникальные идентификаторы
                 }
                 
         else:
             self._drag_data = None
-            
-            
+
+    def _restore_selection_by_identifiers(self, identifiers):
+        """Восстанавливает выделение по уникальным идентификаторам"""
+        if not identifiers:
+            return
+        
+        new_selection = []
+        visible_items = list(self.tree.get_children())
+        
+        for item in visible_items:
+            values = self.tree.item(item, 'values')
+            if values and len(values) > 0:
+                real_index = int(values[0]) - 1
+                if 0 <= real_index < len(self.display_tracks):
+                    track = self.display_tracks[real_index]
+                    if 'drag_id' in track and track['drag_id'] in identifiers:
+                        new_selection.append(item)
+        
+        if new_selection:
+            self.tree.selection_set(new_selection)
+            # Обновляем данные drag
+            self._drag_data["items"] = new_selection
+
     def on_treeview_button_release(self, event):
         """Обработчик отпускания кнопки мыши"""
         if hasattr(self, '_drag_data') and self._drag_data:
+            # Очищаем временные идентификаторы
+            if 'identifiers' in self._drag_data:
+                for identifier in self._drag_data['identifiers']:
+                    for track in self.display_tracks:
+                        if 'drag_id' in track and track['drag_id'] == identifier:
+                            del track['drag_id']
+            
             # Сбрасываем флаги и временные данные
             if 'block_init' in self._drag_data:
                 del self._drag_data['block_init']
@@ -1530,7 +1606,7 @@ class PlaylistEditor:
             
             # Сбрасываем данные перетаскивания
             self._drag_data = {}
-
+        
         
     def move_up(self):
         """Перемещает выделенные треки вверх с учетом фильтрации"""
@@ -1600,7 +1676,7 @@ class PlaylistEditor:
         
         # Обновляем основной список
         self.display_tracks = self.temp_list.copy()
-        
+        self.shuffled_list = None
         # Обновляем отображение
         self.update_display()
         
@@ -1690,7 +1766,7 @@ class PlaylistEditor:
         
         # Обновляем основной список
         self.display_tracks = self.temp_list.copy()
-        
+        self.shuffled_list = None
         # Обновляем отображение
         self.update_display()
         
@@ -1777,7 +1853,7 @@ class PlaylistEditor:
         self.tree.tag_configure('modified_name_path', background='#c6f5f0') # Бирюзовый
         self.tree.tag_configure('modified_name_path_moved', background='#CCDAFF')
         self.tree.tag_configure('found', background='white')  # Голубой для найденных элементов
-        self.tree.tag_configure('all', background='#E0E0E0') # Все три состояния
+        self.tree.tag_configure('added', background='#E0E0E0') # Все три состояния
 
         # Получаем поисковый запрос
         search_term = self.search_entry.get().lower()
@@ -1798,10 +1874,10 @@ class PlaylistEditor:
             is_restored = track.get('was_restored', False)
             is_name_modified = track.get('was_name_modified', False)
             is_found = track.get('found', False)
-            
+            is_added = track.get('was_added', False)
             # Комбинируем теги для всех возможных сочетаний
-            if is_modified and is_moved and is_restored:
-                tags.append('all')
+            if is_added:
+                tags.append('added')
             elif is_moved and is_name_modified and is_modified:
                 tags.append('modified_name_path_moved')
             elif is_moved and is_name_modified:
@@ -1871,7 +1947,8 @@ class PlaylistEditor:
                 'was_name_modified': track.get('was_name_modified', False),
                 'was_moved': track.get('was_moved', False),
                 'was_restored': track.get('was_restored', False),
-                'found': track.get('found', False)
+                'found': track.get('found', False),
+                'was_added': track.get('was_added', False)
             } for track in self.display_tracks],
             'selection': [int(self.tree.index(item)) for item in self.tree.selection()]
         }
@@ -2117,15 +2194,26 @@ class PlaylistEditor:
             now = datetime.datetime.now()
         
             # Определяем базовый список для работы
-            base_list = self.temp_list if self.temp_list is not None else self.original_list.copy()
+            if self.shuffled_list is not None:
+                # Если было перемешивание - используем перемешанный список
+                base_list = self.shuffled_list
             
-            # Сохраняем текущие состояния restored и modified перед любыми изменениями
+            elif self.temp_list is not None:
+                # Если было ручное редактирование - используем временный список
+                base_list = self.temp_list
+            
+            else:
+                # Если не было ни перемешивания, ни редактирования - используем оригинальный порядок
+                base_list = self.original_list.copy()
+
+            # Сохраняем текущие состояния restored и modified и др. перед любыми изменениями
             track_states = {
                 track['original_path']: {
                     'was_restored': track.get('was_restored', False),
                     'was_modified': track.get('was_modified', False),
                     'was_name_modified': track.get('was_name_modified', False),
                     'was_moved': track.get('was_moved', False),
+                    'was_added': track.get('was_added', False),
                     'found': track.get('found', False),
                     'path': track['path'],
                     'name': track['name'],
@@ -2205,6 +2293,7 @@ class PlaylistEditor:
                     track["was_restored"] = saved_state['was_restored']
                     track["original_name"] = saved_state['original_name']
                     track["found"] = saved_state['found']
+                    track["was_added"] = saved_state['was_added']
                     # Для модифицированных треков сохраняем новый путь
                     if track["was_modified"] and original_path in self.modified_paths:
                         track["path"] = self.modified_paths[original_path]
@@ -2310,6 +2399,8 @@ class PlaylistEditor:
             for track in source_list:
                 if 'was_moved' in track:
                     del track['was_moved'] 
+                if 'was_added' in track:
+                    del track['was_added']
                     
             # Создаем копию текущего состояния перед сохранением
             current_state = {
@@ -2342,7 +2433,8 @@ class PlaylistEditor:
                     "was_name_modified": track.get("was_name_modified", False),
                     "was_moved": track.get("was_moved", False),
                     "was_restored": track.get("was_restored", False),
-                    'found': track.get('found', False)
+                    'found': track.get('found', False),
+                    'was_added': track.get('was_added', False)
                 })
             
             if not saved_tracks:

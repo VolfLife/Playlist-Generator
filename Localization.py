@@ -71,7 +71,11 @@ class Localization:
 				"new_name_label": "New track name:",
 				"name_example_hint": "Example: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Track name cannot be empty",
-				"names_updated": "Track name updated"
+				"names_updated": "Track name updated",
+                "select_folder_to_add_tracks": "Select folder to add tracks",
+                "no_supported_files_found": "No supported audio/video files found in selected folder",
+                "tracks_added_successfully": "Added {count} tracks successfully",
+                "error_adding_tracks": "Error adding tracks"
             },
             "ru-ru": {
                 "window_title_generator": "Генератор плейлистов",
@@ -138,7 +142,11 @@ class Localization:
                 "new_name_label": "Новое имя трека:",
                 "name_example_hint": "Например: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Имя трека не может быть пустым",
-                "names_updated": "Имя трека был изменен"
+                "names_updated": "Имя трека был изменен",
+                "select_folder_to_add_tracks": "Выберите папку для добавления треков",
+                "no_supported_files_found": "В выбранной папке не найдено поддерживаемых аудио/видео файлов",
+                "tracks_added_successfully": "Успешно добавлено {count} треков",
+                "error_adding_tracks": "Ошибка при добавлении треков"
             },
             "es-es": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -205,7 +213,11 @@ class Localization:
                 "new_name_label": "Nuevo nombre de pista:",
                 "name_example_hint": "Ejemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "El nombre de la pista no puede estar vacío",
-                "names_updated": "Nombre de pista actualizado"
+                "names_updated": "Nombre de pista actualizado",
+                "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
+                "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
+                "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
+                "error_adding_tracks": "Error al agregar pistas"
             },
             "fr-fr": {
                 "window_title_generator": "Générateur de playlists",
@@ -272,7 +284,11 @@ class Localization:
 				"new_name_label": "Nouveau nom de piste:",
 				"name_example_hint": "Exemple: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Le nom de la piste ne peut pas être vide",
-				"names_updated": "Nom de piste mis à jour"
+				"names_updated": "Nom de piste mis à jour",
+                "select_folder_to_add_tracks": "Sélectionnez le dossier pour ajouter des pistes",
+                "no_supported_files_found": "Aucun fichier audio/vidéo pris en charge trouvé dans le dossier sélectionné",
+                "tracks_added_successfully": "{count} pistes ajoutées avec succès",
+                "error_adding_tracks": "Erreur lors de l'ajout de pistes"
             },
             "de-de": {
 				"window_title_generator": "Playlist-Generator",
@@ -339,7 +355,11 @@ class Localization:
 				"new_name_label": "Neuer Trackname:",
 				"name_example_hint": "Beispiel: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Trackname darf nicht leer sein",
-				"names_updated": "Trackname aktualisiert"
+				"names_updated": "Trackname aktualisiert",
+                "select_folder_to_add_tracks": "Ordner zum Hinzufügen von Tracks auswählen",
+                "no_supported_files_found": "Keine unterstützten Audio-/Videodateien im ausgewählten Ordner gefunden",
+                "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
+                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks"
             },
             "it-it": {
                 "window_title_generator": "Generatore di Playlist",
@@ -406,7 +426,11 @@ class Localization:
                 "new_name_label": "Nuovo nome traccia:",
                 "name_example_hint": "Esempio: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Il nome della traccia non può essere vuoto",
-                "names_updated": "Nome traccia modificato"
+                "names_updated": "Nome traccia modificato",
+                "select_folder_to_add_tracks": "Seleziona la cartella per aggiungere brani",
+                "no_supported_files_found": "Nessun file audio/video supportato trovato nella cartella selezionata",
+                "tracks_added_successfully": "{count} brani aggiunti con successo",
+                "error_adding_tracks": "Errore durante l'aggiunta dei brani"
             },
             "pl-pl": {
                 "window_title_generator": "Generator playlist",
@@ -473,7 +497,11 @@ class Localization:
 				"new_name_label": "Nowa nazwa utworu:",
 				"name_example_hint": "Przykład: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Nazwa utworu nie może być pusta",
-				"names_updated": "Nazwa utworu zaktualizowana"
+				"names_updated": "Nazwa utworu zaktualizowana",
+                "select_folder_to_add_tracks": "Wybierz folder, aby dodać utwory",
+                "no_supported_files_found": "Nie znaleziono obsługiwanych plików audio/wideo w wybranym folderze",
+                "tracks_added_successfully": "Pomyślnie dodano {count} utworów",
+                "error_adding_tracks": "Błąd podczas dodawania utworów"
             },
             "tr-tr": {
                 "window_title_generator": "Çalma Listesi Oluşturucu",
@@ -540,7 +568,11 @@ class Localization:
 				"new_name_label": "Yeni parça adı:",
 				"name_example_hint": "Örnek: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Parça adı boş olamaz",
-				"names_updated": "Parça adı güncellendi"
+				"names_updated": "Parça adı güncellendi",
+                "select_folder_to_add_tracks": "Parça eklemek için klasör seçin",
+                "no_supported_files_found": "Seçilen klasörde desteklenen ses/video dosyası bulunamadı",
+                "tracks_added_successfully": "{count} parça başarıyla eklendi",
+                "error_adding_tracks": "Parça eklenirken hata oluştu"
             },
             "be-by": {
                 "window_title_generator": "Генератар плэйлістаў",
@@ -607,7 +639,11 @@ class Localization:
                 "new_name_label": "Новая назва трэку:",
                 "name_example_hint": "Напрыклад: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Назва трэку не можа быць пустой",
-                "names_updated": "Назву трэку змянілі"
+                "names_updated": "Назву трэку змянілі",
+                "select_folder_to_add_tracks": "Выберыце папку для дадання трэкаў",
+                "no_supported_files_found": "У выбранай папцы не знойдзена падтрымліваемых аўдыё/відэа файлаў",
+                "tracks_added_successfully": "Паспяхова дадана {count} трэкаў",
+                "error_adding_tracks": "Памылка пры даданні трэкаў"
             },
               "uk-ua": {
                 "window_title_generator": "Генератор плейлистів",
@@ -674,7 +710,11 @@ class Localization:
                 "new_name_label": "Нова назва треку:",
                 "name_example_hint": "Наприклад: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Назва треку не може бути порожньою",
-                "names_updated": "Назву треку змінено"
+                "names_updated": "Назву треку змінено",
+                "select_folder_to_add_tracks": "Виберіть папку для додавання треків",
+                "no_supported_files_found": "У вибраній папці не знайдено підтримуваних аудіо/відео файлів",
+                "tracks_added_successfully": "Успішно додано {count} треків",
+                "error_adding_tracks": "Помилка при додаванні треків"
             },
             "kk-kz": {
                 "window_title_generator": "Плейлист генераторы",
@@ -741,7 +781,11 @@ class Localization:
                 "new_name_label": "Тректің жаңа атауы:",
                 "name_example_hint": "Мысалы: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Трек атауы бос болмауы керек",
-                "names_updated": "Трек атауы өзгертілді"
+                "names_updated": "Трек атауы өзгертілді",
+                "select_folder_to_add_tracks": "Тректерді қосу үшін буманы таңдаңыз",
+                "no_supported_files_found": "Таңдалған бумада қолдау көрсетілетін аудио/бейне файлдары табылмады",
+                "tracks_added_successfully": "{count} трек сәтті қосылды",
+                "error_adding_tracks": "Тректерді қосу кезіндегі қате"
             },
             "sr-rs": {
                 "window_title_generator": "Генератор плејлиста",
@@ -808,7 +852,11 @@ class Localization:
 				"new_name_label": "Ново име нумере:",
 				"name_example_hint": "Пример: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Име нумере не може бити празно",
-				"names_updated": "Име нумере је ажурирано"
+				"names_updated": "Име нумере је ажурирано",
+                "select_folder_to_add_tracks": "Изаберите фолдер за додавање нумера",
+                "no_supported_files_found": "Нису пронађени подржани аудио/видео фајлови у изабраном фолдеру",
+                "tracks_added_successfully": "Успешно додато {count} нумера",
+                "error_adding_tracks": "Грешка при додавању нумера"
             },
             "nl-nl": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -875,7 +923,11 @@ class Localization:
 				"new_name_label": "Nieuwe tracknaam:",
 				"name_example_hint": "Voorbeeld: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Tracknaam mag niet leeg zijn",
-				"names_updated": "Tracknaam bijgewerkt"
+				"names_updated": "Tracknaam bijgewerkt",
+                "select_folder_to_add_tracks": "Selecteer map om nummers toe te voegen",
+                "no_supported_files_found": "Geen ondersteunde audio/video-bestanden gevonden in geselecteerde map",
+                "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
+                "error_adding_tracks": "Fout bij toevoegen van nummers"
             },
             "es-mx": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -942,7 +994,11 @@ class Localization:
 				"new_name_label": "Nuevo nombre de pista:",
 				"name_example_hint": "Ejemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "El nombre de la pista no puede estar vacío",
-				"names_updated": "Nombre de pista actualizado"
+				"names_updated": "Nombre de pista actualizado",
+                "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
+                "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
+                "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
+                "error_adding_tracks": "Error al agregar pistas"
             },
             "pt-pt": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1009,7 +1065,11 @@ class Localization:
                 "new_name_label": "Novo nome da faixa:",
                 "name_example_hint": "Exemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "O nome da faixa não pode estar vazio",
-                "names_updated": "Nome da faixa atualizado"
+                "names_updated": "Nome da faixa atualizado",
+                "select_folder_to_add_tracks": "Selecione a pasta para adicionar faixas",
+                "no_supported_files_found": "Nenhum ficheiro de áudio/vídeo suportado encontrado na pasta selecionada",
+                "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
+                "error_adding_tracks": "Erro ao adicionar faixas"
             },
             "pt-br": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1076,7 +1136,11 @@ class Localization:
 				"new_name_label": "Novo nome da faixa:",
 				"name_example_hint": "Exemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "O nome da faixa não pode estar vazio",
-				"names_updated": "Nome da faixa atualizado"
+				"names_updated": "Nome da faixa atualizado",
+                "select_folder_to_add_tracks": "Selecione a pasta para adicionar faixas",
+                "no_supported_files_found": "Nenhum arquivo de áudio/vídeo suportado encontrado na pasta selecionada",
+                "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
+                "error_adding_tracks": "Erro ao adicionar faixas"
             },
             "zh-cn": {
                 "window_title_generator": "播放列表生成器",
@@ -1143,7 +1207,11 @@ class Localization:
 				"new_name_label": "新音轨名称:",
 				"name_example_hint": "例如: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "音轨名称不能为空",
-				"names_updated": "音轨名称已更新"
+				"names_updated": "音轨名称已更新",
+                "select_folder_to_add_tracks": "选择要添加曲目的文件夹",
+                "no_supported_files_found": "在所选文件夹中未找到支持的音频/视频文件",
+                "tracks_added_successfully": "成功添加 {count} 首曲目",
+                "error_adding_tracks": "添加曲目时出错"
             },
             "ko-kr": {
                 "window_title_generator": "플레이리스트 생성기",
@@ -1210,7 +1278,11 @@ class Localization:
 				"new_name_label": "새 트랙 이름:",
 				"name_example_hint": "예: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "트랙 이름은 비워둘 수 없습니다",
-				"names_updated": "트랙 이름 업데이트됨"
+				"names_updated": "트랙 이름 업데이트됨",
+                "select_folder_to_add_tracks": "트랙을 추가할 폴더 선택",
+                "no_supported_files_found": "선택한 폴더에서 지원되는 오디오/비디오 파일을 찾을 수 없음",
+                "tracks_added_successfully": "{count}개의 트랙이 성공적으로 추가됨",
+                "error_adding_tracks": "트랙 추가 중 오류 발생"
             },
             "sl-si": {
                 "window_title_generator": "Generator seznamov predvajanja",
@@ -1277,7 +1349,11 @@ class Localization:
 				"new_name_label": "Novo ime skladbe:",
 				"name_example_hint": "Primer: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Ime skladbe ne more biti prazno",
-				"names_updated": "Ime skladbe posodobljeno"
+				"names_updated": "Ime skladbe posodobljeno",
+                "select_folder_to_add_tracks": "Izberite mapo za dodajanje skladb",
+                "no_supported_files_found": "V izbrani mapi ni podprtih avdio/video datotek",
+                "tracks_added_successfully": "Uspešno dodanih {count} skladb",
+                "error_adding_tracks": "Napaka pri dodajanju skladb"
             },
             "sq-al": {
                 "window_title_generator": "Gjenerues i Listave të Këngëve",
@@ -1344,7 +1420,11 @@ class Localization:
 				"new_name_label": "Emri i ri i këngës:",
 				"name_example_hint": "P.sh.: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Emri i këngës nuk mund të jetë bosh",
-				"names_updated": "Emri i këngës u përditësua"
+				"names_updated": "Emri i këngës u përditësua",
+                "select_folder_to_add_tracks": "Zgjidhni dosjen për të shtuar këngë",
+                "no_supported_files_found": "Nuk u gjetën skedarë audio/video të mbështetur në dosjen e zgjedhur",
+                "tracks_added_successfully": "U shtuan me sukses {count} këngë",
+                "error_adding_tracks": "Gabim gjatë shtimit të këngëve"
             },
             "hr-hr": {
                 "window_title_generator": "Generator playlisti",
@@ -1411,7 +1491,11 @@ class Localization:
 				"new_name_label": "Novi naziv pjesme:",
 				"name_example_hint": "Primjer: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Naziv pjesme ne može biti prazan",
-				"names_updated": "Naziv pjesme ažuriran"
+				"names_updated": "Naziv pjesme ažuriran",
+                "select_folder_to_add_tracks": "Odaberite mapu za dodavanje pjesama",
+                "no_supported_files_found": "Nema podržanih audio/video datoteka u odabranoj mapi",
+                "tracks_added_successfully": "Uspješno dodano {count} pjesama",
+                "error_adding_tracks": "Greška pri dodavanju pjesama"
             },
             "hu-hu": {
                 "window_title_generator": "Lejátszási lista generátor",
@@ -1478,7 +1562,11 @@ class Localization:
 				"new_name_label": "Új szám neve:",
 				"name_example_hint": "Példa: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "A szám neve nem lehet üres",
-				"names_updated": "Szám neve frissítve"
+				"names_updated": "Szám neve frissítve",
+                "select_folder_to_add_tracks": "Válassza ki a zeneszámok hozzáadásához a mappát",
+                "no_supported_files_found": "Nem található támogatott audio/videó fájl a kiválasztott mappában",
+                "tracks_added_successfully": "{count} zeneszám sikeresen hozzáadva",
+                "error_adding_tracks": "Hiba a zeneszámok hozzáadásakor"
             },
             "ro-ro": {
                 "window_title_generator": "Generator de playlist-uri",
@@ -1545,7 +1633,11 @@ class Localization:
 				"new_name_label": "Noul nume al piesei:",
 				"name_example_hint": "Exemplu: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Numele piesei nu poate fi gol",
-				"names_updated": "Numele piesei a fost actualizat"
+				"names_updated": "Numele piesei a fost actualizat",
+                "select_folder_to_add_tracks": "Selectați folderul pentru a adăuga piese",
+                "no_supported_files_found": "Nu s-au găsit fișiere audio/video suportate în folderul selectat",
+                "tracks_added_successfully": "{count} piese adăugate cu succes",
+                "error_adding_tracks": "Eroare la adăugarea pieselor"
             },
             "cs-cz": {
                 "window_title_generator": "Generátor playlistů",
@@ -1612,7 +1704,11 @@ class Localization:
 				"new_name_label": "Nový název skladby:",
 				"name_example_hint": "Příklad: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Název skladby nemůže být prázdný",
-				"names_updated": "Název skladby aktualizován"
+				"names_updated": "Název skladby aktualizován",
+                "select_folder_to_add_tracks": "Vyberte složku pro přidání skladeb",
+                "no_supported_files_found": "Ve vybrané složce nebyly nalezeny podporované audio/video soubory",
+                "tracks_added_successfully": "Úspěšně přidáno {count} skladeb",
+                "error_adding_tracks": "Chyba při přidávání skladeb"
             },
             "nl-be": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -1679,7 +1775,11 @@ class Localization:
 				"new_name_label": "Nieuwe tracknaam:",
 				"name_example_hint": "Voorbeeld: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Tracknaam mag niet leeg zijn",
-				"names_updated": "Tracknaam bijgewerkt"
+				"names_updated": "Tracknaam bijgewerkt",
+                "select_folder_to_add_tracks": "Selecteer map om nummers toe te voegen",
+                "no_supported_files_found": "Geen ondersteunde audio/video-bestanden gevonden in geselecteerde map",
+                "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
+                "error_adding_tracks": "Fout bij toevoegen van nummers"
             },
             "fr-be": {
                 "window_title_generator": "Générateur de Playlist",
@@ -1746,7 +1846,11 @@ class Localization:
 				"new_name_label": "Nouveau nom de piste:",
 				"name_example_hint": "Exemple: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Le nom de la piste ne peut pas être vide",
-				"names_updated": "Nom de piste mis à jour"
+				"names_updated": "Nom de piste mis à jour",
+                "select_folder_to_add_tracks": "Sélectionnez le dossier pour ajouter des pistes",
+                "no_supported_files_found": "Aucun fichier audio/vidéo pris en charge trouvé dans le dossier sélectionné",
+                "tracks_added_successfully": "{count} pistes ajoutées avec succès",
+                "error_adding_tracks": "Erreur lors de l'ajout de pistes"
             },
             "de-be": {
                 "window_title_generator": "Playlist Generator",
@@ -1813,7 +1917,11 @@ class Localization:
 				"new_name_label": "Neuer Trackname:",
 				"name_example_hint": "Beispiel: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Trackname darf nicht leer sein",
-				"names_updated": "Trackname aktualisiert"
+				"names_updated": "Trackname aktualisiert",
+                "select_folder_to_add_tracks": "Ordner zum Hinzufügen von Tracks auswählen",
+                "no_supported_files_found": "Keine unterstützten Audio-/Videodateien im ausgewählten Ordner gefunden",
+                "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
+                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks"
             },
             "ga-ie": {
                 "window_title_generator": "Gineadóir Liosta Ealaíon",
@@ -1880,7 +1988,11 @@ class Localization:
                 "new_name_label": "Ainm nua don sléacht:",
                 "name_example_hint": "Sampla: Rick Astley - Never Gonna Give You Up.mp3",
                 "error_empty_name": "Ní féidir ainm an tsléachta a fhágáil bán",
-                "names_updated": "Ainm an tsléachta nuashonraithe"
+                "names_updated": "Ainm an tsléachta nuashonraithe",
+                "select_folder_to_add_tracks": "Roghnaigh fillteán chun rianta a chur leis",
+                "no_supported_files_found": "Níor aimsíodh aon chomhad fuaime/físe a dtacaítear leis sa bhfillteán roghnaithe",
+                "tracks_added_successfully": "{count} rianta curtha leis go rathúil",
+                "error_adding_tracks": "Earráid agus rianta á gcur leis"
             },
             "is-is": {
                 "window_title_generator": "Spilunarlisti Generator",
@@ -1947,7 +2059,11 @@ class Localization:
 				"new_name_label": "Nýtt nafn lags:",
 				"name_example_hint": "Dæmi: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Nafn lags má ekki vera tómt",
-				"names_updated": "Nafn lags uppfært"
+				"names_updated": "Nafn lags uppfært",
+                "select_folder_to_add_tracks": "Veldu möppu til að bæta við lögum",
+                "no_supported_files_found": "Engin studd hljóð-/myndskrár fundust í valinni möppu",
+                "tracks_added_successfully": "{count} lög bætt við",
+                "error_adding_tracks": "Villa við að bæta við lögum"
             },
             "et-ee": {
                 "window_title_generator": "Esitusloendite Generaator",
@@ -2014,7 +2130,11 @@ class Localization:
 				"new_name_label": "Uus loo nimi:",
 				"name_example_hint": "Näide: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Loo nimi ei saa olla tühi",
-				"names_updated": "Loo nimi uuendatud"
+				"names_updated": "Loo nimi uuendatud",
+                "select_folder_to_add_tracks": "Vali kaust lugude lisamiseks",
+                "no_supported_files_found": "Valitud kaustast ei leitud toetatavaid audio/videofaile",
+                "tracks_added_successfully": "{count} lugu edukalt lisatud",
+                "error_adding_tracks": "Viga lugude lisamisel"
             },
             "nb-no": {
                 "window_title_generator": "Spilleliste-generator",
@@ -2081,7 +2201,11 @@ class Localization:
 				"new_name_label": "Nytt spornavn:",
 				"name_example_hint": "Eksempel: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Spornavn kan ikke være tomt",
-				"names_updated": "Spornavn oppdatert"
+				"names_updated": "Spornavn oppdatert",
+                "select_folder_to_add_tracks": "Velg mappe for å legge til spor",
+                "no_supported_files_found": "Ingen støttede lyd-/videofiler funnet i valgt mappe",
+                "tracks_added_successfully": "{count} spor lagt til",
+                "error_adding_tracks": "Feil ved tilføying av spor"
             },
             "es-cl": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2148,7 +2272,11 @@ class Localization:
 				"new_name_label": "Nuevo nombre de pista:",
 				"name_example_hint": "Ejemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "El nombre de la pista no puede estar vacío",
-				"names_updated": "Nombre de pista actualizado"
+				"names_updated": "Nombre de pista actualizado",
+                "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
+                "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
+                "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
+                "error_adding_tracks": "Error al agregar pistas"
             },
             "es-ar": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -2215,7 +2343,11 @@ class Localization:
 				"new_name_label": "Nuevo nombre de pista:",
 				"name_example_hint": "Ejemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "El nombre de la pista no puede estar vacío",
-				"names_updated": "Nombre de pista actualizado"
+				"names_updated": "Nombre de pista actualizado",
+                "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
+                "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
+                "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
+                "error_adding_tracks": "Error al agregar pistas"
             },
             "es-bo": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2282,7 +2414,11 @@ class Localization:
 				"new_name_label": "Nuevo nombre de pista:",
 				"name_example_hint": "Ejemplo: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "El nombre de la pista no puede estar vacío",
-				"names_updated": "Nombre de pista actualizado"
+				"names_updated": "Nombre de pista actualizado",
+                "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
+                "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
+                "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
+                "error_adding_tracks": "Error al agregar pistas"
             },
             "hi-in": {
                 "window_title_generator": "प्लेलिस्ट जनरेटर",
@@ -2349,7 +2485,11 @@ class Localization:
 				"new_name_label": "नया ट्रैक नाम:",
 				"name_example_hint": "उदाहरण: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "ट्रैक नाम खाली नहीं हो सकता",
-				"names_updated": "ट्रैक नाम अपडेट किया गया"
+				"names_updated": "ट्रैक नाम अपडेट किया गया",
+                "select_folder_to_add_tracks": "ट्रैक जोड़ने के लिए फ़ोल्डर चुनें",
+                "no_supported_files_found": "चयनित फ़ोल्डर में कोई समर्थित ऑडियो/वीडियो फ़ाइलें नहीं मिलीं",
+                "tracks_added_successfully": "{count} ट्रैक सफलतापूर्वक जोड़े गए",
+                "error_adding_tracks": "ट्रैक जोड़ने में त्रुटि"
             },
             "en-au": {
                 "window_title_generator": "Playlist Generator",
@@ -2416,7 +2556,11 @@ class Localization:
                 "new_name_label": "New track name:",
                 "name_example_hint": "Example: Rick Astley - Never Gonna Give You Up.mp3",
                 "error_empty_name": "Track name can't be empty",
-                "names_updated": "Track name updated"
+                "names_updated": "Track name updated",
+                "select_folder_to_add_tracks": "Select folder to add tracks",
+                "no_supported_files_found": "No supported audio/video files found in selected folder",
+                "tracks_added_successfully": "Added {count} tracks successfully",
+                "error_adding_tracks": "Error adding tracks"
             },
             "en-ca": {
                 "window_title_generator": "Playlist Generator",
@@ -2483,7 +2627,11 @@ class Localization:
 				"new_name_label": "New track name:",
 				"name_example_hint": "Example: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Track name cannot be empty",
-				"names_updated": "Track name updated"
+				"names_updated": "Track name updated",
+                "select_folder_to_add_tracks": "Select folder to add tracks",
+                "no_supported_files_found": "No supported audio/video files found in selected folder",
+                "tracks_added_successfully": "Added {count} tracks successfully",
+                "error_adding_tracks": "Error adding tracks"
             },
             "ja-jp": {
                 "window_title_generator": "プレイリスト生成ツール",
@@ -2550,7 +2698,11 @@ class Localization:
 				"new_name_label": "新しいトラック名:",
 				"name_example_hint": "例: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "トラック名は空にできません",
-				"names_updated": "トラック名が更新されました"
+				"names_updated": "トラック名が更新されました",
+                "select_folder_to_add_tracks": "トラックを追加するフォルダを選択",
+                "no_supported_files_found": "選択したフォルダにサポートされているオーディオ/ビデオファイルが見つかりませんでした",
+                "tracks_added_successfully": "{count} トラックを正常に追加しました",
+                "error_adding_tracks": "トラックの追加中にエラーが発生しました"
             },
             "da-dk": {
                 "window_title_generator": "Playlist Generator",
@@ -2617,7 +2769,11 @@ class Localization:
                 "new_name_label": "Nyt spor-navn:",
                 "name_example_hint": "Eksempel: Rick Astley - Never Gonna Give You Up.mp3",
                 "error_empty_name": "Spor-navn kan ikke være tomt",
-                "names_updated": "Spor-navn opdateret"
+                "names_updated": "Spor-navn opdateret",
+                "select_folder_to_add_tracks": "Vælg mappe for at tilføje spor",
+                "no_supported_files_found": "Ingen understøttede lyd-/videofiler fundet i den valgte mappe",
+                "tracks_added_successfully": "{count} spor tilføjet",
+                "error_adding_tracks": "Fejl ved tilføjelse af spor"
             },
             "sv-se": {
                 "window_title_generator": "Spellista Generator",
@@ -2684,7 +2840,11 @@ class Localization:
 				"new_name_label": "Nytt låtnamn:",
 				"name_example_hint": "Exempel: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Låtnamn får inte vara tomt",
-				"names_updated": "Låtnamn uppdaterat"
+				"names_updated": "Låtnamn uppdaterat",
+                "select_folder_to_add_tracks": "Välj mapp för att lägga till spår",
+                "no_supported_files_found": "Inga ljud-/videofiler som stöds hittades i den valda mappen",
+                "tracks_added_successfully": "{count} spår lades till",
+                "error_adding_tracks": "Fel vid tillägg av spår"
             },
             "fi-fi": {
                 "window_title_generator": "Soittolistageneraattori",
@@ -2751,7 +2911,11 @@ class Localization:
 				"new_name_label": "Uusi kappaleen nimi:",
 				"name_example_hint": "Esimerkki: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Kappaleen nimi ei voi olla tyhjä",
-				"names_updated": "Kappaleen nimi päivitetty"
+				"names_updated": "Kappaleen nimi päivitetty",
+                "select_folder_to_add_tracks": "Valitse kansio, johon haluat lisätä raitoja",
+                "no_supported_files_found": "Valitussa kansiossa ei löytynyt tuettuja ääni-/videotiedostoja",
+                "tracks_added_successfully": "{count} raidat lisättiin onnistuneesti",
+                "error_adding_tracks": "Virhe raidat lisättäessä"
             },
             "af-za": {
                 "window_title_generator": "Speellys Generator",
@@ -2818,7 +2982,11 @@ class Localization:
 				"new_name_label": "Nuwe snitnaam:",
 				"name_example_hint": "Voorbeeld: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Snitnaam mag nie leeg wees nie",
-				"names_updated": "Snitnaam opgedateer"
+				"names_updated": "Snitnaam opgedateer",
+                "select_folder_to_add_tracks": "Kies 'n gids om snitte by te voeg",
+                "no_supported_files_found": "Geen ondersteunde klank-/videolêers in die gekose gids gevind nie",
+                "tracks_added_successfully": "{count} snitte suksesvol bygevoeg",
+                "error_adding_tracks": "Fout met byvoeging van snitte"
             },
             "vi-vn": {
                 "window_title_generator": "Trình tạo playlist",
@@ -2885,7 +3053,11 @@ class Localization:
 				"new_name_label": "Tên bài hát mới:",
 				"name_example_hint": "Ví dụ: Rick Astley - Never Gonna Give You Up.mp3\n",
 				"error_empty_name": "Tên bài hát không được để trống",
-				"names_updated": "Tên bài hát đã cập nhật"
+				"names_updated": "Tên bài hát đã cập nhật",
+                "select_folder_to_add_tracks": "Chọn thư mục để thêm bài hát",
+                "no_supported_files_found": "Không tìm thấy tệp âm thanh/hình ảnh được hỗ trợ trong thư mục đã chọn",
+                "tracks_added_successfully": "Đã thêm thành công {count} bài hát",
+                "error_adding_tracks": "Lỗi khi thêm bài hát"
             },
             "id-id": {
                 "window_title_generator": "Pembuat Daftar Putar",
@@ -2952,7 +3124,11 @@ class Localization:
                 "new_name_label": "Nama baru lagu:",
                 "name_example_hint": "Contoh: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Nama lagu tidak boleh kosong",
-                "names_updated": "Nama lagu telah diubah"
+                "names_updated": "Nama lagu telah diubah",
+                "select_folder_to_add_tracks": "Pilih folder untuk menambahkan trek",
+                "no_supported_files_found": "Tidak ada file audio/video yang didukung ditemukan di folder yang dipilih",
+                "tracks_added_successfully": "{count} trek berhasil ditambahkan",
+                "error_adding_tracks": "Kesalahan saat menambahkan trek"
             },
             "el-gr": {
                 "window_title_generator": "Δημιουργός Λιστών Αναπαραγωγής",
@@ -3019,7 +3195,11 @@ class Localization:
                 "new_name_label": "Νέο όνομα κομματιού:",
                 "name_example_hint": "Παράδειγμα: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Το όνομα κομματιού δεν μπορεί να είναι κενό",
-                "names_updated": "Το όνομα κομματιού ενημερώθηκε"
+                "names_updated": "Το όνομα κομματιού ενημερώθηκε",
+                "select_folder_to_add_tracks": "Επιλέξτε φάκελο για προσθήκη κομματιών",
+                "no_supported_files_found": "Δεν βρέθηκαν υποστηριζόμενα αρχεία ήχου/βίντεο στον επιλεγμένο φάκελο",
+                "tracks_added_successfully": "Προστέθηκαν {count} κομμάτια με επιτυχία",
+                "error_adding_tracks": "Σφάλμα κατά την προσθήκη κομματιών"
             },
             "bg-bg": {
                 "window_title_generator": "Генератор на плейлисти",
@@ -3086,7 +3266,11 @@ class Localization:
                 "new_name_label": "Ново име на трака:",
                 "name_example_hint": "Пример: Рик Астли - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Името на трака не може да бъде празно",
-                "names_updated": "Името на трака е обновено"
+                "names_updated": "Името на трака е обновено",
+                "select_folder_to_add_tracks": "Изберете папка за добавяне на песни",
+                "no_supported_files_found": "В избраната папка не бяха намерени поддържани аудио/видео файлове",
+                "tracks_added_successfully": "Успешно добавени {count} песни",
+                "error_adding_tracks": "Грешка при добавяне на песни"
             },
             "lt-lt": {
                 "window_title_generator": "Grojaraščių generatorius",
@@ -3153,7 +3337,11 @@ class Localization:
                 "new_name_label": "Naujas dainos pavadinimas:",
                 "name_example_hint": "Pavyzdys: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Dainos pavadinimas negali būti tuščias",
-                "names_updated": "Dainos pavadinimas atnaujintas"
+                "names_updated": "Dainos pavadinimas atnaujintas",
+                "select_folder_to_add_tracks": "Pasirinkite katalogą, norėdami pridėti takelių",
+                "no_supported_files_found": "Pasirinktame kataloge nerasta palaikomų garso/vaizdo failų",
+                "tracks_added_successfully": "Sėkmingai pridėta {count} takelių",
+                "error_adding_tracks": "Klaida pridedant takelius"
             },
             "lv-lv": {
                 "window_title_generator": "Playlistu Ģenerators",
@@ -3220,7 +3408,11 @@ class Localization:
                 "new_name_label": "Jauns dziesmas nosaukums:",
                 "name_example_hint": "Piemērs: Raimonds Pauls - Maija Dziesma.mp3\n",
                 "error_empty_name": "Dziesmas nosaukums nevar būt tukšs",
-                "names_updated": "Dziesmas nosaukums atjaunināts"
+                "names_updated": "Dziesmas nosaukums atjaunināts",
+                "select_folder_to_add_tracks": "Atlasiet mapi, lai pievienotu dziesmas",
+                "no_supported_files_found": "Atlasītajā mapē netika atrasti atbalstīti audio/video faili",
+                "tracks_added_successfully": "Veiksmīgi pievienotas {count} dziesmas",
+                "error_adding_tracks": "Kļūda, pievienojot dziesmas"
             },
             "mt-mt": {
                 "window_title_generator": "Ġeneratur ta' Playlist",
@@ -3287,7 +3479,11 @@ class Localization:
                 "new_name_label": "Isem ġdid tat-track:",
                 "name_example_hint": "Eżempju: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "L-isem tat-track ma jistax ikun vojt",
-                "names_updated": "Isem tat-track aġġornat"
+                "names_updated": "Isem tat-track aġġornat",
+                "select_folder_to_add_tracks": "Agħżel folder biex iżżid traks",
+                "no_supported_files_found": "L-ebda fajls awdjo/vidjo appoġġjati ma nstab fil-folder magħżul",
+                "tracks_added_successfully": "{count} trakki miżjuda b'suċċess",
+                "error_adding_tracks": "Żball waqt iż-żid ta' trakki"
             },
             "mk-mk": {
                 "window_title_generator": "Генератор на плејлисти",
@@ -3354,7 +3550,11 @@ class Localization:
                 "new_name_label": "Ново име на песна:",
                 "name_example_hint": "Пример: Рик Астли - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Името на песната не може да биде празно",
-                "names_updated": "Името на песната е ажурирано"
+                "names_updated": "Името на песната е ажурирано",
+                "select_folder_to_add_tracks": "Изберете папка за додавање песни",
+                "no_supported_files_found": "Не се пронајдени поддржани аудио/видео датотеки во избраната папка",
+                "tracks_added_successfully": "Успешно додадени {count} песни",
+                "error_adding_tracks": "Грешка при додавање песни"
             },
             "sk-sk": {
                 "window_title_generator": "Generátor playlistu",
@@ -3421,7 +3621,11 @@ class Localization:
                 "new_name_label": "Nový názov skladby:",
                 "name_example_hint": "Príklad: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Názov skladby nemôže byť prázdny",
-                "names_updated": "Názov skladby aktualizovaný"
+                "names_updated": "Názov skladby aktualizovaný",
+                "select_folder_to_add_tracks": "Vyberte priečinok na pridanie skladieb",
+                "no_supported_files_found": "Vo vybranom priečinku sa nenašli žiadne podporované audio/video súbory",
+                "tracks_added_successfully": "Úspešne pridaných {count} skladieb",
+                "error_adding_tracks": "Chyba pri pridávaní skladieb"
             },
             "he-il": {
                 "window_title_generator": "מחולל פלייליסט",
@@ -3488,7 +3692,11 @@ class Localization:
                 "new_name_label": "שם רצועה חדש:",
                 "name_example_hint": "דוגמה: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "שם הרצועה לא יכול להיות ריק",
-                "names_updated": "שם הרצועה עודכן"
+                "names_updated": "שם הרצועה עודכן",
+                "select_folder_to_add_tracks": "בחר תיקייה להוספת רצועות",
+                "no_supported_files_found": "לא נמצאו קבצי אודיו/וידאו נתמכים בתיקייה שנבחרה",
+                "tracks_added_successfully": "נוספו בהצלחה {count} רצועות",
+                "error_adding_tracks": "שגיאה בהוספת רצועות"
             },
             "ta-in": {
                 "window_title_generator": "பிளேலிஸ்ட் ஜெனரேட்டர்",
@@ -3555,7 +3763,11 @@ class Localization:
                 "new_name_label": "புதிய டிராக் பெயர்:",
                 "name_example_hint": "எடுத்துக்காட்டு: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "டிராக் பெயர் காலியாக இருக்க முடியாது",
-                "names_updated": "டிராக் பெயர் புதுப்பிக்கப்பட்டது"
+                "names_updated": "டிராக் பெயர் புதுப்பிக்கப்பட்டது",
+                "select_folder_to_add_tracks": "பாடல்களைச் சேர்க்க கோப்புறையைத் தேர்ந்தெடுக்கவும்",
+                "no_supported_files_found": "தேர்ந்தெடுக்கப்பட்ட கோப்புறையில் ஆதரவு உள்ள ஒலி/காணொளி கோப்புகள் எதுவும் கிடைக்கவில்லை",
+                "tracks_added_successfully": "{count} பாடல்கள் வெற்றிகரமாக சேர்க்கப்பட்டன",
+                "error_adding_tracks": "பாடல்களைச் சேர்க்கும்போது பிழை"
             },
             "te-in": {
                 "window_title_generator": "ప్లేలిస్ట్ జనరేటర్",
@@ -3622,7 +3834,11 @@ class Localization:
                 "new_name_label": "కొత్త ట్రాక్ పేరు:",
                 "name_example_hint": "ఉదాహరణ: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "ట్రాక్ పేరు ఖాళీగా ఉండకూడదు",
-                "names_updated": "ట్రాక్ పేరు అప్డేట్ చేయబడింది"
+                "names_updated": "ట్రాక్ పేరు అప్డేట్ చేయబడింది",
+                "select_folder_to_add_tracks": "ట్రాక్స్ జోడించడానికి ఫోల్డర్ ఎంచుకోండి",
+                "no_supported_files_found": "ఎంచుకున్న ఫోల్డర్‌లో మద్దతు ఉన్న ఆడియో/వీడియో ఫైళ్లు ఏవీ కనుగొనబడలేదు",
+                "tracks_added_successfully": "{count} ట్రాక్స్ విజయవంతంగా జోడించబడ్డాయి",
+                "error_adding_tracks": "ట్రాక్స్ జోడించడంలో లోపం"
             },
             "ms-my": {
                 "window_title_generator": "Penjana Senarai Main",
@@ -3689,7 +3905,11 @@ class Localization:
                 "new_name_label": "Nama trek baru:",
                 "name_example_hint": "Contoh: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Nama trek tidak boleh kosong",
-                "names_updated": "Nama trek dikemas kini"
+                "names_updated": "Nama trek dikemas kini",
+                "select_folder_to_add_tracks": "Pilih folder untuk menambah lagu",
+                "no_supported_files_found": "Tiada fail audio/video yang disokong ditemui dalam folder yang dipilih",
+                "tracks_added_successfully": "{count} lagu berjaya ditambah",
+                "error_adding_tracks": "Ralat semasa menambah lagu"
             },
             "am-et": {
                 "window_title_generator": "የፕሌይሊስት ጀነሬተር",
@@ -3756,7 +3976,11 @@ class Localization:
                 "new_name_label": "የአዲሱ ትራክ ስም፡",
                 "name_example_hint": "ምሳሌ፡ Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "የትራክ ስም ባዶ ሊሆን አይችልም",
-                "names_updated": "የትራክ ስም ተዘምኗል"
+                "names_updated": "የትራክ ስም ተዘምኗል",
+                "select_folder_to_add_tracks": "ትራኮችን ለመጨመር አቃፊ ይምረጡ",
+                "no_supported_files_found": "በተመረጠው አቃፊ ውስጥ የሚደገፉ የድምፅ/ቪዲዮ ፋይሎች አልተገኙም",
+                "tracks_added_successfully": "{count} ትራኮች በተሳካ ሁኔታ ታክለዋል",
+                "error_adding_tracks": "ትራኮችን በማከል ላይ ስህተት"
             },
             "sw-ke": {
                 "window_title_generator": "Kizazi cha Orodha ya Nyimbo",
@@ -3823,7 +4047,11 @@ class Localization:
                 "new_name_label": "Jina jipya la wimbo:",
                 "name_example_hint": "Mfano: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Jina la wimbo haliwezi kuwa wazi",
-                "names_updated": "Jina la wimbo limebadilishwa"
+                "names_updated": "Jina la wimbo limebadilishwa",
+                "select_folder_to_add_tracks": "Chagua folda ya kuongeza nyimbo",
+                "no_supported_files_found": "Hakuna faili za sauti/video zinazotumika zilizopatikana katika folda uliyochagua",
+                "tracks_added_successfully": "Nyimbo {count} zimeongezwa kwa mafanikio",
+                "error_adding_tracks": "Hitilafu wakati wa kuongeza nyimbo"
             },
             "zu-za": {
                 "window_title_generator": "Umakhi Weplaylist",
@@ -3890,7 +4118,11 @@ class Localization:
                 "new_name_label": "Igama elisha lomculo:",
                 "name_example_hint": "Isibonelo: Rick Astley - Never Gonna Give You Up.mp3\n",
                 "error_empty_name": "Igama lomculo alinakuba yize",
-                "names_updated": "Igama lomculo livuselelwe"
+                "names_updated": "Igama lomculo livuselelwe",
+                "select_folder_to_add_tracks": "Khetha ifolda yokungeza amathrekhi",
+                "no_supported_files_found": "Ayikho ifayela yomsindo/ividiyo esekelayo etholakala kufolda ekhethiwe",
+                "tracks_added_successfully": "Amakhodi {count} angezwe ngempumelelo",
+                "error_adding_tracks": "Iphutha ekwengezeni amathrekhi"
             }
         }
         self.lang_names = {code: data["language_name"] for code, data in self.languages.items()}
