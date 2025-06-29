@@ -1879,7 +1879,7 @@ class PlaylistEditor:
         self.tree.tag_configure('modified_name_path', background='#c6f5f0') # Бирюзовый
         self.tree.tag_configure('modified_name_path_moved', background='#CCDAFF')
         self.tree.tag_configure('found', background='white')  # для найденных элементов
-        self.tree.tag_configure('added', background='#E0E0E0') # Все три состояния
+        self.tree.tag_configure('added', background='#EAEAEA') # Все три состояния E0E0E0
 
         # Получаем поисковый запрос
         search_term = self.search_entry.get().lower()
@@ -2254,36 +2254,24 @@ class PlaylistEditor:
                 # Если не было ни перемешивания, ни редактирования - используем оригинальный порядок
                 base_list = self.original_list.copy()
 
-            # 1. Присваиваем временные ID перед сортировкой
+            # 1. Присваиваем временные ID и сохраняем полные копии оригинальных треков
+            original_tracks = {}
             for track in base_list:
-                track["temp_id"] = str(uuid.uuid4())  # Временный уникальный ID
-
-            # Сохраняем текущие состояния restored и modified и др. перед любыми изменениями
-            track_states = {
-                track['original_path']: {
-                    'track_id': track.get('track_id'),  # Основной ID
-                    'temp_id': track.get('temp_id'),   # Временный ID
-                    'was_restored': track.get('was_restored', False),
-                    'was_modified': track.get('was_modified', False),
-                    'was_name_modified': track.get('was_name_modified', False),
-                    'was_moved': track.get('was_moved', False),
-                    'found': track.get('found', False),
-                    'path': track['path'],
-                    'name': track['name'],
-                    'original_name': track.get('original_name', track['name']),    
-                } 
-                for track in base_list.copy()
-            }            
-                             
-            # Гарантируем наличие original_path и сохраняем флаги
+                temp_id = str(uuid.uuid4())
+                track["temp_id"] = temp_id
+                # Сохраняем ПОЛНУЮ КОПИЮ оригинального трека
+                original_tracks[temp_id] = track.copy()
+            
+            # 2. Гарантируем наличие original_path и применяем модификации
             for track in base_list:
                 if "original_path" not in track:
                     track["original_path"] = track["path"]
-                    
+                
+                # Применяем изменения только к текущему треку
                 if track["original_path"] in self.modified_paths:
-                    track["path"] = self.modified_paths[track["original_path"]]    
+                    track["path"] = self.modified_paths[track["original_path"]]
                     track["was_modified"] = True
-                    
+                
             # Сортируем по именам (A-Z)
             self.sorted_list = sorted(base_list, 
                             key=lambda x: (not x['name'][0].isalpha(), x['name'].lower()))
@@ -2333,42 +2321,38 @@ class PlaylistEditor:
                 print("===================================================================")            
             
             
-            # Восстанавливаем все состояния после перемешивания
+            # 3. Восстанавливаем состояния после перемешивания
             for track in self.shuffled_list:
-                # Сначала находим оригинальный трек по временному ID
-                original_track = None
-                for original_path, state in track_states.items():
-                    if state['temp_id'] == track.get('temp_id'):
-                        original_track = state
-                        break
-                
-                if original_track:
-                    # Восстанавливаем основной ID из оригинального трека
-                    track["track_id"] = original_track['track_id']
+                temp_id = track.get('temp_id')
+                if temp_id and temp_id in original_tracks:
+                    original_track = original_tracks[temp_id]
                     
-                    # Восстанавливаем остальные состояния
-                    track["was_modified"] = original_track['was_modified']
-                    track["was_name_modified"] = original_track['was_name_modified']
-                    track["was_moved"] = original_track['was_moved']
-                    track["was_restored"] = original_track['was_restored']
-                    track["original_name"] = original_track['original_name']
-                    track["found"] = original_track['found']
+                    # Восстанавливаем ВСЕ атрибуты из оригинального трека
+                    for key in ['track_id', 'was_restored', 'was_modified', 
+                               'was_name_modified', 'was_moved', 'found',
+                               'original_path', 'original_name']:
+                        if key in original_track:
+                            track[key] = original_track[key]
                     
-                    # Для модифицированных треков сохраняем новый путь
-                    if track["was_modified"] and track["original_path"] in self.modified_paths:
-                        track["path"] = self.modified_paths[track["original_path"]]
+                    # Особые случаи:
+                    # - Путь восстанавливаем только если не был изменен
+                    if not track.get('was_modified', False):
+                        track['path'] = original_track['path']
                     
-                    if track["was_name_modified"]:
-                        track["name"] = original_track['name']
+                    # - Имя восстанавливаем только если не было изменено
+                    if not track.get('was_name_modified', False):
+                        track['name'] = original_track['name']
+                    
+                    # - Для модифицированных треков сохраняем текущий путь
+                    if track.get('was_modified', False) and track['original_path'] in self.modified_paths:
+                        track['path'] = self.modified_paths[track['original_path']]
                 
-                # Удаляем временный ID
-                if 'temp_id' in track:
-                    del track['temp_id']
-                
-                # Удаляем временный флаг перемещения (если был установлен при сортировке)
+                # Удаляем временные данные
+                track.pop('temp_id', None)
                 if 'was_moved' in track and not track['was_moved']:
                     del track['was_moved']
-            
+
+                
             # Обновляем отображение
             self.display_tracks = self.shuffled_list
             self.update_display()
