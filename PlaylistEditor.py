@@ -3077,7 +3077,7 @@ class PlaylistEditor:
                         track["was_name_modified"] = True
                         
             self.display_tracks = self.temp_list.copy()
-            self.update_display(selection_indices=[self.tree.index(item) for item in selected_items])
+            self.update_display()
             self.save_state()
             
             self.shuffled_list = None
@@ -3120,7 +3120,7 @@ class PlaylistEditor:
                         track['was_modified'] = True
                     
             self.display_tracks = self.temp_list.copy()
-            self.update_display(selection_indices=[self.tree.index(item) for item in selected_items])
+            self.update_display()
             self.save_state()
             
             self.shuffled_list = None
