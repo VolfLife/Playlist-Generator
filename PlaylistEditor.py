@@ -2071,19 +2071,7 @@ class PlaylistEditor:
             self.search_entry.delete(0, tk.END)
             self.search_entry.insert(0, current_search)
             self.on_search_key_release(None)
-        
-        # Восстанавливаем выделение с проверкой типов
-        #if current_state.get('selection'):
-            #try:
-                #children = self.tree.get_children()
-                #for idx in current_state['selection']:
-                    # Преобразуем индекс в int если нужно
-                    #idx_int = int(idx) if isinstance(idx, str) else idx
-                    #if 0 <= idx_int < len(children):
-                        #self.tree.selection_add(children[idx_int])
-            #except (ValueError, tk.TclError):
-                #pass  # Игнорируем ошибки преобразования или несуществующие индексы
-            
+                   
 
     def add_to_deletion_history(self, track):
         """Добавляет трек в историю удалений и обновляет карту"""
