@@ -26,7 +26,7 @@ To download the program, go to the [Releases](https://github.com/VolfLife/Playli
 
 * Seed-based shuffling for reproducible results
 
-* Reversal step algorithm for complex shuffling
+* Custom extra swaps & segmented block reversal algorithms for complex shuffling
 
 * Preserves playlist metadata:
 
@@ -66,10 +66,12 @@ Creates a playlist from scratch. Simply launch the executable to enter generator
 3. Enter a custom seed or leave blank for random generation
 
 4. Configure optional settings:
+	
+ 	* **Extra swaps**: Enable for secondary shuffling
+	
+ 	* **Reversal Step**: Set block size for reverse shuffling
 
-	* **Reversal Step**: Set block size for reverse shuffling
-
- 	* **Shadow Seed**: Enable for advanced shuffle algorithm
+ 	* **Shadow Seed**: Alternative seed for wider permutation coverage
 
 	* **Format**: Select output format (`.m3u`/`.pls`/etc.)
 
@@ -85,7 +87,7 @@ Edits and saves data from existing playlists without requiring local track files
 
 #### Features:
 
-* All generator mixing options (excluding shadow seed)
+* All generator mixing options
 
 * Quick track search/filter by name
 
