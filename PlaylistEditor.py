@@ -58,6 +58,7 @@ class PlaylistEditor:
         self.display_names = []
         self.current_seed = ""
         self.current_reverse_step = None
+        self.current_swaps = None
         self.seed_format = self.localization.tr("seed_formats")[0]  # По умолчанию
         self.selected_for_edit = []
         
@@ -172,7 +173,7 @@ class PlaylistEditor:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 3) - (height // 3)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
-        self.root.minsize(540, 687)
+        self.root.minsize(540, 738)
 
         
     def load_playlist(self):
@@ -1005,8 +1006,15 @@ class PlaylistEditor:
         self.step_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
         
         
-        tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
+        # Поле перестановок
+        tk.Label(input_frame, text=self.localization.tr("intensity_label")).grid(
             row=3, column=0, sticky="w", padx=5, pady=3)
+        self.intensity_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
+        self.intensity_entry.insert(0, "")
+        self.intensity_entry.grid(row=3, column=1, padx=5, pady=3, sticky="w")
+        
+        tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
+            row=4, column=0, sticky="w", padx=5, pady=3)
         self.seed_format_combobox = ttk.Combobox(
             input_frame, 
             values=self.localization.tr("seed_formats"), 
@@ -1014,7 +1022,7 @@ class PlaylistEditor:
             width=18
         )
         self.seed_format_combobox.current(0)
-        self.seed_format_combobox.grid(row=3, column=1, padx=5, pady=3, sticky="w")
+        self.seed_format_combobox.grid(row=4, column=1, padx=5, pady=3, sticky="w")
         self.seed_format_combobox.bind("<<ComboboxSelected>>", self.update_seed_format)
         
         
@@ -1039,19 +1047,19 @@ class PlaylistEditor:
         
         # Поле для сообщений
         message_frame = ttk.Frame(main_frame)
-        message_frame.pack(fill=tk.X, pady=(12, 12))
+        message_frame.pack(fill=tk.X, pady=16)
         
         # Фиксируем высоту фрейма сообщений
         message_frame.pack_propagate(False)  # Отключаем автоматическое изменение размера
-        message_frame.config(height=45)  # Устанавливаем фиксированную высоту
+        message_frame.config(height=65)  # Устанавливаем фиксированную высоту
         
         self.seed_info = tk.Label(
             message_frame,
             text="",
-            fg="red",
+            fg="green",
             justify="center"  # Выравнивание по центру при переносе строк
         )
-        self.seed_info.pack(fill=tk.X, expand=True)
+        self.seed_info.pack(fill=tk.X, expand=False)
         
                 
                 
@@ -1879,7 +1887,7 @@ class PlaylistEditor:
         self.tree.tag_configure('modified_name_path', background='#c6f5f0') # Бирюзовый
         self.tree.tag_configure('modified_name_path_moved', background='#CCDAFF')
         self.tree.tag_configure('found', background='white')  # для найденных элементов
-        self.tree.tag_configure('added', background='#EAEAEA') # Все три состояния E0E0E0
+        self.tree.tag_configure('added', background='#F0F0F0') # Все три состояния E0E0E0
 
         # Получаем поисковый запрос
         search_term = self.search_entry.get().lower()
@@ -2218,7 +2226,7 @@ class PlaylistEditor:
         return reversed_files
 
 
-    def shuffle_tracks(self):
+    def shuffle_tracks(self, num_swaps=None):
         """Перемешивание с фиксированным результатом для одинакового сида"""
         import _pylong
         import uuid
@@ -2281,7 +2289,7 @@ class PlaylistEditor:
            
             # Перемешиваем sorted_list
             tracks = [track.copy() for track in self.sorted_list]  # Глубокое копирование
-            self.shuffled_list = self.soft_shuffle(tracks, str(seed_trimmed))
+            self.shuffled_list, num_swaps = self.soft_shuffle(tracks, str(seed_trimmed))
             
             print("[DEBUG] : Перестановленный список ============================")
             for i, track in enumerate(self.shuffled_list, 1):
@@ -2294,6 +2302,9 @@ class PlaylistEditor:
                 try:
                     step = int(step_value)
                     if 0 < step <= 20:
+                        if step == 1:
+                            step = random.randint(2, 20)
+                        
                         # Реверсируем блоки в shuffled_list
                         print(f"[DEBUG] Реверс = {step}")
                         for i in range(0, len(self.shuffled_list), step):
@@ -2347,6 +2358,7 @@ class PlaylistEditor:
             
             # Обновляем информацию о сиде
             self.current_seed = seed_trimmed
+            self.current_swaps = num_swaps if num_swaps > 0 else None
             self.current_reverse_step = step if step > 0 else None
                     
             print(f"[SUCCES] Перемешивание завершено")
@@ -2354,9 +2366,15 @@ class PlaylistEditor:
             self.save_state()
             # Показываем сообщение
             if step > 0:
-                info_text = self.localization.tr("editor_seed_info_step").format(seed=seed_trimmed, step=step)
+                if self.current_swaps:
+                    info_text = self.localization.tr("editor_seed_info_intensity_step").format(seed=seed_trimmed, step=step, num_swaps=self.current_swaps)
+                else:
+                    info_text = self.localization.tr("editor_seed_info_step").format(seed=seed_trimmed, step=step)
             else:
-                info_text = self.localization.tr("editor_seed_info_basic").format(seed=seed_trimmed)
+                if self.current_swaps:
+                    info_text = self.localization.tr("editor_seed_info_intensity").format(seed=seed_trimmed, num_swaps=self.current_swaps)
+                else:
+                    info_text = self.localization.tr("editor_seed_info_basic").format(seed=seed_trimmed)
             
             self.seed_info.config(text=info_text, fg="green")
             
@@ -2391,24 +2409,50 @@ class PlaylistEditor:
             print(f"{i}. {track['name']} \n                                                                     TempID: {track['temp_id']}      |       ID: {track.get('track_id')}")
         print("===================================================================")
         
-        # Генерация intensity из сида, если не задано
-        if intensity is None:
-            # Используем хеш сида как основу для 0.6-1.0
-            hash_ratio = (seed_hash % 10_000_000_000) / 10_000_000_000  # 0.0-0.999...
-            intensity = 0.6 + 0.4 * hash_ratio  # Растягиваем на диапазон 0.6-1.0
-        else:
-            # Ограничиваем ручной ввод с сохранением точности
-            intensity = max(0.6, min(1.0, float(intensity)))
+        # Обработка шага реверса
+        intensity_value = self.intensity_entry.get()
+        intensity = 0
+        num_swaps = 0
+        if intensity_value.strip():
+            try:
+                intensity = int(intensity_value)
+                if intensity < 0:
+                    raise ValueError
+            except ValueError:
+                self.seed_info.config(text=self.localization.tr("error_intensity"), fg="red")
+                return            
+
             
-        # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
-        print(f"[DEBUG] Генерация intensity из сида = {intensity}")
-        print(f"[DEBUG] Количество перестановок = {num_swaps}")
-        for _ in range(num_swaps):
-            i, j = random.sample(range(len(files)), 2)
-            files[i], files[j] = files[j], files[i]
-            print(f"[DEBUG] Перемешано {i}<->{j}")
-        return files
+        # Генерация intensity из сида, если не задано
+        if intensity != 0 and intensity is None:
+            return files, num_swaps
+
+        elif intensity == 1:
+            # Используем хеш сида для генерации значения 0.6-1.0
+            hash_val = (seed_hash % 10_000_000_000) / 10_000_000_000
+            intensity = 0.6 + 0.4 * hash_val  # Растягиваем на диапазон 0.6-1.0
+            
+            # Количество перестановок = 30% от числа треков (можно регулировать)
+            num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
+            print(f"[DEBUG] Генерация intensity из сида = {intensity}")
+            print(f"[DEBUG] Количество перестановок = {num_swaps}")
+            for _ in range(num_swaps):
+                i, j = random.sample(range(len(files)), 2)
+                files[i], files[j] = files[j], files[i]
+                print(f"[DEBUG] Перемешано {i}<->{j}")
+            return files, num_swaps          
+
+        else:
+                
+            # Количество перестановок = 30% от числа треков (можно регулировать)
+            num_swaps = int(intensity)
+            print(f"[DEBUG] Генерация intensity из сида = {intensity}")
+            print(f"[DEBUG] Количество перестановок = {num_swaps}")
+            for _ in range(num_swaps):
+                i, j = random.sample(range(len(files)), 2)
+                files[i], files[j] = files[j], files[i]
+                print(f"[DEBUG] Перемешано {i}<->{j}")
+            return files, num_swaps
 
 
 
@@ -2500,6 +2544,8 @@ class PlaylistEditor:
                         f.write(f"#SEED:{self.current_seed}\n")
                         if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
                             f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
+                        if self.current_swaps:
+                            f.write(f"#NUM_SWAPS:{self.current_swaps}\n")    
                     
                     f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
@@ -2527,6 +2573,8 @@ class PlaylistEditor:
                         f.write(f"#SEED:{self.current_seed}\n")
                         if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
                             f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
+                        if self.current_swaps:
+                            f.write(f"#NUM_SWAPS:{self.current_swaps}\n")    
                     
                     f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
@@ -2549,6 +2597,8 @@ class PlaylistEditor:
                         f.write(f"#SEED:{self.current_seed}\n")
                         if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
                             f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
+                        if self.current_swaps:
+                            f.write(f"#NUM_SWAPS:{self.current_swaps}\n")     
                     
                     f.write(f"NumberOfEntries={len(saved_tracks)}\n")
                     f.write("Version=2\n\n")  # Версия формата PLS
@@ -2580,6 +2630,8 @@ class PlaylistEditor:
                     
                     if self.current_reverse_step is not None and self.current_reverse_step > 0:
                         f.write(f'<Abstract>REVERSE_STEP:{self.current_reverse_step}</Abstract>\n')
+                    if self.current_swaps is not None and self.current_swaps > 0:
+                        f.write(f'<Abstract>NUM_SWAPS:{self.current_swaps}</Abstract>\n')    
                     
                     f.write(f'<Abstract>TRACKS:{len(saved_tracks)}</Abstract>\n\n')
                     
@@ -2612,7 +2664,9 @@ class PlaylistEditor:
                         f.write('  <annotation>\n')
                         f.write(f'    SEED:{self.current_seed}\n')
                         if hasattr(self, 'current_reverse_step'):
-                            f.write(f'    REVERSE_STEP:{self.current_reverse_step}\n')
+                            f.write(f'    REVERSE_STEP:{self.current_swaps}\n')
+                        if self.current_swaps:
+                            f.write(f'    NUM_SWAPS:{self.current_swaps}\n')
                         f.write('  </annotation>\n')
                     
                     f.write('  <trackList>\n')
@@ -2658,6 +2712,8 @@ class PlaylistEditor:
                         f.write(f'    SEED:{self.current_seed}\n')
                         if hasattr(self, 'current_reverse_step'):
                             f.write(f'    REVERSE_STEP:{self.current_reverse_step}\n')
+                        if self.current_swaps:
+                            f.write(f'    NUM_SWAPS:{self.current_swaps}\n')    
                         f.write('  </annotation>\n')
                     
                     f.write('  <trackList>\n')
@@ -2692,6 +2748,7 @@ class PlaylistEditor:
                         "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "seed": self.current_seed,
                         "reverse_step": self.current_reverse_step if self.current_reverse_step and self.current_reverse_step > 0 else None,
+                        "num_swaps": self.current_swaps if self.current_swaps and self.current_swaps > 0 else None,
                         "num_tracks": len(saved_tracks)
                     },
                     "tracks": []
@@ -2725,6 +2782,8 @@ class PlaylistEditor:
                     f.write(f'      SEED:{self.current_seed}\n')
                     if self.current_reverse_step:
                         f.write(f'      REVERSE_STEP:{self.current_reverse_step}\n')
+                    if self.current_swaps:
+                        f.write(f'      NUM_SWAPS:{self.current_swaps}\n')
                     f.write('    -->\n')
                     
                     f.write('  </head>\n')
@@ -2761,6 +2820,8 @@ class PlaylistEditor:
                         f.write('    SEED:{}\n'.format(self.current_seed))
                     if self.current_reverse_step:
                         f.write('    REVERSE_STEP:{}\n'.format(self.current_reverse_step))
+                    if self.current_swaps:
+                        f.write('    NUM_SWAPS:{}\n'.format(self.current_swaps))
                     f.write('    TRACKS:{}\n'.format(len(saved_tracks)))
                     f.write('  </annotation>\n')
                     
@@ -2798,14 +2859,27 @@ class PlaylistEditor:
             self.display_tracks = saved_tracks.copy()
             self.update_display()
             
-            # Формируем сообщение
-            message = self.localization.tr("playlist_saved").format(name=f"{playlist_name}.{playlist_format}")
-            if self.shuffled_list is not None and hasattr(self, 'current_seed'):
-                message += f" \n {self.localization.tr('seed_info_value')}: {self.current_seed}"
-                if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
-                    message += f" \n {self.localization.tr('reverse_info_value')}: {self.current_reverse_step}"
+            # Формируем сообщение          
+            if self.current_reverse_step:
+                if self.current_swaps:
+                    info_text = self.localization.tr("seed_info_intensity_step").format(
+                        seed=self.current_seed, step=self.current_reverse_step, num_swaps=self.current_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_step").format(
+                        seed=self.current_seed, step=self.current_reverse_step
+                    )
+            else:
+                if self.current_swaps:
+                    info_text = self.localization.tr("seed_info_intensity").format(
+                        seed=self.current_seed, num_swaps=self.current_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_basic").format(
+                        seed=self.current_seed
+                    )
             
-            self.seed_info.config(text=message, fg="green")
+            self.seed_info.config(text=self.localization.tr("playlist_saved").format(name=f"{playlist_name}.{playlist_format}", info=info_text), fg="green")
             
         except Exception as e:
             self.seed_info.config(text=f"{self.localization.tr('error_save')}: {str(e)}", fg="red")

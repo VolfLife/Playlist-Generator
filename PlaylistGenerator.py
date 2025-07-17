@@ -137,7 +137,7 @@ class PlaylistGenerator:
     
         # Устанавливаем положение и размер
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        self.root.minsize(540, 310)
+        self.root.minsize(540, 361)
     
         if self.last_folders:
             self.folder_entry.insert(0, self.last_folders)
@@ -393,23 +393,29 @@ class PlaylistGenerator:
         self.step_entry = ttk.Entry(self.root, width=40)
         self.step_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
 
+        # Поле для intensity
+        tk.Label(self.root, text=self.localization.tr("intensity_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        self.intensity_entry = ttk.Entry(self.root, width=40)
+        self.intensity_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+
         # Выбор формата сида
-        tk.Label(self.root, text=self.localization.tr("seed_format_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        tk.Label(self.root, text=self.localization.tr("seed_format_label")).grid(row=5, column=0, sticky="w", padx=10, pady=5)
         self.seed_format = ttk.Combobox(self.root, 
                                       values=self.localization.tr("seed_formats"), 
                                       state="readonly")
         self.seed_format.current(0)
-        self.seed_format.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+        self.seed_format.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
 
         # Чекбокс для теневого сида
         self.use_shadow_seed = tk.BooleanVar()
         self.shadow_seed_check = ttk.Checkbutton(
             self.root, 
             text=self.localization.tr("shadow_seed_check"),
-            variable=self.use_shadow_seed,
-            command=self.toggle_step_entry
+            variable=self.use_shadow_seed
+            #command=self.toggle_step_entry
         )
-        self.shadow_seed_check.grid(row=5, column=0, columnspan=3, pady=5)
+        self.shadow_seed_check.grid(row=6, column=0, columnspan=3, pady=5)
+                
         
         # Добавляем подсказку при наведении курсора
         self.folder_entry_tooltip = tk.Label(self.root, text=self.localization.tr("folder_entry_tooltip"), 
@@ -424,7 +430,7 @@ class PlaylistGenerator:
         
         # Выбор языка
         language_frame = ttk.Frame(self.root)
-        language_frame.grid(row=6, column=0, columnspan=3, pady=5, sticky="ew")
+        language_frame.grid(row=7, column=0, columnspan=3, pady=5, sticky="ew")
     
         self.language_label = tk.Label(language_frame, text=self.localization.tr("language_label"))
         self.language_label.pack(side=tk.LEFT, padx=(10, 5))
@@ -473,7 +479,7 @@ class PlaylistGenerator:
         
         # Поле для вывода информации
         self.seed_info = tk.Label(self.root, text="", fg="green", bg=self.root.cget('bg'))
-        self.seed_info.grid(row=7, column=0, columnspan=3, pady=5)
+        self.seed_info.grid(row=8, column=0, columnspan=3, pady=5)
         
         
         self.create_github_link()  # Создаем ссылку на GitHub
@@ -528,10 +534,11 @@ class PlaylistGenerator:
             (1, 0, "playlist_name_label"),
             (2, 0, "seed_label"),
             (3, 0, "reverse_step_label"),
-            (4, 0, "seed_format_label"),
-            (5, 0, "shadow_seed_check"),
-            (6, 1, "generate_button"),
-            (6, 0, "language_label"), # Для label в language_frame
+            (4, 0, "intensity_label"),
+            (5, 0, "seed_format_label"),
+            (6, 0, "shadow_seed_check"),
+            (7, 1, "generate_button"),
+            (7, 0, "language_label") # Для label в language_frame   
         ]
         
         for row, col, key in widgets_to_update:
@@ -673,7 +680,7 @@ class PlaylistGenerator:
         
         
         
-    def generate_playlist(self):
+    def generate_playlist(self, num_swaps=None):
         import _pylong
         sys.set_int_max_str_digits(0)
         print(f"[DEBUG] ПРОЦЕСС ПЕРЕМЕШИВАНИЯ \n===================================================================")
@@ -720,7 +727,6 @@ class PlaylistGenerator:
         num_tracks = len(audio_files)
         total_size = sum(os.path.getsize(f) for f in audio_files)
         now = datetime.datetime.now()
-
     
         # Счетчик итераций (сбрасывается при ручном вводе сида)
         if not hasattr(self, '_generation_iteration'):
@@ -768,42 +774,111 @@ class PlaylistGenerator:
 
         # Обработка перемешивания
         reverse_step = None
-        if self.use_shadow_seed.get():       
+        if step == 1:       
             # Определяем шаг реверса (1-20)
-            reverse_step = random.randint(1, 20)
+            reverse_step = random.randint(2, 20)
             print(f"[DEBUG] Реверс = {reverse_step}")
             
-            # Основное перемешивание по теневому сиду
-            shuffled = self.soft_shuffle(audio_files, str(shadow_seed_trimmed))
+            if self.use_shadow_seed.get():
+                seed_trimmed = shadow_seed_trimmed
+                # Основное перемешивание по теневому сиду
+                shuffled, num_swaps = self.soft_shuffle(audio_files, str(shadow_seed_trimmed))
+                shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
             
-            # Применяем реверс блоков
-            shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_shadow_intensity_step").format(
+                        shadow_seed=shadow_seed_trimmed, step=reverse_step, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_shadow_step").format(
+                        shadow_seed=shadow_seed_trimmed, step=reverse_step
+                    )
+            else:
             
-            info_text = self.localization.tr("seed_info_shadow").format(
-                seed=seed_trimmed, shadow_seed=shadow_seed_trimmed, step=reverse_step
-            )
+                # Основное перемешивание по основному сиду
+                shuffled, num_swaps = self.soft_shuffle(audio_files, str(seed_trimmed))
+            
+                # Применяем реверс блоков
+                shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
+                
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_intensity_step").format(
+                        seed=seed_trimmed, step=reverse_step, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_step").format(
+                        seed=seed_trimmed, step=reverse_step
+                    )
+            
             print(f"[DEBUG] : Перестановленный список (Теневой сид + {reverse_step}) ============================")
             for i, path in enumerate(shuffled_files, 1):
                 print(f"{i}. {os.path.basename(path)}")
             print("===================================================================")
+            
         elif step > 0:
             # Ручной шаг реверса
             reverse_step = step
             print(f"[DEBUG] Реверс = {reverse_step}")
-            shuffled = self.soft_shuffle(audio_files, str(seed_trimmed))
-            shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
-            info_text = self.localization.tr("seed_info_step").format(
-                seed=seed_trimmed, step=reverse_step
-            )
-            print(f"[DEBUG] : Перестановленный список с реверсом {reverse_step} ============================")
+            
+            if self.use_shadow_seed.get():
+                shuffled, num_swaps = self.soft_shuffle(audio_files, str(shadow_seed_trimmed))
+                shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
+                
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_shadow_intensity_step").format(
+                        shadow_seed=shadow_seed_trimmed, step=reverse_step, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_shadow_step").format(
+                        shadow_seed=shadow_seed_trimmed, step=reverse_step
+                    )
+                
+            else:
+                shuffled, num_swaps = self.soft_shuffle(audio_files, str(seed_trimmed))
+                shuffled_files = self.apply_reverse_step(shuffled, reverse_step)
+            
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_intensity_step").format(
+                        seed=seed_trimmed, step=reverse_step, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_step").format(
+                        seed=seed_trimmed, step=reverse_step
+                    )
+            
+            print(f"[DEBUG] : Новый список с реверсом {reverse_step} ============================")
             for i, path in enumerate(shuffled_files, 1):
                 print(f"{i}. {os.path.basename(path)}")
             print("===================================================================")
+            
         else:
             # Без реверса
-            shuffled_files = self.soft_shuffle(audio_files, str(seed_trimmed))
-            info_text = self.localization.tr("seed_info_basic").format(seed=seed_trimmed)
-            print(f"[DEBUG] : Перестановленный список ============================")
+            if self.use_shadow_seed.get():
+                shuffled_files, num_swaps = self.soft_shuffle(audio_files, str(shadow_seed_trimmed))
+                
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_shadow_intensity").format(
+                        shadow_seed=shadow_seed_trimmed, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_shadow").format(
+                        shadow_seed=shadow_seed_trimmed
+                    )
+                
+            else:
+                shuffled_files, num_swaps = self.soft_shuffle(audio_files, str(seed_trimmed))
+                
+                if num_swaps:
+                    info_text = self.localization.tr("seed_info_intensity").format(
+                        seed=seed_trimmed, num_swaps=num_swaps
+                    )
+                else:
+                    info_text = self.localization.tr("seed_info_basic").format(
+                        seed=seed_trimmed
+                    )
+            
+            
+            print(f"[DEBUG] : Новый список ============================")
             for i, path in enumerate(shuffled_files, 1):
                 print(f"{i}. {os.path.basename(path)}")
             print("===================================================================")
@@ -820,15 +895,82 @@ class PlaylistGenerator:
             num_tracks=num_tracks,
             date=now,
             reverse_step=reverse_step,
+            num_swaps=num_swaps,
             playlist_format=playlist_format
         )
 
         self.last_folder = valid_paths
         self.save_settings()
         self.seed_info.config(text=self.localization.tr("playlist_created").format(info=info_text), fg="green")
+       
+       
+    def soft_shuffle(self, files, seed_value):
+        """Перемешивание с небольшими изменениями"""
+        seed_hash = abs(self.stable_hash(str(seed_value)))
+        random.seed(seed_hash)
+        files = files.copy()
+        
+        print(f"[DEBUG] : Текущий список ============================")
+        for i, path in enumerate(files, 1):
+            print(f"{i}. {os.path.basename(path)}")
+        print("===================================================================")
+        
+        random.shuffle(files)
+        
+        print(f"[DEBUG] : Перемешанный список ============================")
+        for i, path in enumerate(files, 1):
+            print(f"{i}. {os.path.basename(path)}")
+        print("===================================================================")
+            
+            
+        # Обработка шага реверса
+        intensity_value = self.intensity_entry.get()
+        intensity = 0
+        num_swaps = 0
+        if intensity_value.strip():
+            try:
+                intensity = int(intensity_value)
+                if intensity < 0:
+                    raise ValueError
+            except ValueError:
+                self.seed_info.config(text=self.localization.tr("error_intensity"), fg="red")
+                return            
+
+            
+        # Генерация intensity из сида, если не задано
+        if intensity != 0 and intensity is None:
+            return files, num_swaps
+
+        elif intensity == 1:
+            # Используем хеш сида для генерации значения 0.6-1.0
+            hash_val = (seed_hash % 10_000_000_000) / 10_000_000_000
+            intensity = 0.6 + 0.4 * hash_val  # Растягиваем на диапазон 0.6-1.0
+            
+            # Количество перестановок = 30% от числа треков (можно регулировать)
+            num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
+            print(f"[DEBUG] Генерация intensity из сида = {intensity}")
+            print(f"[DEBUG] Количество перестановок = {num_swaps}")
+            for _ in range(num_swaps):
+                i, j = random.sample(range(len(files)), 2)
+                files[i], files[j] = files[j], files[i]
+                print(f"[DEBUG] Перемешано {i}<->{j}")
+            return files, num_swaps          
+
+        else:
+                
+            # Количество перестановок = 30% от числа треков (можно регулировать)
+            num_swaps = int(intensity)
+            print(f"[DEBUG] Генерация intensity из сида = {intensity}")
+            print(f"[DEBUG] Количество перестановок = {num_swaps}")
+            for _ in range(num_swaps):
+                i, j = random.sample(range(len(files)), 2)
+                files[i], files[j] = files[j], files[i]
+                print(f"[DEBUG] Перемешано {i}<->{j}")
+            return files, num_swaps
+        
         
     
-    def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None, playlist_format=None):
+    def save_m3u8_playlist(self, path, files, name, seed, shadow_seed, num_tracks, date, reverse_step=None, num_swaps=None, playlist_format=None):
         """Создает M3U8 файл плейлиста"""
         date_str = date.strftime("%Y-%m-%d %H:%M:%S")
         if playlist_format in ["m3u8", "m3u"]:      
@@ -842,7 +984,9 @@ class PlaylistGenerator:
                 
                 if reverse_step is not None and reverse_step > 0:
                     f.write(f"#REVERSE_STEP:{reverse_step}\n")
-                
+                if num_swaps is not None and num_swaps > 0:
+                    f.write(f"#NUM_SWAPS:{num_swaps}\n")
+                    
                 f.write(f"#TRACKS:{num_tracks}\n")
 
                 f.write("\n")  # Разделитель
@@ -870,6 +1014,8 @@ class PlaylistGenerator:
                 
                 if reverse_step is not None and reverse_step > 0:
                     f.write(f"#REVERSE_STEP:{reverse_step}\n")
+                if num_swaps is not None and num_swaps > 0:
+                    f.write(f"#NUM_SWAPS:{num_swaps}\n")    
                 
                 f.write(f"#TRACKS:{num_tracks}\n")
 
@@ -893,6 +1039,8 @@ class PlaylistGenerator:
                 
                 if reverse_step is not None and reverse_step > 0:
                     f.write(f";REVERSE_STEP:{reverse_step}\n")
+                if num_swaps is not None and num_swaps > 0:
+                    f.write(f";NUM_SWAPS:{num_swaps}\n")    
                 
                 f.write(f"NumberOfEntries={num_tracks}\n")
                 f.write("Version=2\n\n")  # Версия формата PLS
@@ -926,7 +1074,9 @@ class PlaylistGenerator:
                 
                 if reverse_step is not None and reverse_step > 0:
                     f.write(f'<Abstract>REVERSE_STEP:{reverse_step}</Abstract>\n')
-                
+                if num_swaps is not None and num_swaps > 0:
+                    f.write(f'<Abstract>NUM_SWAPS:{num_swaps}</Abstract>\n')
+                    
                 f.write(f'<Abstract>TRACKS:{num_tracks}</Abstract>\n\n')
                 
                 # Запись треков
@@ -961,6 +1111,8 @@ class PlaylistGenerator:
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
                 if reverse_step:
                     f.write(f'    REVERSE_STEP:{reverse_step}\n')
+                if num_swaps:
+                    f.write(f'    NUM_SWAPS:{num_swaps}\n')
                 f.write(f'    TRACKS:{num_tracks}\n')
                 f.write('  </annotation>\n')
                 
@@ -1013,6 +1165,8 @@ class PlaylistGenerator:
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
                 if reverse_step:
                     f.write(f'    REVERSE_STEP:{reverse_step}\n')
+                if num_swaps:
+                    f.write(f'    NUM_SWAPS:{num_swaps}\n')
                 f.write(f'    TRACKS:{num_tracks}\n')
                 f.write('  </annotation>\n')
                 
@@ -1049,6 +1203,7 @@ class PlaylistGenerator:
                     "seed": seed,
                     "shadow_seed": shadow_seed,
                     "reverse_step": reverse_step if reverse_step and reverse_step > 0 else None,
+                    "num_swaps": num_swaps if num_swaps and num_swaps > 0 else None,
                     "num_tracks": num_tracks
                 },
                 "tracks": []
@@ -1084,6 +1239,8 @@ class PlaylistGenerator:
                     f.write(f'      SHADOW_SEED:{shadow_seed}\n')
                 if reverse_step:
                     f.write(f'      REVERSE_STEP:{reverse_step}\n')
+                if num_swaps:
+                    f.write(f'      NUM_SWAPS:{num_swaps}\n')
                 f.write('    -->\n')
                 
                 f.write('  </head>\n')
@@ -1121,6 +1278,8 @@ class PlaylistGenerator:
                     f.write('    SHADOW_SEED:{}\n'.format(shadow_seed))
                 if reverse_step:
                     f.write('    REVERSE_STEP:{}\n'.format(reverse_step))
+                if num_swaps:
+                    f.write('    NUM_SWAPS:{}\n'.format(num_swaps))
                 f.write('    TRACKS:{}\n'.format(num_tracks))
                 f.write('  </annotation>\n')
                 
@@ -1165,42 +1324,6 @@ class PlaylistGenerator:
         return shuffled
     
     
-    def soft_shuffle(self, files, seed_value, intensity=None):
-        """Перемешивание с небольшими изменениями"""
-        seed_hash = abs(self.stable_hash(str(seed_value)))
-        random.seed(seed_hash)
-        files = files.copy()
-        
-        print(f"[DEBUG] : Текущий список ============================")
-        for i, path in enumerate(files, 1):
-            print(f"{i}. {os.path.basename(path)}")
-        print("===================================================================")
-        
-        random.shuffle(files)
-        
-        print(f"[DEBUG] : Перемешанный список ============================")
-        for i, path in enumerate(files, 1):
-            print(f"{i}. {os.path.basename(path)}")
-        print("===================================================================")
-            
-        # Генерация intensity из сида, если не задано
-        if intensity is None:
-            # Используем хеш сида для генерации значения 0.6-1.0
-            hash_val = (seed_hash % 10_000_000_000) / 10_000_000_000
-            intensity = 0.6 + 0.4 * hash_val  # Растягиваем на диапазон 0.6-1.0
-        else:
-            # Ограничиваем заданное значение
-            intensity = max(0.6, min(1.0, float(intensity)))
-        
-        # Количество перестановок = 30% от числа треков (можно регулировать)
-        num_swaps = min(int(len(files) * intensity * 1.07), int(len(files)))
-        print(f"[DEBUG] Генерация intensity из сида = {intensity}")
-        print(f"[DEBUG] Количество перестановок = {num_swaps}")
-        for _ in range(num_swaps):
-            i, j = random.sample(range(len(files)), 2)
-            files[i], files[j] = files[j], files[i]
-            print(f"[DEBUG] Перемешано {i}<->{j}")
-        return files
         
 if __name__ == "__main__":
     
@@ -1213,7 +1336,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.17 by VolfLife   ")
+        print("    Playlist Generator v4.18 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
