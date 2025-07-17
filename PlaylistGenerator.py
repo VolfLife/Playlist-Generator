@@ -711,7 +711,7 @@ class PlaylistGenerator:
         if step_value.strip():
             try:
                 step = int(step_value)
-                if step < 0 or step > 20:
+                if step < 0:
                     raise ValueError
             except ValueError:
                 self.seed_info.config(text=self.localization.tr("error_reverse_step"), fg="red")

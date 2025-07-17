@@ -2301,7 +2301,7 @@ class PlaylistEditor:
             if step_value.strip():
                 try:
                     step = int(step_value)
-                    if 0 < step <= 20:
+                    if 0 < step:
                         if step == 1:
                             step = random.randint(2, 20)
                         
