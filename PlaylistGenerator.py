@@ -391,19 +391,19 @@ class PlaylistGenerator:
 
         self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
 
-        # Поле для шага реверса
-        tk.Label(self.root, text=self.localization.tr("reverse_step_label")).grid(row=3, column=0, sticky="w", padx=10, pady=5)
-        self.step_entry = ttk.Entry(self.root, width=40)
-        self.step_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
-
-        self.step_entry.bind("<Button-3>", self.clear_step_entry)
-
-        # Поле для intensity
-        tk.Label(self.root, text=self.localization.tr("intensity_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        # Поле для перестановок
+        tk.Label(self.root, text=self.localization.tr("intensity_label")).grid(row=3, column=0, sticky="w", padx=10, pady=5)
         self.intensity_entry = ttk.Entry(self.root, width=40)
-        self.intensity_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+        self.intensity_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
 
         self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
+
+        # Поле для шага реверса
+        tk.Label(self.root, text=self.localization.tr("reverse_step_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        self.step_entry = ttk.Entry(self.root, width=40)
+        self.step_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+
+        self.step_entry.bind("<Button-3>", self.clear_step_entry)
 
         # Выбор формата сида
         tk.Label(self.root, text=self.localization.tr("seed_format_label")).grid(row=5, column=0, sticky="w", padx=10, pady=5)
@@ -1039,10 +1039,10 @@ class PlaylistGenerator:
                 f.write(f"#SEED:{seed}\n")
                 f.write(f"#SHADOW_SEED:{shadow_seed}\n")
                 
-                if reverse_step is not None and reverse_step > 0:
-                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f"#NUM_SWAPS:{num_swaps}\n")
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
                     
                 f.write(f"#TRACKS:{num_tracks}\n")
 
@@ -1069,10 +1069,10 @@ class PlaylistGenerator:
                 f.write(f"#SEED:{seed}\n")
                 f.write(f"#SHADOW_SEED:{shadow_seed}\n")
                 
-                if reverse_step is not None and reverse_step > 0:
-                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f"#NUM_SWAPS:{num_swaps}\n")    
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f"#REVERSE_STEP:{reverse_step}\n")
                 
                 f.write(f"#TRACKS:{num_tracks}\n")
 
@@ -1094,10 +1094,10 @@ class PlaylistGenerator:
                 f.write(f";SEED:{seed}\n")
                 f.write(f";SHADOW_SEED:{shadow_seed}\n")
                 
-                if reverse_step is not None and reverse_step > 0:
-                    f.write(f";REVERSE_STEP:{reverse_step}\n")
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f";NUM_SWAPS:{num_swaps}\n")    
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f";REVERSE_STEP:{reverse_step}\n")
                 
                 f.write(f"NumberOfEntries={num_tracks}\n")
                 f.write("Version=2\n\n")  # Версия формата PLS
@@ -1129,10 +1129,10 @@ class PlaylistGenerator:
                 f.write(f'<Title>{saxutils.escape(name)}</Title>\n')
                 f.write(f'<Abstract>SEED:{seed} | SHADOW_SEED:{shadow_seed}</Abstract>\n')
                 
-                if reverse_step is not None and reverse_step > 0:
-                    f.write(f'<Abstract>REVERSE_STEP:{reverse_step}</Abstract>\n')
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f'<Abstract>NUM_SWAPS:{num_swaps}</Abstract>\n')
+                if reverse_step is not None and reverse_step > 0:
+                    f.write(f'<Abstract>REVERSE_STEP:{reverse_step}</Abstract>\n')
                     
                 f.write(f'<Abstract>TRACKS:{num_tracks}</Abstract>\n\n')
                 
@@ -1166,10 +1166,10 @@ class PlaylistGenerator:
                 f.write(f'    SEED:{seed}\n')
                 if shadow_seed:
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
-                if reverse_step:
-                    f.write(f'    REVERSE_STEP:{reverse_step}\n')
                 if num_swaps:
                     f.write(f'    NUM_SWAPS:{num_swaps}\n')
+                if reverse_step:
+                    f.write(f'    REVERSE_STEP:{reverse_step}\n')
                 f.write(f'    TRACKS:{num_tracks}\n')
                 f.write('  </annotation>\n')
                 
@@ -1220,10 +1220,10 @@ class PlaylistGenerator:
                 f.write(f'    SEED:{seed}\n')
                 if shadow_seed:
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
-                if reverse_step:
-                    f.write(f'    REVERSE_STEP:{reverse_step}\n')
                 if num_swaps:
                     f.write(f'    NUM_SWAPS:{num_swaps}\n')
+                if reverse_step:
+                    f.write(f'    REVERSE_STEP:{reverse_step}\n')
                 f.write(f'    TRACKS:{num_tracks}\n')
                 f.write('  </annotation>\n')
                 
@@ -1259,8 +1259,8 @@ class PlaylistGenerator:
                     "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "seed": seed,
                     "shadow_seed": shadow_seed,
-                    "reverse_step": reverse_step if reverse_step and reverse_step > 0 else None,
                     "num_swaps": num_swaps if num_swaps and num_swaps > 0 else None,
+                    "reverse_step": reverse_step if reverse_step and reverse_step > 0 else None,
                     "num_tracks": num_tracks
                 },
                 "tracks": []
@@ -1294,10 +1294,10 @@ class PlaylistGenerator:
                 f.write(f'      SEED:{seed}\n')
                 if shadow_seed:
                     f.write(f'      SHADOW_SEED:{shadow_seed}\n')
-                if reverse_step:
-                    f.write(f'      REVERSE_STEP:{reverse_step}\n')
                 if num_swaps:
                     f.write(f'      NUM_SWAPS:{num_swaps}\n')
+                if reverse_step:
+                    f.write(f'      REVERSE_STEP:{reverse_step}\n')
                 f.write('    -->\n')
                 
                 f.write('  </head>\n')
@@ -1333,10 +1333,10 @@ class PlaylistGenerator:
                 f.write('    SEED:{}\n'.format(seed))
                 if shadow_seed:
                     f.write('    SHADOW_SEED:{}\n'.format(shadow_seed))
-                if reverse_step:
-                    f.write('    REVERSE_STEP:{}\n'.format(reverse_step))
                 if num_swaps:
                     f.write('    NUM_SWAPS:{}\n'.format(num_swaps))
+                if reverse_step:
+                    f.write('    REVERSE_STEP:{}\n'.format(reverse_step))
                 f.write('    TRACKS:{}\n'.format(num_tracks))
                 f.write('  </annotation>\n')
                 

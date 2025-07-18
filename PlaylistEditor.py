@@ -1001,25 +1001,25 @@ class PlaylistEditor:
         self.seed_entry.grid(row=1, column=1, padx=5, pady=3, sticky="ew")
 
         self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
-        
-        # Поле шага реверса
-        tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
-            row=2, column=0, sticky="w", padx=5, pady=3)
-        self.step_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
-        self.step_entry.insert(0, "")
-        self.step_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
-        
-        self.step_entry.bind("<Button-3>", self.clear_step_entry)
-        
+
         # Поле перестановок
         tk.Label(input_frame, text=self.localization.tr("intensity_label")).grid(
-            row=3, column=0, sticky="w", padx=5, pady=3)
+            row=2, column=0, sticky="w", padx=5, pady=3)
         self.intensity_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
         self.intensity_entry.insert(0, "")
-        self.intensity_entry.grid(row=3, column=1, padx=5, pady=3, sticky="w")
+        self.intensity_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
         
         self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
         
+        # Поле шага реверса
+        tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
+            row=3, column=0, sticky="w", padx=5, pady=3)
+        self.step_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
+        self.step_entry.insert(0, "")
+        self.step_entry.grid(row=3, column=1, padx=5, pady=3, sticky="w")
+        
+        self.step_entry.bind("<Button-3>", self.clear_step_entry)
+                
         # Формат сида
         tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
             row=4, column=0, sticky="w", padx=5, pady=3)
@@ -2561,10 +2561,10 @@ class PlaylistEditor:
                     # Добавляем информацию о сиде только если было перемешивание
                     if self.shuffled_list is not None and hasattr(self, 'current_seed'):
                         f.write(f"#SEED:{self.current_seed}\n")
-                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
-                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                         if self.current_swaps:
                             f.write(f"#NUM_SWAPS:{self.current_swaps}\n")    
+                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
+                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                     
                     f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
@@ -2590,10 +2590,10 @@ class PlaylistEditor:
                     # Добавляем информацию о сиде только если было перемешивание
                     if self.shuffled_list is not None and hasattr(self, 'current_seed'):
                         f.write(f"#SEED:{self.current_seed}\n")
-                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
-                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                         if self.current_swaps:
                             f.write(f"#NUM_SWAPS:{self.current_swaps}\n")    
+                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
+                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                     
                     f.write(f"#TRACKS:{len(saved_tracks)}\n\n")
                     
@@ -2614,10 +2614,10 @@ class PlaylistEditor:
                     # Добавляем информацию о сиде только если было перемешивание
                     if self.shuffled_list is not None and hasattr(self, 'current_seed'):
                         f.write(f"#SEED:{self.current_seed}\n")
-                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
-                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                         if self.current_swaps:
                             f.write(f"#NUM_SWAPS:{self.current_swaps}\n")     
+                        if hasattr(self, 'current_reverse_step') and self.current_reverse_step:
+                            f.write(f"#REVERSE_STEP:{self.current_reverse_step}\n")
                     
                     f.write(f"NumberOfEntries={len(saved_tracks)}\n")
                     f.write("Version=2\n\n")  # Версия формата PLS
@@ -2647,10 +2647,10 @@ class PlaylistEditor:
                     f.write(f'<Title>{saxutils.escape(playlist_name)}</Title>\n')
                     f.write(f'<Abstract>SEED:{self.current_seed}</Abstract>\n')
                     
-                    if self.current_reverse_step is not None and self.current_reverse_step > 0:
-                        f.write(f'<Abstract>REVERSE_STEP:{self.current_reverse_step}</Abstract>\n')
                     if self.current_swaps is not None and self.current_swaps > 0:
                         f.write(f'<Abstract>NUM_SWAPS:{self.current_swaps}</Abstract>\n')    
+                    if self.current_reverse_step is not None and self.current_reverse_step > 0:
+                        f.write(f'<Abstract>REVERSE_STEP:{self.current_reverse_step}</Abstract>\n')
                     
                     f.write(f'<Abstract>TRACKS:{len(saved_tracks)}</Abstract>\n\n')
                     
@@ -2682,10 +2682,10 @@ class PlaylistEditor:
                     if hasattr(self, 'current_seed'):
                         f.write('  <annotation>\n')
                         f.write(f'    SEED:{self.current_seed}\n')
-                        if hasattr(self, 'current_reverse_step'):
-                            f.write(f'    REVERSE_STEP:{self.current_swaps}\n')
                         if self.current_swaps:
                             f.write(f'    NUM_SWAPS:{self.current_swaps}\n')
+                        if hasattr(self, 'current_reverse_step'):
+                            f.write(f'    REVERSE_STEP:{self.current_swaps}\n')
                         f.write('  </annotation>\n')
                     
                     f.write('  <trackList>\n')
@@ -2729,10 +2729,10 @@ class PlaylistEditor:
                     if hasattr(self, 'current_seed'):
                         f.write('  <annotation>\n')
                         f.write(f'    SEED:{self.current_seed}\n')
-                        if hasattr(self, 'current_reverse_step'):
-                            f.write(f'    REVERSE_STEP:{self.current_reverse_step}\n')
                         if self.current_swaps:
                             f.write(f'    NUM_SWAPS:{self.current_swaps}\n')    
+                        if hasattr(self, 'current_reverse_step'):
+                            f.write(f'    REVERSE_STEP:{self.current_reverse_step}\n')
                         f.write('  </annotation>\n')
                     
                     f.write('  <trackList>\n')
@@ -2766,8 +2766,8 @@ class PlaylistEditor:
                         "generator": "VolfLife's Playlist Generator",
                         "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "seed": self.current_seed,
-                        "reverse_step": self.current_reverse_step if self.current_reverse_step and self.current_reverse_step > 0 else None,
                         "num_swaps": self.current_swaps if self.current_swaps and self.current_swaps > 0 else None,
+                        "reverse_step": self.current_reverse_step if self.current_reverse_step and self.current_reverse_step > 0 else None,
                         "num_tracks": len(saved_tracks)
                     },
                     "tracks": []
@@ -2799,10 +2799,10 @@ class PlaylistEditor:
                     f.write('    <!--\n')
                     f.write(f'      GENERATED:{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n')
                     f.write(f'      SEED:{self.current_seed}\n')
-                    if self.current_reverse_step:
-                        f.write(f'      REVERSE_STEP:{self.current_reverse_step}\n')
                     if self.current_swaps:
                         f.write(f'      NUM_SWAPS:{self.current_swaps}\n')
+                    if self.current_reverse_step:
+                        f.write(f'      REVERSE_STEP:{self.current_reverse_step}\n')
                     f.write('    -->\n')
                     
                     f.write('  </head>\n')
@@ -2837,10 +2837,10 @@ class PlaylistEditor:
                     f.write('    GENERATED:{}\n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                     if self.current_seed:
                         f.write('    SEED:{}\n'.format(self.current_seed))
-                    if self.current_reverse_step:
-                        f.write('    REVERSE_STEP:{}\n'.format(self.current_reverse_step))
                     if self.current_swaps:
                         f.write('    NUM_SWAPS:{}\n'.format(self.current_swaps))
+                    if self.current_reverse_step:
+                        f.write('    REVERSE_STEP:{}\n'.format(self.current_reverse_step))
                     f.write('    TRACKS:{}\n'.format(len(saved_tracks)))
                     f.write('  </annotation>\n')
                     
