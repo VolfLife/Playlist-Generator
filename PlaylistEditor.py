@@ -2291,7 +2291,7 @@ class PlaylistEditor:
             tracks = [track.copy() for track in self.sorted_list]  # Глубокое копирование
             self.shuffled_list, num_swaps = self.soft_shuffle(tracks, str(seed_trimmed))
             
-            print("[DEBUG] : Перестановленный список ============================")
+            print("[DEBUG] : Новый список ============================")
             for i, track in enumerate(self.shuffled_list, 1):
                 print(f"{i}. {track['name']}\n                                                                     TempID: {track['temp_id']}       |       ID: {track.get('track_id')}")
             print("===================================================================")            
@@ -2314,7 +2314,7 @@ class PlaylistEditor:
                     return
             
             if step_value.strip(): 
-                print(f"[DEBUG] : Перестановленный список c реверсом {step} ============================")
+                print(f"[DEBUG] : Новый список c реверсом {step} ============================")
                 for i, track in enumerate(self.shuffled_list, 1):
                     print(f"{i}. {track['name']}\n                                                                     TempID: {track['temp_id']}       |       ID: {track.get('track_id')}")
                 print("===================================================================")            
