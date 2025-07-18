@@ -383,20 +383,27 @@ class PlaylistGenerator:
         self.playlist_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
         self.playlist_entry.insert(0, self.localization.tr("default_playlist_name")) # Добавляем значение по умолчанию
         
+        self.playlist_entry.bind("<Button-3>", self.clear_playlist_entry)
         
         tk.Label(self.root, text=self.localization.tr("seed_label")).grid(row=2, column=0, sticky="w", padx=10, pady=5)
         self.seed_entry = ttk.Entry(self.root, width=40)
         self.seed_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+
+        self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
 
         # Поле для шага реверса
         tk.Label(self.root, text=self.localization.tr("reverse_step_label")).grid(row=3, column=0, sticky="w", padx=10, pady=5)
         self.step_entry = ttk.Entry(self.root, width=40)
         self.step_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
 
+        self.step_entry.bind("<Button-3>", self.clear_step_entry)
+
         # Поле для intensity
         tk.Label(self.root, text=self.localization.tr("intensity_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
         self.intensity_entry = ttk.Entry(self.root, width=40)
         self.intensity_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+
+        self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
 
         # Выбор формата сида
         tk.Label(self.root, text=self.localization.tr("seed_format_label")).grid(row=5, column=0, sticky="w", padx=10, pady=5)
@@ -438,7 +445,7 @@ class PlaylistGenerator:
         # Создаем список языков в формате (название, код)
         lang_options = [(self.localization.lang_names[code], code) 
                         for code in self.localization.languages]
-    
+        
         # Сортируем по названию языка
         lang_options.sort()
     
@@ -455,6 +462,13 @@ class PlaylistGenerator:
         )
         self.language_dropdown.pack(side=tk.LEFT)
         self.language_dropdown.bind("<<ComboboxSelected>>", self.change_language)
+        
+        # Добавляем подсказку при наведении курсора для языка
+        self.translation_tooltip = tk.Label(self.root, text="Translations are machine-generated \nand may contain errors", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.translation_tooltip.place_forget()
+        self.language_dropdown.bind("<Enter>", self.show_translation_tooltip)
+        self.language_dropdown.bind("<Leave>", self.hide_translation_tooltip)
         
         # Кнопка генерации
         self.generate_btn = ttk.Button(
@@ -514,7 +528,44 @@ class PlaylistGenerator:
         if hasattr(self, 'folder_entry_tooltip'):
             self.folder_entry_tooltip.place_forget()
     
+    def show_translation_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " Translations are machine-generated \nand may contain errors"
+        self.translation_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.translation_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.language_dropdown.winfo_x()  # Позиция поля ввода
+        entry_width = self.language_dropdown.winfo_width()  # Ширина поля
+        tooltip_width = self.translation_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.language_dropdown.winfo_y() + 203  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.translation_tooltip.place(x=x, y=y)
+
+    def hide_translation_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'folder_entry_tooltip'):
+            self.translation_tooltip.place_forget()
     
+    def clear_playlist_entry(self, event=None):
+        self.playlist_entry.delete(0, tk.END)
+
+    def clear_seed_entry(self, event=None):
+        self.seed_entry.delete(0, tk.END)
+    
+    def clear_step_entry(self, event=None):
+        self.step_entry.delete(0, tk.END)
+    
+    def clear_intensity_entry(self, event=None):
+        self.intensity_entry.delete(0, tk.END)
+
+
     def clear_folder_entry(self, event=None):
         # Очищаем поле ввода и список папок, сохраняем настройки
         self.folder_entry.delete(0, tk.END)
@@ -1336,7 +1387,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.18 by VolfLife   ")
+        print("    Playlist Generator v4.19 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")

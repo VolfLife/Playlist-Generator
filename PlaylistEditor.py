@@ -993,11 +993,15 @@ class PlaylistEditor:
         self.name_entry.grid(row=0, column=1, padx=5, pady=3, sticky="ew")
         self.name_entry.insert(0, self.playlist_name)
 
+        self.name_entry.bind("<Button-3>", self.clear_playlist_entry)
+        
         # Поле сида
         tk.Label(input_frame, text=self.localization.tr("seed_label")).grid(row=1, column=0, sticky="w", padx=5, pady=3)
         self.seed_entry = ttk.Entry(input_frame)
         self.seed_entry.grid(row=1, column=1, padx=5, pady=3, sticky="ew")
 
+        self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
+        
         # Поле шага реверса
         tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
             row=2, column=0, sticky="w", padx=5, pady=3)
@@ -1005,6 +1009,7 @@ class PlaylistEditor:
         self.step_entry.insert(0, "")
         self.step_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
         
+        self.step_entry.bind("<Button-3>", self.clear_step_entry)
         
         # Поле перестановок
         tk.Label(input_frame, text=self.localization.tr("intensity_label")).grid(
@@ -1013,6 +1018,9 @@ class PlaylistEditor:
         self.intensity_entry.insert(0, "")
         self.intensity_entry.grid(row=3, column=1, padx=5, pady=3, sticky="w")
         
+        self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
+        
+        # Формат сида
         tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
             row=4, column=0, sticky="w", padx=5, pady=3)
         self.seed_format_combobox = ttk.Combobox(
@@ -1198,7 +1206,18 @@ class PlaylistEditor:
         # Скрываем подсказку
         if hasattr(self, 'tree_tooltip'):
             self.search_tooltip.place_forget()    
+
+    def clear_playlist_entry(self, event=None):
+        self.name_entry.delete(0, tk.END)
+
+    def clear_seed_entry(self, event=None):
+        self.seed_entry.delete(0, tk.END)
     
+    def clear_step_entry(self, event=None):
+        self.step_entry.delete(0, tk.END)
+    
+    def clear_intensity_entry(self, event=None):
+        self.intensity_entry.delete(0, tk.END)
     
     def select_all_tracks(self, event=None):
         """Выделяет все треки в таблице"""
