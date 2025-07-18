@@ -42,7 +42,7 @@ To download the program, go to the [Releases](https://github.com/VolfLife/Playli
 ...
 ```
 
->*Note: Translations may contain errors*
+>*Note: Translations are machine-generated and may contain errors*
 
 ## Usage
 
