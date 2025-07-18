@@ -712,6 +712,12 @@ class PlaylistGenerator:
         random_nbrr = random.getrandbits(64)
         number = [1, random_nbr, random_nbrr, 1]
         random_divisor = random.choice(number)
+        
+        # Выбираем подходящий делитель
+        random_divisor = random.choice(number)
+        if random_divisor == 0 or (random_divisor > random_part and random_divisor != 1):
+            random_divisor = max([x for x in number if x <= random_part])
+        
         result = (random_part // random_divisor)
         
         seed_num = int((seed_trimmed), 16) if isinstance(seed_trimmed, str) else seed_trimmed
