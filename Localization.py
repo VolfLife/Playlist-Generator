@@ -14,7 +14,7 @@ class Localization:
                 "browse_button": "Browse",
                 "playlist_name_label": "Playlist name:",
                 "seed_label": "Seed (leave empty for random):",
-                "reverse_step_label": "Reverse step (0=off, 1-20):",
+                "reverse_step_label": "Reverse step (0=off, 1-∞):",
                 "intensity_label": "Double shuffle (0=off, 1=auto):",
                 "seed_format_label": "Seed format:",
                 "generate_button": "   Generate playlist   ",
@@ -83,7 +83,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Select folder to add tracks",
                 "no_supported_files_found": "No supported audio/video files found in selected folder",
                 "tracks_added_successfully": "Added {count} tracks successfully",
-                "error_adding_tracks": "Error adding tracks"
+                "error_adding_tracks": "Error adding tracks",
+                "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
             },
             "ru-ru": {
                 "window_title_generator": "Генератор плейлистов",
@@ -93,7 +95,7 @@ class Localization:
                 "browse_button": "Обзор",
                 "playlist_name_label": "Имя плейлиста:",
                 "seed_label": "Сид (оставьте пустым для случайного):",
-                "reverse_step_label": "Шаг реверса (0=выкл, 1-20):",
+                "reverse_step_label": "Шаг реверса (0=выкл, 1-∞):",
                 "seed_format_label": "Формат сида:",
                 "generate_button": "   Создать плейлист   ",
                 "language_label": "Язык:",
@@ -161,7 +163,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Выберите папку для добавления треков",
                 "no_supported_files_found": "В выбранной папке не найдено поддерживаемых аудио/видео файлов",
                 "tracks_added_successfully": "Успешно добавлено {count} треков",
-                "error_adding_tracks": "Ошибка при добавлении треков"
+                "error_adding_tracks": "Ошибка при добавлении треков",
+                "editor_seed_info_intensity_step": "Перемешано!\nСид: {seed} \nПрименено перестановок: {num_swaps} \nРеверс: {step}",
+                "editor_seed_info_intensity": "Перемешано!\nСид: {seed} \nПрименено перестановок: {num_swaps}"
             },
             "es-es": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -171,7 +175,7 @@ class Localization:
                 "browse_button": "Examinar",
                 "playlist_name_label": "Nombre de la lista:",
                 "seed_label": "Semilla (dejar vacío para aleatorio):",
-                "reverse_step_label": "Paso inverso (0=desactivado, 1-20):",
+                "reverse_step_label": "Paso inverso (0=desactivado, 1-∞):",
                 "seed_format_label": "Formato de semilla:",
                 "generate_button": "   Crear lista   ",
                 "language_label": "Idioma:",
@@ -239,7 +243,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
                 "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
-                "error_adding_tracks": "Error al agregar pistas"
+                "error_adding_tracks": "Error al agregar pistas",
+                "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
             },
             "fr-fr": {
                 "window_title_generator": "Générateur de playlists",
@@ -249,7 +255,7 @@ class Localization:
                 "browse_button": "Parcourir",
                 "playlist_name_label": "Nom de la playlist :",
                 "seed_label": "Graine (laissez vide pour aléatoire) :",
-                "reverse_step_label": "Pas d'inversion (0=désactivé, 1-20) :",
+                "reverse_step_label": "Pas d'inversion (0=désactivé, 1-∞) :",
                 "seed_format_label": "Format de graine :",
                 "generate_button": "   Créer la playlist   ",
                 "language_label": "Langue :",
@@ -317,7 +323,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Sélectionnez le dossier pour ajouter des pistes",
                 "no_supported_files_found": "Aucun fichier audio/vidéo pris en charge trouvé dans le dossier sélectionné",
                 "tracks_added_successfully": "{count} pistes ajoutées avec succès",
-                "error_adding_tracks": "Erreur lors de l'ajout de pistes"
+                "error_adding_tracks": "Erreur lors de l'ajout de pistes",
+                "editor_seed_info_intensity_step": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps} \nÉtape inverse: {step}",
+                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}"
             },
             "de-de": {
 				"window_title_generator": "Playlist-Generator",
@@ -327,7 +335,7 @@ class Localization:
 				"browse_button": "Durchsuchen",
 				"playlist_name_label": "Playlist-Name:",
 				"seed_label": "Seed (leer lassen für zufällig):",
-				"reverse_step_label": "Umkehrschritt (0=aus, 1-20):",
+				"reverse_step_label": "Umkehrschritt (0=aus, 1-∞):",
 				"seed_format_label": "Seed-Format:",
 				"generate_button": "   Playlist erstellen   ",
 				"language_label": "Sprache:",
@@ -395,7 +403,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Ordner zum Hinzufügen von Tracks auswählen",
                 "no_supported_files_found": "Keine unterstützten Audio-/Videodateien im ausgewählten Ordner gefunden",
                 "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
-                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks"
+                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks",
+                "editor_seed_info_intensity_step": "Gemischt!\nSeed: {seed} \nAngewandte Tausche: {num_swaps} \nRückwärtsschritt: {step}",
+                "editor_seed_info_intensity": "Gemischt!\nSeed: {seed} \nVertauschungen: {num_swaps}"
             },
             "it-it": {
                 "window_title_generator": "Generatore di Playlist",
@@ -405,7 +415,7 @@ class Localization:
                 "browse_button": "Sfoglia",
                 "playlist_name_label": "Nome playlist:",
                 "seed_label": "Seed (lasciare vuoto per casuale):",
-                "reverse_step_label": "Passo inverso (0=disattivato, 1-20):",
+                "reverse_step_label": "Passo inverso (0=disattivato, 1-∞):",
                 "seed_format_label": "Formato seed:",
                 "generate_button": "   Crea playlist   ",
                 "language_label": "Lingua:",
@@ -473,7 +483,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleziona la cartella per aggiungere brani",
                 "no_supported_files_found": "Nessun file audio/video supportato trovato nella cartella selezionata",
                 "tracks_added_successfully": "{count} brani aggiunti con successo",
-                "error_adding_tracks": "Errore durante l'aggiunta dei brani"
+                "error_adding_tracks": "Errore durante l'aggiunta dei brani",
+                "editor_seed_info_intensity_step": "Mescolato!\nSeme: {seed} \nScambi applicati: {num_swaps} \nPasso inverso: {step}",
+                "editor_seed_info_intensity": "Mescolato!\nSeme: {seed} \nScambi applicati: {num_swaps}"
             },
             "pl-pl": {
                 "window_title_generator": "Generator playlist",
@@ -483,7 +495,7 @@ class Localization:
                 "browse_button": "Przeglądaj",
                 "playlist_name_label": "Nazwa playlisty:",
                 "seed_label": "Ziarno (pozostaw puste dla losowego):",
-                "reverse_step_label": "Krok odwrotny (0=wył, 1-20):",
+                "reverse_step_label": "Krok odwrotny (0=wył, 1-∞):",
                 "seed_format_label": "Format ziarna:",
                 "generate_button": "   Utwórz playlistę   ",
                 "language_label": "Język:",
@@ -551,7 +563,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Wybierz folder, aby dodać utwory",
                 "no_supported_files_found": "Nie znaleziono obsługiwanych plików audio/wideo w wybranym folderze",
                 "tracks_added_successfully": "Pomyślnie dodano {count} utworów",
-                "error_adding_tracks": "Błąd podczas dodawania utworów"
+                "error_adding_tracks": "Błąd podczas dodawania utworów",
+                "editor_seed_info_intensity_step": "Przetasowane!\nZiarno: {seed} \nZastosowane zamiany: {num_swaps} \nKrok wsteczny: {step}",
+                "editor_seed_info_intensity": "Przetasowane!\nZiarno: {seed} \nZastosowane zamiany: {num_swaps}"
             },
             "tr-tr": {
                 "window_title_generator": "Çalma Listesi Oluşturucu",
@@ -561,7 +575,7 @@ class Localization:
                 "browse_button": "Gözat",
                 "playlist_name_label": "Çalma listesi adı:",
                 "seed_label": "Tohum (rastgele için boş bırakın):",
-                "reverse_step_label": "Ters adım (0=kapalı, 1-20):",
+                "reverse_step_label": "Ters adım (0=kapalı, 1-∞):",
                 "seed_format_label": "Tohum formatı:",
                 "generate_button": "   Çalma listesi oluştur   ",
                 "language_label": "Dil:",
@@ -629,7 +643,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Parça eklemek için klasör seçin",
                 "no_supported_files_found": "Seçilen klasörde desteklenen ses/video dosyası bulunamadı",
                 "tracks_added_successfully": "{count} parça başarıyla eklendi",
-                "error_adding_tracks": "Parça eklenirken hata oluştu"
+                "error_adding_tracks": "Parça eklenirken hata oluştu",
+                "editor_seed_info_intensity_step": "Karıştırıldı!\nTohum: {seed} \nUygulanan takaslar: {num_swaps} \nTers adım: {step}",
+                "editor_seed_info_intensity": "Karıştırıldı!\nTohum: {seed} \nUygulanan takaslar: {num_swaps}"
             },
             "be-by": {
                 "window_title_generator": "Генератар плэйлістаў",
@@ -639,7 +655,7 @@ class Localization:
                 "browse_button": "Агляд",
                 "playlist_name_label": "Імя плэйліста:",
                 "seed_label": "Сід (пакіньце пустым для выпадковага):",
-                "reverse_step_label": "Крок рэверсу (0=выкл, 1-20):",
+                "reverse_step_label": "Крок рэверсу (0=выкл, 1-∞):",
                 "seed_format_label": "Фармат сіду:",
                 "generate_button": "   Стварыць плэйліст   ",
                 "language_label": "Мова:",
@@ -707,7 +723,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Выберыце папку для дадання трэкаў",
                 "no_supported_files_found": "У выбранай папцы не знойдзена падтрымліваемых аўдыё/відэа файлаў",
                 "tracks_added_successfully": "Паспяхова дадана {count} трэкаў",
-                "error_adding_tracks": "Памылка пры даданні трэкаў"
+                "error_adding_tracks": "Памылка пры даданні трэкаў",
+                "editor_seed_info_intensity_step": "Перамешана!\nСід: {seed} \nПрыменена перастановак: {num_swaps} \nАдваротны крок: {step}",
+                "editor_seed_info_intensity": "Перамешана!\nСід: {seed} \nАбменаў прыменена: {num_swaps}"
             },
               "uk-ua": {
                 "window_title_generator": "Генератор плейлистів",
@@ -717,7 +735,7 @@ class Localization:
                 "browse_button": "Огляд",
                 "playlist_name_label": "Назва плейлиста:",
                 "seed_label": "Сід (залиште порожнім для випадкового):",
-                "reverse_step_label": "Крок реверсу (0=вимк, 1-20):",
+                "reverse_step_label": "Крок реверсу (0=вимк, 1-∞):",
                 "seed_format_label": "Формат сіда:",
                 "generate_button": "   Створити плейлист   ",
                 "language_label": "Мова:",
@@ -785,7 +803,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Виберіть папку для додавання треків",
                 "no_supported_files_found": "У вибраній папці не знайдено підтримуваних аудіо/відео файлів",
                 "tracks_added_successfully": "Успішно додано {count} треків",
-                "error_adding_tracks": "Помилка при додаванні треків"
+                "error_adding_tracks": "Помилка при додаванні треків",
+                "editor_seed_info_intensity_step": "Перемішано!\nСід: {seed} \nЗастосовано перестановок: {num_swaps} \nЗворотній крок: {step}",
+                "editor_seed_info_intensity": "Перемішано!\nНасіння: {seed} \nЗмін застосовано: {num_swaps}"
             },
             "kk-kz": {
                 "window_title_generator": "Плейлист генераторы",
@@ -795,7 +815,7 @@ class Localization:
                 "browse_button": "Қарап шығу",
                 "playlist_name_label": "Плейлист атауы:",
                 "seed_label": "Seed (кездейсоқ үшін бос қалдырыңыз):",
-                "reverse_step_label": "Кері алу қадамы (0=өшіру, 1-20):",
+                "reverse_step_label": "Кері алу қадамы (0=өшіру, 1-∞):",
                 "seed_format_label": "Seed форматы:",
                 "generate_button": "   Плейлист құру   ",
                 "language_label": "Тіл:",
@@ -806,7 +826,7 @@ class Localization:
                 "error_no_music_folder": "Қате: Музыка қалтасын көрсетіңіз!",
                 "error_no_playlist_name": "Қате: Плейлист атауын көрсетіңіз!",
                 "error_folder_not_exist": "Қате: Қалта жоқ!",
-                "error_reverse_step": "Қате: Кері алу қадамы 0-20 аралығындағы сан болуы керек!",
+                "error_reverse_step": "Қате: Кері алу қадамы 0-∞ аралығындағы сан болуы керек!",
                 "error_no_audio_files": "Қате: Көрсетілген қалтада музыка файлдары жоқ!",
                 "shadow_seed_check": "Көлеңке тұқымды қолдану",
                 "intensity_label": "Қосымша ауыстырулар (0=өшір, 1=авто):",
@@ -863,7 +883,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Тректерді қосу үшін буманы таңдаңыз",
                 "no_supported_files_found": "Таңдалған бумада қолдау көрсетілетін аудио/бейне файлдары табылмады",
                 "tracks_added_successfully": "{count} трек сәтті қосылды",
-                "error_adding_tracks": "Тректерді қосу кезіндегі қате"
+                "error_adding_tracks": "Тректерді қосу кезіндегі қате",
+                "editor_seed_info_intensity_step": "Араластырылды!\nТұқым: {seed} \nҚолданылған ауыстырулар: {num_swaps} \nКері қадам: {step}",
+                "editor_seed_info_intensity": "Араластырылды!\nТұқым: {seed} \nАуыстырулар саны: {num_swaps}"
             },
             "sr-rs": {
                 "window_title_generator": "Генератор плејлиста",
@@ -873,7 +895,7 @@ class Localization:
                 "browse_button": "Претражи",
                 "playlist_name_label": "Назив плејлисте:",
                 "seed_label": "Сид (оставите празно за насумично):",
-                "reverse_step_label": "Корак обртања (0=искључено, 1-20):",
+                "reverse_step_label": "Корак обртања (0=искључено, 1-∞):",
                 "seed_format_label": "Формат сида:",
                 "generate_button": "   Направи плејлисту   ",
                 "language_label": "Језик:",
@@ -941,7 +963,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Изаберите фолдер за додавање нумера",
                 "no_supported_files_found": "Нису пронађени подржани аудио/видео фајлови у изабраном фолдеру",
                 "tracks_added_successfully": "Успешно додато {count} нумера",
-                "error_adding_tracks": "Грешка при додавању нумера"
+                "error_adding_tracks": "Грешка при додавању нумера",
+                "editor_seed_info_intensity_step": "Измешано!\nСеме: {seed} \nПримењене замене: {num_swaps} \nОбратни корак: {step}",
+                "editor_seed_info_intensity": "Izmešano!\nSeme: {seed} \nPrimenjene zamene: {num_swaps}"
             },
             "nl-nl": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -951,7 +975,7 @@ class Localization:
                 "browse_button": "Bladeren",
                 "playlist_name_label": "Afspeellijstnaam:",
                 "seed_label": "Seed (leeg laten voor willekeurig):",
-                "reverse_step_label": "Omgekeerde stap (0=uit, 1-20):",
+                "reverse_step_label": "Omgekeerde stap (0=uit, 1-∞):",
                 "seed_format_label": "Seed-formaat:",
                 "generate_button": "   Afspeellijst genereren   ",
                 "language_label": "Taal:",
@@ -1019,7 +1043,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Selecteer map om nummers toe te voegen",
                 "no_supported_files_found": "Geen ondersteunde audio/video-bestanden gevonden in geselecteerde map",
                 "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
-                "error_adding_tracks": "Fout bij toevoegen van nummers"
+                "error_adding_tracks": "Fout bij toevoegen van nummers",
+                "editor_seed_info_intensity_step": "Geschud!\nZaad: {seed} \nToegepaste swaps: {num_swaps} \nTerugstap: {step}",
+                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}"
             },
             "es-mx": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -1029,7 +1055,7 @@ class Localization:
                 "browse_button": "Explorar",
                 "playlist_name_label": "Nombre de la lista:",
                 "seed_label": "Semilla (dejar vacío para aleatorio):",
-                "reverse_step_label": "Paso inverso (0=desactivado, 1-20):",
+                "reverse_step_label": "Paso inverso (0=desactivado, 1-∞):",
                 "seed_format_label": "Formato de semilla:",
                 "generate_button": "   Crear lista   ",
                 "language_label": "Idioma:",
@@ -1097,7 +1123,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
                 "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
-                "error_adding_tracks": "Error al agregar pistas"
+                "error_adding_tracks": "Error al agregar pistas",
+                "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
             },
             "pt-pt": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1107,7 +1135,7 @@ class Localization:
                 "browse_button": "Procurar",
                 "playlist_name_label": "Nome da playlist:",
                 "seed_label": "Seed (deixe vazio para aleatório):",
-                "reverse_step_label": "Passo de reversão (0=desligado, 1-20):",
+                "reverse_step_label": "Passo de reversão (0=desligado, 1-∞):",
                 "seed_format_label": "Formato do seed:",
                 "generate_button": "   Criar Playlist   ",
                 "language_label": "Idioma:",
@@ -1175,7 +1203,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Selecione a pasta para adicionar faixas",
                 "no_supported_files_found": "Nenhum ficheiro de áudio/vídeo suportado encontrado na pasta selecionada",
                 "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
-                "error_adding_tracks": "Erro ao adicionar faixas"
+                "error_adding_tracks": "Erro ao adicionar faixas",
+                "editor_seed_info_intensity_step": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps} \nPasso inverso: {step}",
+                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}"
             },
             "pt-br": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1185,7 +1215,7 @@ class Localization:
                 "browse_button": "Procurar",
                 "playlist_name_label": "Nome da playlist:",
                 "seed_label": "Seed (deixe vazio para aleatório):",
-                "reverse_step_label": "Passo reverso (0=desligado, 1-20):",
+                "reverse_step_label": "Passo reverso (0=desligado, 1-∞):",
                 "seed_format_label": "Formato do seed:",
                 "generate_button": "   Criar playlist   ",
                 "language_label": "Idioma:",
@@ -1253,7 +1283,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Selecione a pasta para adicionar faixas",
                 "no_supported_files_found": "Nenhum arquivo de áudio/vídeo suportado encontrado na pasta selecionada",
                 "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
-                "error_adding_tracks": "Erro ao adicionar faixas"
+                "error_adding_tracks": "Erro ao adicionar faixas",
+                "editor_seed_info_intensity_step": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps} \nPasso reverso: {step}",
+                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}"
             },
             "zh-cn": {
                 "window_title_generator": "播放列表生成器",
@@ -1263,7 +1295,7 @@ class Localization:
                 "browse_button": "浏览",
                 "playlist_name_label": "播放列表名称:",
                 "seed_label": "种子 (留空为随机):",
-                "reverse_step_label": "反转步长 (0=关闭, 1-20):",
+                "reverse_step_label": "反转步长 (0=关闭, 1-∞):",
                 "seed_format_label": "种子格式:",
                 "generate_button": "   生成播放列表   ",
                 "language_label": "语言:",
@@ -1331,7 +1363,9 @@ class Localization:
                 "select_folder_to_add_tracks": "选择要添加曲目的文件夹",
                 "no_supported_files_found": "在所选文件夹中未找到支持的音频/视频文件",
                 "tracks_added_successfully": "成功添加 {count} 首曲目",
-                "error_adding_tracks": "添加曲目时出错"
+                "error_adding_tracks": "添加曲目时出错",
+                "editor_seed_info_intensity_step": "已洗牌!\n种子: {seed} \n应用交换: {num_swaps} \n反向步骤: {step}",
+                "editor_seed_info_intensity": "已洗牌!\n种子: {seed} \n应用交换: {num_swaps}"
             },
             "ko-kr": {
                 "window_title_generator": "플레이리스트 생성기",
@@ -1341,7 +1375,7 @@ class Localization:
                 "browse_button": "찾아보기",
                 "playlist_name_label": "플레이리스트 이름:",
                 "seed_label": "시드 (비워두면 랜덤):",
-                "reverse_step_label": "역방향 단계 (0=끔, 1-20):",
+                "reverse_step_label": "역방향 단계 (0=끔, 1-∞):",
                 "seed_format_label": "시드 형식:",
                 "generate_button": "   플레이리스트 생성   ",
                 "language_label": "언어:",
@@ -1409,7 +1443,9 @@ class Localization:
                 "select_folder_to_add_tracks": "트랙을 추가할 폴더 선택",
                 "no_supported_files_found": "선택한 폴더에서 지원되는 오디오/비디오 파일을 찾을 수 없음",
                 "tracks_added_successfully": "{count}개의 트랙이 성공적으로 추가됨",
-                "error_adding_tracks": "트랙 추가 중 오류 발생"
+                "error_adding_tracks": "트랙 추가 중 오류 발생",
+                "editor_seed_info_intensity_step": "셔플됨!\n시드: {seed} \n적용된 교환: {num_swaps} \n역방향 단계: {step}",
+                "editor_seed_info_intensity": "셔플됨!\n시드: {seed} \n적용된 교환: {num_swaps}"
             },
             "sl-si": {
                 "window_title_generator": "Generator seznamov predvajanja",
@@ -1419,7 +1455,7 @@ class Localization:
                 "browse_button": "Raziskaj",
                 "playlist_name_label": "Ime seznama predvajanja:",
                 "seed_label": "Začetna vrednost (pustite prazno za naključno):",
-                "reverse_step_label": "Korak obrata (0=izklopljeno, 1-20):",
+                "reverse_step_label": "Korak obrata (0=izklopljeno, 1-∞):",
                 "seed_format_label": "Oblika začetne vrednosti:",
                 "generate_button": "   Ustvari seznam predvajanja   ",
                 "language_label": "Jezik:",
@@ -1487,7 +1523,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Izberite mapo za dodajanje skladb",
                 "no_supported_files_found": "V izbrani mapi ni podprtih avdio/video datotek",
                 "tracks_added_successfully": "Uspešno dodanih {count} skladb",
-                "error_adding_tracks": "Napaka pri dodajanju skladb"
+                "error_adding_tracks": "Napaka pri dodajanju skladb",
+                "editor_seed_info_intensity_step": "Premešano!\nSeme: {seed} \nUporabljene zamenjave: {num_swaps} \nPovratni korak: {step}",
+                "editor_seed_info_intensity": "Premešano!\nSeme: {seed} \nUporabljene zamenjave: {num_swaps}"
             },
             "sq-al": {
                 "window_title_generator": "Gjenerues i Listave të Këngëve",
@@ -1497,7 +1535,7 @@ class Localization:
                 "browse_button": "Shfleto",
                 "playlist_name_label": "Emri i listës së këngëve:",
                 "seed_label": "Farë (lëreni bosh për të rastësishme):",
-                "reverse_step_label": "Hapi i kundërt (0=çaktivizo, 1-20):",
+                "reverse_step_label": "Hapi i kundërt (0=çaktivizo, 1-∞):",
                 "seed_format_label": "Formati i farës:",
                 "generate_button": "   Krijo Listën e Këngëve   ",
                 "language_label": "Gjuha:",
@@ -1565,7 +1603,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Zgjidhni dosjen për të shtuar këngë",
                 "no_supported_files_found": "Nuk u gjetën skedarë audio/video të mbështetur në dosjen e zgjedhur",
                 "tracks_added_successfully": "U shtuan me sukses {count} këngë",
-                "error_adding_tracks": "Gabim gjatë shtimit të këngëve"
+                "error_adding_tracks": "Gabim gjatë shtimit të këngëve",
+                "editor_seed_info_intensity_step": "Përzierë!\nFarë: {seed} \nShkëmbime të aplikuara: {num_swaps} \nHapi i kundërt: {step}",
+                "editor_seed_info_intensity": "Përzierë!\nFarë: {seed} \nShkëmbime të aplikuara: {num_swaps}"
             },
             "hr-hr": {
                 "window_title_generator": "Generator playlisti",
@@ -1575,7 +1615,7 @@ class Localization:
                 "browse_button": "Pregledaj",
                 "playlist_name_label": "Naziv playliste:",
                 "seed_label": "Sjeme (ostavite prazno za slučajnu):",
-                "reverse_step_label": "Korak obrnutog reda (0=isključeno, 1-20):",
+                "reverse_step_label": "Korak obrnutog reda (0=isključeno, 1-∞):",
                 "seed_format_label": "Format početne vrijednosti:",
                 "generate_button": "   Kreiraj playlistu   ",
                 "language_label": "Jezik:",
@@ -1643,7 +1683,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Odaberite mapu za dodavanje pjesama",
                 "no_supported_files_found": "Nema podržanih audio/video datoteka u odabranoj mapi",
                 "tracks_added_successfully": "Uspješno dodano {count} pjesama",
-                "error_adding_tracks": "Greška pri dodavanju pjesama"
+                "error_adding_tracks": "Greška pri dodavanju pjesama",
+                "editor_seed_info_intensity_step": "Promiješano!\nSjeme: {seed} \nPrimijenjene zamjene: {num_swaps} \nObrnuti korak: {step}",
+                "editor_seed_info_intensity": "Promiješano!\nSjeme: {seed} \nPrimijenjene zamjene: {num_swaps}"
             },
             "hu-hu": {
                 "window_title_generator": "Lejátszási lista generátor",
@@ -1653,7 +1695,7 @@ class Localization:
                 "browse_button": "Tallózás",
                 "playlist_name_label": "Lejátszási lista neve:",
                 "seed_label": "Mag (hagyja üresen véletlenszerű generáláshoz):",
-                "reverse_step_label": "Fordított lépés (0=ki, 1-20):",
+                "reverse_step_label": "Fordított lépés (0=ki, 1-∞):",
                 "seed_format_label": "Mag formátuma:",
                 "generate_button": "   Lejátszási lista létrehozása   ",
                 "language_label": "Nyelv:",
@@ -1721,7 +1763,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Válassza ki a zeneszámok hozzáadásához a mappát",
                 "no_supported_files_found": "Nem található támogatott audio/videó fájl a kiválasztott mappában",
                 "tracks_added_successfully": "{count} zeneszám sikeresen hozzáadva",
-                "error_adding_tracks": "Hiba a zeneszámok hozzáadásakor"
+                "error_adding_tracks": "Hiba a zeneszámok hozzáadásakor",
+                "editor_seed_info_intensity_step": "Megkeverve!\nMag: {seed} \nAlkalmazott cserék: {num_swaps} \nFordított lépés: {step}",
+                "editor_seed_info_intensity": "Keverve!\nMag: {seed} \nAlkalmazott cserék: {num_swaps}"
             },
             "ro-ro": {
                 "window_title_generator": "Generator de playlist-uri",
@@ -1731,7 +1775,7 @@ class Localization:
                 "browse_button": "Răsfoire",
                 "playlist_name_label": "Nume playlist:",
                 "seed_label": "Seed (lăsați gol pentru aleatoriu):",
-                "reverse_step_label": "Pas inversare (0=dezactivat, 1-20):",
+                "reverse_step_label": "Pas inversare (0=dezactivat, 1-∞):",
                 "seed_format_label": "Format seed:",
                 "generate_button": "   Creează playlist   ",
                 "language_label": "Limba:",
@@ -1799,7 +1843,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Selectați folderul pentru a adăuga piese",
                 "no_supported_files_found": "Nu s-au găsit fișiere audio/video suportate în folderul selectat",
                 "tracks_added_successfully": "{count} piese adăugate cu succes",
-                "error_adding_tracks": "Eroare la adăugarea pieselor"
+                "error_adding_tracks": "Eroare la adăugarea pieselor",
+                "editor_seed_info_intensity_step": "Amestecat!\nSămânță: {seed} \nSchimburi aplicate: {num_swaps} \nPas invers: {step}",
+                "editor_seed_info_intensity": "Amestecat!\nSămânță: {seed} \nSchimburi aplicate: {num_swaps}"
             },
             "cs-cz": {
                 "window_title_generator": "Generátor playlistů",
@@ -1809,7 +1855,7 @@ class Localization:
                 "browse_button": "Procházet",
                 "playlist_name_label": "Název playlistu:",
                 "seed_label": "Semínko (prázdné pro náhodné):",
-                "reverse_step_label": "Krok obrácení (0=vypnuto, 1-20):",
+                "reverse_step_label": "Krok obrácení (0=vypnuto, 1-∞):",
                 "seed_format_label": "Formát semínka:",
                 "generate_button": "   Vytvořit playlist   ",
                 "language_label": "Jazyk:",
@@ -1877,7 +1923,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Vyberte složku pro přidání skladeb",
                 "no_supported_files_found": "Ve vybrané složce nebyly nalezeny podporované audio/video soubory",
                 "tracks_added_successfully": "Úspěšně přidáno {count} skladeb",
-                "error_adding_tracks": "Chyba při přidávání skladeb"
+                "error_adding_tracks": "Chyba při přidávání skladeb",
+                "editor_seed_info_intensity_step": "Zamícháno!\nSemínko: {seed} \nPoužité prohození: {num_swaps} \nReverzní krok: {step}",
+                "editor_seed_info_intensity": "Zamícháno!\nSemínko: {seed} \nProhození aplikováno: {num_swaps}"
             },
             "nl-be": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -1887,7 +1935,7 @@ class Localization:
                 "browse_button": "Bladeren",
                 "playlist_name_label": "Afspeellijstnaam:",
                 "seed_label": "Seed (leeg laten voor willekeurig):",
-                "reverse_step_label": "Omgekeerde stap (0=uit, 1-20):",
+                "reverse_step_label": "Omgekeerde stap (0=uit, 1-∞):",
                 "seed_format_label": "Seed-formaat:",
                 "generate_button": "   Afspeellijst Maken   ",
                 "language_label": "Taal:",
@@ -1955,7 +2003,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Selecteer map om nummers toe te voegen",
                 "no_supported_files_found": "Geen ondersteunde audio/video-bestanden gevonden in geselecteerde map",
                 "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
-                "error_adding_tracks": "Fout bij toevoegen van nummers"
+                "error_adding_tracks": "Fout bij toevoegen van nummers",
+                "editor_seed_info_intensity_step": "Geschud!\nZaad: {seed} \nToegepaste swaps: {num_swaps} \nTerugstap: {step}",
+                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}"
             },
             "fr-be": {
                 "window_title_generator": "Générateur de Playlist",
@@ -1965,7 +2015,7 @@ class Localization:
                 "browse_button": "Parcourir",
                 "playlist_name_label": "Nom de la playlist:",
                 "seed_label": "Graine (laisser vide pour aléatoire):",
-                "reverse_step_label": "Pas inversé (0=off, 1-20):",
+                "reverse_step_label": "Pas inversé (0=off, 1-∞):",
                 "seed_format_label": "Format de graine:",
                 "generate_button": "   Créer Playlist   ",
                 "language_label": "Langue:",
@@ -2033,7 +2083,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Sélectionnez le dossier pour ajouter des pistes",
                 "no_supported_files_found": "Aucun fichier audio/vidéo pris en charge trouvé dans le dossier sélectionné",
                 "tracks_added_successfully": "{count} pistes ajoutées avec succès",
-                "error_adding_tracks": "Erreur lors de l'ajout de pistes"
+                "error_adding_tracks": "Erreur lors de l'ajout de pistes",
+                "editor_seed_info_intensity_step": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps} \nÉtape inverse: {step}",
+                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}"
             },
             "de-be": {
                 "window_title_generator": "Playlist Generator",
@@ -2043,7 +2095,7 @@ class Localization:
                 "browse_button": "Durchsuchen",
                 "playlist_name_label": "Playlistname:",
                 "seed_label": "Seed (leer lassen für zufällig):",
-                "reverse_step_label": "Umkehrschritt (0=aus, 1-20):",
+                "reverse_step_label": "Umkehrschritt (0=aus, 1-∞):",
                 "seed_format_label": "Seed-Format:",
                 "generate_button": "   Playlist Erstellen   ",
                 "language_label": "Sprache:",
@@ -2111,7 +2163,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Ordner zum Hinzufügen von Tracks auswählen",
                 "no_supported_files_found": "Keine unterstützten Audio-/Videodateien im ausgewählten Ordner gefunden",
                 "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
-                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks"
+                "error_adding_tracks": "Fehler beim Hinzufügen von Tracks",
+                "editor_seed_info_intensity_step": "Gemisch!\nSamen: {seed} \nAngewandte Tausche: {num_swaps} \nRückwärtsschritt: {step}",
+                "editor_seed_info_intensity": "Gemisch!\nSeed: {seed} \nVertauschungen: {num_swaps}"
             },
             "ga-ie": {
                 "window_title_generator": "Gineadóir Liosta Ealaíon",
@@ -2121,7 +2175,7 @@ class Localization:
                 "browse_button": "Brabhsáil",
                 "playlist_name_label": "Ainm an Liosta Ealaíon:",
                 "seed_label": "Síol (fág bán le haghaidh randamach):",
-                "reverse_step_label": "Céim chúl (0=as, 1-20):",
+                "reverse_step_label": "Céim chúl (0=as, 1-∞):",
                 "seed_format_label": "Formáid an tSíl:",
                 "generate_button": "   Gine Liosta Ealaíon   ",
                 "language_label": "Teanga:",
@@ -2189,7 +2243,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Roghnaigh fillteán chun rianta a chur leis",
                 "no_supported_files_found": "Níor aimsíodh aon chomhad fuaime/físe a dtacaítear leis sa bhfillteán roghnaithe",
                 "tracks_added_successfully": "{count} rianta curtha leis go rathúil",
-                "error_adding_tracks": "Earráid agus rianta á gcur leis"
+                "error_adding_tracks": "Earráid agus rianta á gcur leis",
+                "editor_seed_info_intensity_step": "Measctha!\nSíol: {seed} \nMalartuithe curtha i bhfeidhm: {num_swaps} \nCéim chúl: {step}",
+                "editor_seed_info_intensity": "Measctha!\nSíol: {seed} \nMalartuithe curtha i bhfeidhm: {num_swaps}"
             },
             "is-is": {
                 "window_title_generator": "Spilunarlisti Generator",
@@ -2199,7 +2255,7 @@ class Localization:
                 "browse_button": "Fletta",
                 "playlist_name_label": "Heiti spilunarlista:",
                 "seed_label": "Fró (skildu eftir autt fyrir af handahófi):",
-                "reverse_step_label": "Bakfærslu skref (0=slökkt, 1-20):",
+                "reverse_step_label": "Bakfærslu skref (0=slökkt, 1-∞):",
                 "seed_format_label": "Fró snið:",
                 "generate_button": "   Búa til spilunarlista   ",
                 "language_label": "Tungumál:",
@@ -2267,7 +2323,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Veldu möppu til að bæta við lögum",
                 "no_supported_files_found": "Engin studd hljóð-/myndskrár fundust í valinni möppu",
                 "tracks_added_successfully": "{count} lög bætt við",
-                "error_adding_tracks": "Villa við að bæta við lögum"
+                "error_adding_tracks": "Villa við að bæta við lögum",
+                "editor_seed_info_intensity_step": "Stokkað!\nFræ: {seed} \nNotaðir skiptingar: {num_swaps} \nBakfæra skref: {step}",
+                "editor_seed_info_intensity": "Stokkað!\nFræ: {seed} \nViðskipti notuð: {num_swaps}"
             },
             "et-ee": {
                 "window_title_generator": "Esitusloendite Generaator",
@@ -2277,7 +2335,7 @@ class Localization:
                 "browse_button": "Sirvi",
                 "playlist_name_label": "Esitusloendi nimi:",
                 "seed_label": "Algväärtus (tühjenda juhuslikuks):",
-                "reverse_step_label": "Pöördesamm (0=väljas, 1-20):",
+                "reverse_step_label": "Pöördesamm (0=väljas, 1-∞):",
                 "seed_format_label": "Algväärtuse vorming:",
                 "generate_button": "   Loo esitusloend   ",
                 "language_label": "Keel:",
@@ -2345,7 +2403,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Vali kaust lugude lisamiseks",
                 "no_supported_files_found": "Valitud kaustast ei leitud toetatavaid audio/videofaile",
                 "tracks_added_successfully": "{count} lugu edukalt lisatud",
-                "error_adding_tracks": "Viga lugude lisamisel"
+                "error_adding_tracks": "Viga lugude lisamisel",
+                "editor_seed_info_intensity_step": "Segatud!\nSeeme: {seed} \nRakendatud vahetused: {num_swaps} \nTagurpidi samm: {step}",
+                "editor_seed_info_intensity": "Segatud!\nSeeme: {seed} \nRakendatud vahetused: {num_swaps}"
             },
             "nb-no": {
                 "window_title_generator": "Spilleliste-generator",
@@ -2355,7 +2415,7 @@ class Localization:
                 "browse_button": "Bla gjennom",
                 "playlist_name_label": "Spillelistenavn:",
                 "seed_label": "Frø (la stå tomt for tilfeldig):",
-                "reverse_step_label": "Reverseringssteg (0=av, 1-20):",
+                "reverse_step_label": "Reverseringssteg (0=av, 1-∞):",
                 "seed_format_label": "Frø-format:",
                 "generate_button": "   Opprett spilleliste   ",
                 "language_label": "Språk:",
@@ -2423,7 +2483,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Velg mappe for å legge til spor",
                 "no_supported_files_found": "Ingen støttede lyd-/videofiler funnet i valgt mappe",
                 "tracks_added_successfully": "{count} spor lagt til",
-                "error_adding_tracks": "Feil ved tilføying av spor"
+                "error_adding_tracks": "Feil ved tilføying av spor",
+                "editor_seed_info_intensity_step": "Blandet!\nFrø: {seed} \nBrukte bytter: {num_swaps} \nOmvendt steg: {step}",
+                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nBytter utført: {num_swaps}"
             },
             "es-cl": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2433,7 +2495,7 @@ class Localization:
                 "browse_button": "Examinar",
                 "playlist_name_label": "Nombre de la lista:",
                 "seed_label": "Semilla (dejar vacío para aleatorio):",
-                "reverse_step_label": "Paso de reversa (0=desactivado, 1-20):",
+                "reverse_step_label": "Paso de reversa (0=desactivado, 1-∞):",
                 "seed_format_label": "Formato de semilla:",
                 "generate_button": "   Crear Lista   ",
                 "language_label": "Idioma:",
@@ -2501,7 +2563,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
                 "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
-                "error_adding_tracks": "Error al agregar pistas"
+                "error_adding_tracks": "Error al agregar pistas",
+                "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
             },
             "es-ar": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -2511,7 +2575,7 @@ class Localization:
                 "browse_button": "Examinar",
                 "playlist_name_label": "Nombre de la lista:",
                 "seed_label": "Semilla (dejar vacío para aleatorio):",
-                "reverse_step_label": "Paso de reversión (0=desact., 1-20):",
+                "reverse_step_label": "Paso de reversión (0=desact., 1-∞):",
                 "seed_format_label": "Formato de semilla:",
                 "generate_button": "   Crear lista   ",
                 "language_label": "Idioma:",
@@ -2579,7 +2643,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
                 "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
-                "error_adding_tracks": "Error al agregar pistas"
+                "error_adding_tracks": "Error al agregar pistas",
+                "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
             },
             "es-bo": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2589,7 +2655,7 @@ class Localization:
                 "browse_button": "Examinar",
                 "playlist_name_label": "Nombre de la lista:",
                 "seed_label": "Semilla (dejar vacío para aleatorio):",
-                "reverse_step_label": "Paso de reversa (0=desact., 1-20):",
+                "reverse_step_label": "Paso de reversa (0=desact., 1-∞):",
                 "seed_format_label": "Formato de semilla:",
                 "generate_button": "   Crear Lista   ",
                 "language_label": "Idioma:",
@@ -2657,7 +2723,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Seleccione la carpeta para agregar pistas",
                 "no_supported_files_found": "No se encontraron archivos de audio/video compatibles en la carpeta seleccionada",
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
-                "error_adding_tracks": "Error al agregar pistas"
+                "error_adding_tracks": "Error al agregar pistas",
+                "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
             },
             "hi-in": {
                 "window_title_generator": "प्लेलिस्ट जनरेटर",
@@ -2667,7 +2735,7 @@ class Localization:
                 "browse_button": "ब्राउज़ करें",
                 "playlist_name_label": "प्लेलिस्ट का नाम:",
                 "seed_label": "सीड (यादृच्छिक के लिए खाली छोड़ें):",
-                "reverse_step_label": "रिवर्स स्टेप (0=बंद, 1-20):",
+                "reverse_step_label": "रिवर्स स्टेप (0=बंद, 1-∞):",
                 "seed_format_label": "सीड प्रारूप:",
                 "generate_button": "   प्लेलिस्ट बनाएं   ",
                 "language_label": "भाषा:",
@@ -2735,7 +2803,9 @@ class Localization:
                 "select_folder_to_add_tracks": "ट्रैक जोड़ने के लिए फ़ोल्डर चुनें",
                 "no_supported_files_found": "चयनित फ़ोल्डर में कोई समर्थित ऑडियो/वीडियो फ़ाइलें नहीं मिलीं",
                 "tracks_added_successfully": "{count} ट्रैक सफलतापूर्वक जोड़े गए",
-                "error_adding_tracks": "ट्रैक जोड़ने में त्रुटि"
+                "error_adding_tracks": "ट्रैक जोड़ने में त्रुटि",
+                "editor_seed_info_intensity_step": "फेंटा गया!\nबीज: {seed} \nलागू की गई अदला-बदली: {num_swaps} \nउल्टा कदम: {step}",
+                "editor_seed_info_intensity": "फेंटा गया!\nबीज: {seed} \nलागू स्वैप: {num_swaps}"
             },
             "en-au": {
                 "window_title_generator": "Playlist Generator",
@@ -2745,7 +2815,7 @@ class Localization:
                 "browse_button": "Browse",
                 "playlist_name_label": "Playlist name:",
                 "seed_label": "Seed (leave blank for random):",
-                "reverse_step_label": "Reverse step (0=off, 1-20):",
+                "reverse_step_label": "Reverse step (0=off, 1-∞):",
                 "seed_format_label": "Seed format:",
                 "generate_button": "   Generate playlist   ",
                 "language_label": "Language:",
@@ -2813,7 +2883,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Select folder to add tracks",
                 "no_supported_files_found": "No supported audio/video files found in selected folder",
                 "tracks_added_successfully": "Added {count} tracks successfully",
-                "error_adding_tracks": "Error adding tracks"
+                "error_adding_tracks": "Error adding tracks",
+                "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
             },
             "en-ca": {
                 "window_title_generator": "Playlist Generator",
@@ -2823,7 +2895,7 @@ class Localization:
                 "browse_button": "Browse",
                 "playlist_name_label": "Playlist Name:",
                 "seed_label": "Seed (leave blank for random):",
-                "reverse_step_label": "Reverse Step (0=off, 1-20):",
+                "reverse_step_label": "Reverse Step (0=off, 1-∞):",
                 "seed_format_label": "Seed Format:",
                 "generate_button": "   Create Playlist   ",
                 "language_label": "Language:",
@@ -2891,7 +2963,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Select folder to add tracks",
                 "no_supported_files_found": "No supported audio/video files found in selected folder",
                 "tracks_added_successfully": "Added {count} tracks successfully",
-                "error_adding_tracks": "Error adding tracks"
+                "error_adding_tracks": "Error adding tracks",
+                "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
             },
             "ja-jp": {
                 "window_title_generator": "プレイリスト生成ツール",
@@ -2901,7 +2975,7 @@ class Localization:
                 "browse_button": "参照",
                 "playlist_name_label": "プレイリスト名:",
                 "seed_label": "シード値 (空白でランダム):",
-                "reverse_step_label": "反転ステップ (0=無効, 1-20):",
+                "reverse_step_label": "反転ステップ (0=無効, 1-∞):",
                 "seed_format_label": "シード値の形式:",
                 "generate_button": "   プレイリストを作成   ",
                 "language_label": "言語:",
@@ -2969,7 +3043,9 @@ class Localization:
                 "select_folder_to_add_tracks": "トラックを追加するフォルダを選択",
                 "no_supported_files_found": "選択したフォルダにサポートされているオーディオ/ビデオファイルが見つかりませんでした",
                 "tracks_added_successfully": "{count} トラックを正常に追加しました",
-                "error_adding_tracks": "トラックの追加中にエラーが発生しました"
+                "error_adding_tracks": "トラックの追加中にエラーが発生しました",
+                "editor_seed_info_intensity_step": "シャッフルされました!\nシード: {seed} \n適用された交換: {num_swaps} \n逆ステップ: {step}",
+                "editor_seed_info_intensity": "シャッフルされました！\nシード: {seed} \n適用された交換: {num_swaps}"
             },
             "da-dk": {
                 "window_title_generator": "Playlist Generator",
@@ -2979,7 +3055,7 @@ class Localization:
                 "browse_button": "Gennemse",
                 "playlist_name_label": "Playlist-navn:",
                 "seed_label": "Seed (lad være tom for tilfældig):",
-                "reverse_step_label": "Omvendt trin (0=slukket, 1-20):",
+                "reverse_step_label": "Omvendt trin (0=slukket, 1-∞):",
                 "seed_format_label": "Seed-format:",
                 "generate_button": "   Generer playlist   ",
                 "language_label": "Sprog:",
@@ -3047,7 +3123,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Vælg mappe for at tilføje spor",
                 "no_supported_files_found": "Ingen understøttede lyd-/videofiler fundet i den valgte mappe",
                 "tracks_added_successfully": "{count} spor tilføjet",
-                "error_adding_tracks": "Fejl ved tilføjelse af spor"
+                "error_adding_tracks": "Fejl ved tilføjelse af spor",
+                "editor_seed_info_intensity_step": "Blandet!\nFrø: {seed} \nAnvendte bytter: {num_swaps} \nOmvendt trin: {step}",
+                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nAnvendte byt: {num_swaps}"
             },
             "sv-se": {
                 "window_title_generator": "Spellista Generator",
@@ -3057,7 +3135,7 @@ class Localization:
                 "browse_button": "Bläddra",
                 "playlist_name_label": "Spellistans namn:",
                 "seed_label": "Seed (lämna tomt för slumpmässigt):",
-                "reverse_step_label": "Omvändningssteg (0=av, 1-20):",
+                "reverse_step_label": "Omvändningssteg (0=av, 1-∞):",
                 "seed_format_label": "Seed-format:",
                 "generate_button": "   Skapa spellista   ",
                 "language_label": "Språk:",
@@ -3125,7 +3203,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Välj mapp för att lägga till spår",
                 "no_supported_files_found": "Inga ljud-/videofiler som stöds hittades i den valda mappen",
                 "tracks_added_successfully": "{count} spår lades till",
-                "error_adding_tracks": "Fel vid tillägg av spår"
+                "error_adding_tracks": "Fel vid tillägg av spår",
+                "editor_seed_info_intensity_step": "Blandad!\nFrö: {seed} \nTillämpade byten: {num_swaps} \nOmvänd steg: {step}",
+                "editor_seed_info_intensity": "Blandad!\nFrö: {seed} \nTillämpade byten: {num_swaps}"
             },
             "fi-fi": {
                 "window_title_generator": "Soittolistageneraattori",
@@ -3135,7 +3215,7 @@ class Localization:
                 "browse_button": "Selaa",
                 "playlist_name_label": "Soittolistan nimi:",
                 "seed_label": "Siemenluku (jätä tyhjäksi satunnaista varten):",
-                "reverse_step_label": "Käänteisaskel (0=pois, 1-20):",
+                "reverse_step_label": "Käänteisaskel (0=pois, 1-∞):",
                 "seed_format_label": "Siemenluvun muoto:",
                 "generate_button": "   Luo soittolista   ",
                 "language_label": "Kieli:",
@@ -3146,7 +3226,7 @@ class Localization:
                 "error_no_music_folder": "Virhe: Määritä musiikkikansio!",
                 "error_no_playlist_name": "Virhe: Määritä soittolistan nimi!",
                 "error_folder_not_exist": "Virhe: Kansiota ei ole olemassa!",
-                "error_reverse_step": "Virhe: Käänteisaskeleen tulee olla luku 0-20!",
+                "error_reverse_step": "Virhe: Käänteisaskeleen tulee olla luku 0-∞!",
                 "error_no_audio_files": "Virhe: Määritetyssä kansiossa ei ole tuettuja äänitiedostoja!",
                 "shadow_seed_check": "Käytä varjosiemen",
                 "intensity_label": "Lisävaihdot (0=pois, 1=auto):",
@@ -3203,7 +3283,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Valitse kansio, johon haluat lisätä raitoja",
                 "no_supported_files_found": "Valitussa kansiossa ei löytynyt tuettuja ääni-/videotiedostoja",
                 "tracks_added_successfully": "{count} raidat lisättiin onnistuneesti",
-                "error_adding_tracks": "Virhe raidat lisättäessä"
+                "error_adding_tracks": "Virhe raidat lisättäessä",
+                "editor_seed_info_intensity_step": "Sekoitettu!\nSiemen: {seed} \nKäytetyt vaihdot: {num_swaps} \nKäänteinen askel: {step}",
+                "editor_seed_info_intensity": "Sekoitettu!\nSiemen: {seed} \nTehdyt vaihdot: {num_swaps}"
             },
             "af-za": {
                 "window_title_generator": "Speellys Generator",
@@ -3213,7 +3295,7 @@ class Localization:
                 "browse_button": "Blaai",
                 "playlist_name_label": "Speellys Naam:",
                 "seed_label": "Sade (los leeg vir ewekansige):",
-                "reverse_step_label": "Omkeer Stap (0=af, 1-20):",
+                "reverse_step_label": "Omkeer Stap (0=af, 1-∞):",
                 "seed_format_label": "Sade Formaat:",
                 "generate_button": "   Skep Speellys   ",
                 "language_label": "Taal:",
@@ -3281,7 +3363,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Kies 'n gids om snitte by te voeg",
                 "no_supported_files_found": "Geen ondersteunde klank-/videolêers in die gekose gids gevind nie",
                 "tracks_added_successfully": "{count} snitte suksesvol bygevoeg",
-                "error_adding_tracks": "Fout met byvoeging van snitte"
+                "error_adding_tracks": "Fout met byvoeging van snitte",
+                "editor_seed_info_intensity_step": "Geskuifel!\nSaad: {seed} \nToegepaste ruilings: {num_swaps} \nOmgekeerde stap: {step}",
+                "editor_seed_info_intensity": "Geskuifel!\nSaad: {seed} \nToegepaste ruilings: {num_swaps}"
             },
             "vi-vn": {
                 "window_title_generator": "Trình tạo playlist",
@@ -3291,7 +3375,7 @@ class Localization:
                 "browse_button": "Duyệt",
                 "playlist_name_label": "Tên playlist:",
                 "seed_label": "Seed (để trống nếu muốn ngẫu nhiên):",
-                "reverse_step_label": "Bước đảo ngược (0=tắt, 1-20):",
+                "reverse_step_label": "Bước đảo ngược (0=tắt, 1-∞):",
                 "seed_format_label": "Định dạng seed:",
                 "generate_button": "   Tạo playlist   ",
                 "language_label": "Ngôn ngữ:",
@@ -3359,7 +3443,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Chọn thư mục để thêm bài hát",
                 "no_supported_files_found": "Không tìm thấy tệp âm thanh/hình ảnh được hỗ trợ trong thư mục đã chọn",
                 "tracks_added_successfully": "Đã thêm thành công {count} bài hát",
-                "error_adding_tracks": "Lỗi khi thêm bài hát"
+                "error_adding_tracks": "Lỗi khi thêm bài hát",
+                "editor_seed_info_intensity_step": "Đã xáo trộn!\nHạt giống: {seed} \nHoán đổi áp dụng: {num_swaps} \nBước đảo ngược: {step}",
+                "editor_seed_info_intensity": "Đã xáo trộn!\nHạt giống: {seed} \nHoán đổi áp dụng: {num_swaps}"
             },
             "id-id": {
                 "window_title_generator": "Pembuat Daftar Putar",
@@ -3369,7 +3455,7 @@ class Localization:
                 "browse_button": "Jelajahi",
                 "playlist_name_label": "Nama daftar putar:",
                 "seed_label": "Seed (kosongkan untuk acak):",
-                "reverse_step_label": "Langkah mundur (0=mati, 1-20):",
+                "reverse_step_label": "Langkah mundur (0=mati, 1-∞):",
                 "seed_format_label": "Format seed:",
                 "generate_button": "   Buat Daftar Putar   ",
                 "language_label": "Bahasa:",
@@ -3380,7 +3466,7 @@ class Localization:
                 "error_no_music_folder": "Error: Tentukan folder musik!",
                 "error_no_playlist_name": "Error: Beri nama daftar putar!",
                 "error_folder_not_exist": "Error: Folder tidak ditemukan!",
-                "error_reverse_step": "Error: Langkah mundur harus angka 0-20!",
+                "error_reverse_step": "Error: Langkah mundur harus angka 0-∞!",
                 "error_no_audio_files": "Error: Tidak ada file audio yang didukung di folder ini!",
                 "shadow_seed_check": "Gunakan benih bayangan",
                 "intensity_label": "Pertukaran ekstra (0=mati, 1=otomatis):",
@@ -3437,7 +3523,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Pilih folder untuk menambahkan trek",
                 "no_supported_files_found": "Tidak ada file audio/video yang didukung ditemukan di folder yang dipilih",
                 "tracks_added_successfully": "{count} trek berhasil ditambahkan",
-                "error_adding_tracks": "Kesalahan saat menambahkan trek"
+                "error_adding_tracks": "Kesalahan saat menambahkan trek",
+                "editor_seed_info_intensity_step": "Diacak!\nSeed: {seed} \nPertukaran diterapkan: {num_swaps} \nLangkah terbalik: {step}",
+                "editor_seed_info_intensity": "Diacak!\nSeed: {seed} \nPertukaran diterapkan: {num_swaps}"
             },
             "el-gr": {
                 "window_title_generator": "Δημιουργός Λιστών Αναπαραγωγής",
@@ -3447,7 +3535,7 @@ class Localization:
                 "browse_button": "Επιλογή",
                 "playlist_name_label": "Όνομα λίστας:",
                 "seed_label": "Seed (αφήστε κενό για τυχαίο):",
-                "reverse_step_label": "Βήμα αντιστροφής (0=απενεργοποιημένο, 1-20):",
+                "reverse_step_label": "Βήμα αντιστροφής (0=απενεργοποιημένο, 1-∞):",
                 "seed_format_label": "Μορφή seed:",
                 "generate_button": "   Δημιουργία λίστας   ",
                 "language_label": "Γλώσσα:",
@@ -3515,7 +3603,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Επιλέξτε φάκελο για προσθήκη κομματιών",
                 "no_supported_files_found": "Δεν βρέθηκαν υποστηριζόμενα αρχεία ήχου/βίντεο στον επιλεγμένο φάκελο",
                 "tracks_added_successfully": "Προστέθηκαν {count} κομμάτια με επιτυχία",
-                "error_adding_tracks": "Σφάλμα κατά την προσθήκη κομματιών"
+                "error_adding_tracks": "Σφάλμα κατά την προσθήκη κομματιών",
+                "editor_seed_info_intensity_step": "Ανακάτεμα!\nΣπόρος: {seed} \nΕφαρμοσμένες ανταλλαγές: {num_swaps} \nΑντίστροφο βήμα: {step}",
+                "editor_seed_info_intensity": "Ανακάτεμα!\nΣπόρος: {seed} \nΕφαρμοσμένες ανταλλαγές: {num_swaps}"
             },
             "bg-bg": {
                 "window_title_generator": "Генератор на плейлисти",
@@ -3525,7 +3615,7 @@ class Localization:
                 "browse_button": "Избор",
                 "playlist_name_label": "Име на плейлиста:",
                 "seed_label": "Сид (оставете празно за случайна):",
-                "reverse_step_label": "Стъпка на обръщане (0=изключено, 1-20):",
+                "reverse_step_label": "Стъпка на обръщане (0=изключено, 1-∞):",
                 "seed_format_label": "Формат на стойността:",
                 "generate_button": "   Генерирай плейлист   ",
                 "language_label": "Език:",
@@ -3593,7 +3683,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Изберете папка за добавяне на песни",
                 "no_supported_files_found": "В избраната папка не бяха намерени поддържани аудио/видео файлове",
                 "tracks_added_successfully": "Успешно добавени {count} песни",
-                "error_adding_tracks": "Грешка при добавяне на песни"
+                "error_adding_tracks": "Грешка при добавяне на песни",
+                "editor_seed_info_intensity_step": "Разбъркано!\nСеме: {seed} \nПриложени размени: {num_swaps} \nОбратна стъпка: {step}",
+                "editor_seed_info_intensity": "Разбъркано!\nСеме: {seed} \nПриложени размени: {num_swaps}"
             },
             "lt-lt": {
                 "window_title_generator": "Grojaraščių generatorius",
@@ -3603,7 +3695,7 @@ class Localization:
                 "browse_button": "Naršyti",
                 "playlist_name_label": "Grojaraščio pavadinimas:",
                 "seed_label": "Sėkla (palikite tuščią, jei norite atsitiktinai):",
-                "reverse_step_label": "Apverstas žingsnis (0=išjungta, 1-20):",
+                "reverse_step_label": "Apverstas žingsnis (0=išjungta, 1-∞):",
                 "seed_format_label": "Pradinės reikšmės formatas:",
                 "generate_button": "   Generuoti grojaraštį   ",
                 "language_label": "Kalba:",
@@ -3671,7 +3763,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Pasirinkite katalogą, norėdami pridėti takelių",
                 "no_supported_files_found": "Pasirinktame kataloge nerasta palaikomų garso/vaizdo failų",
                 "tracks_added_successfully": "Sėkmingai pridėta {count} takelių",
-                "error_adding_tracks": "Klaida pridedant takelius"
+                "error_adding_tracks": "Klaida pridedant takelius",
+                "editor_seed_info_intensity_step": "Išmaišyta!\nSėkla: {seed} \nPritaikyti sukeitimai: {num_swaps} \nAtvirkštinis žingsnis: {step}",
+                "editor_seed_info_intensity": "Sumaišyta!\nSėkla: {seed} \nTaikomi sukeitimai: {num_swaps}"
             },
             "lv-lv": {
                 "window_title_generator": "Playlistu Ģenerators",
@@ -3681,7 +3775,7 @@ class Localization:
                 "browse_button": "Pārlūkot",
                 "playlist_name_label": "Playlista nosaukums:",
                 "seed_label": "Sēkla (tukšs - nejaušai ģenerēšanai):",
-                "reverse_step_label": "Apgriezt soļus (0=izslēgts, 1-20):",
+                "reverse_step_label": "Apgriezt soļus (0=izslēgts, 1-∞):",
                 "seed_format_label": "Sēklas formāts:",
                 "generate_button": "   Ģenerēt playlistu   ",
                 "language_label": "Valoda:",
@@ -3749,7 +3843,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Atlasiet mapi, lai pievienotu dziesmas",
                 "no_supported_files_found": "Atlasītajā mapē netika atrasti atbalstīti audio/video faili",
                 "tracks_added_successfully": "Veiksmīgi pievienotas {count} dziesmas",
-                "error_adding_tracks": "Kļūda, pievienojot dziesmas"
+                "error_adding_tracks": "Kļūda, pievienojot dziesmas",
+                "editor_seed_info_intensity_step": "Sajaukts!\nSēkla: {seed} \nPiemērotie mainījumi: {num_swaps} \nReversais solis: {step}",
+                "editor_seed_info_intensity": "Sajaikts!\nSēkla: {seed} \nPielietotie maiņi: {num_swaps}"
             },
             "mt-mt": {
                 "window_title_generator": "Ġeneratur ta' Playlist",
@@ -3759,7 +3855,7 @@ class Localization:
                 "browse_button": "Fittex",
                 "playlist_name_label": "Isem tal-playlist:",
                 "seed_label": "Seed (ħalli vojt għal każwali):",
-                "reverse_step_label": "Pass tar-reverse (0=mitfugħ, 1-20):",
+                "reverse_step_label": "Pass tar-reverse (0=mitfugħ, 1-∞):",
                 "seed_format_label": "Format tas-seed:",
                 "generate_button": "   Ġenera playlist   ",
                 "language_label": "Lingwa:",
@@ -3827,7 +3923,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Agħżel folder biex iżżid traks",
                 "no_supported_files_found": "L-ebda fajls awdjo/vidjo appoġġjati ma nstab fil-folder magħżul",
                 "tracks_added_successfully": "{count} trakki miżjuda b'suċċess",
-                "error_adding_tracks": "Żball waqt iż-żid ta' trakki"
+                "error_adding_tracks": "Żball waqt iż-żid ta' trakki",
+                "editor_seed_info_intensity_step": "Imxarrab!\nŻerriegħa: {seed} \nSkambji applikati: {num_swaps} \nPass lura: {step}",
+                "editor_seed_info_intensity": "Imħawwad!\nŻerriegħa: {seed} \nSkambji applikati: {num_swaps}"
             },
             "mk-mk": {
                 "window_title_generator": "Генератор на плејлисти",
@@ -3837,7 +3935,7 @@ class Localization:
                 "browse_button": "Избери",
                 "playlist_name_label": "Име на плејлиста:",
                 "seed_label": "Сид (остави празно за случаен):",
-                "reverse_step_label": "Чекор на обратен ред (0=исклучено, 1-20):",
+                "reverse_step_label": "Чекор на обратен ред (0=исклучено, 1-∞):",
                 "seed_format_label": "Формат на сид:",
                 "generate_button": "   Генерирај плејлиста   ",
                 "language_label": "Јазик:",
@@ -3905,7 +4003,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Изберете папка за додавање песни",
                 "no_supported_files_found": "Не се пронајдени поддржани аудио/видео датотеки во избраната папка",
                 "tracks_added_successfully": "Успешно додадени {count} песни",
-                "error_adding_tracks": "Грешка при додавање песни"
+                "error_adding_tracks": "Грешка при додавање песни",
+                "editor_seed_info_intensity_step": "Измешано!\nСеме: {seed} \nПрименети замены: {num_swaps} \nОбратен чекор: {step}",
+                "editor_seed_info_intensity": "Измешано!\nСеме: {seed} \nПрименети замени: {num_swaps}"
             },
             "sk-sk": {
                 "window_title_generator": "Generátor playlistu",
@@ -3915,7 +4015,7 @@ class Localization:
                 "browse_button": "Prehľadať",
                 "playlist_name_label": "Názov playlistu:",
                 "seed_label": "Seed (prázdne pre náhodný výber):",
-                "reverse_step_label": "Krok reverzie (0=vypnuté, 1-20):",
+                "reverse_step_label": "Krok reverzie (0=vypnuté, 1-∞):",
                 "seed_format_label": "Formát seedu:",
                 "generate_button": "   Vytvoriť playlist   ",
                 "language_label": "Jazyk:",
@@ -3983,7 +4083,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Vyberte priečinok na pridanie skladieb",
                 "no_supported_files_found": "Vo vybranom priečinku sa nenašli žiadne podporované audio/video súbory",
                 "tracks_added_successfully": "Úspešne pridaných {count} skladieb",
-                "error_adding_tracks": "Chyba pri pridávaní skladieb"
+                "error_adding_tracks": "Chyba pri pridávaní skladieb",
+                "editor_seed_info_intensity_step": "Zamiešané!\nSemeno: {seed} \nPoužité výmeny: {num_swaps} \nSpätný krok: {step}",
+                "editor_seed_info_intensity": "Zamiešané!\nSemeno: {seed} \nPoužité výmeny: {num_swaps}"
             },
             "he-il": {
                 "window_title_generator": "מחולל פלייליסט",
@@ -3993,7 +4095,7 @@ class Localization:
                 "browse_button": "עיון",
                 "playlist_name_label": "שם הפלייליסט:",
                 "seed_label": "סיד (השאר ריק לאקראי):",
-                "reverse_step_label": "צעד הפוך (0=כבוי, 1-20):",
+                "reverse_step_label": "צעד הפוך (0=כבוי, 1-∞):",
                 "seed_format_label": "פורמט סיד:",
                 "generate_button": "   צור פלייליסט   ",
                 "language_label": "שפה:",
@@ -4004,7 +4106,7 @@ class Localization:
                 "error_no_music_folder": "שגיאה: נא לציין תיקיית מוזיקה!",
                 "error_no_playlist_name": "שגיאה: נא לציין שם פלייליסט!",
                 "error_folder_not_exist": "שגיאה: התיקייה לא קיימת!",
-                "error_reverse_step": "שגיאה: צעד הפוך חייב להיות בין 0 ל-20!",
+                "error_reverse_step": "שגיאה: צעד הפוך חייב להיות בין 0 ל-∞!",
                 "error_no_audio_files": "שגיאה: אין קבצי אודיו נתמכים בתיקייה שצוינה!",
                 "shadow_seed_check": "השתמש בזרע צל",
                 "intensity_label": "החלפות נוספות (0=כבוי, 1=אוטו):",
@@ -4061,7 +4163,9 @@ class Localization:
                 "select_folder_to_add_tracks": "בחר תיקייה להוספת רצועות",
                 "no_supported_files_found": "לא נמצאו קבצי אודיו/וידאו נתמכים בתיקייה שנבחרה",
                 "tracks_added_successfully": "נוספו בהצלחה {count} רצועות",
-                "error_adding_tracks": "שגיאה בהוספת רצועות"
+                "error_adding_tracks": "שגיאה בהוספת רצועות",
+                "editor_seed_info_intensity_step": "עורבב!\nזרע: {seed} \nהחלפות שהוחלו: {num_swaps} \nצעד הפוך: {step}",
+                "editor_seed_info_intensity": "עורבב!\nזרע: {seed} \nהחלפות מיושמות: {num_swaps}"
             },
             "ta-in": {
                 "window_title_generator": "பிளேலிஸ்ட் ஜெனரேட்டர்",
@@ -4071,7 +4175,7 @@ class Localization:
                 "browse_button": "உலாவு",
                 "playlist_name_label": "பிளேலிஸ்ட் பெயர்:",
                 "seed_label": "சீட் (ஏதுமில்லை என்றால் தற்செயல்):",
-                "reverse_step_label": "தலைகீழ் படி (0=அணை, 1-20):",
+                "reverse_step_label": "தலைகீழ் படி (0=அணை, 1-∞):",
                 "seed_format_label": "சீட் வடிவம்:",
                 "generate_button": "   பிளேலிஸ்ட் உருவாக்கு   ",
                 "language_label": "மொழி:",
@@ -4139,7 +4243,9 @@ class Localization:
                 "select_folder_to_add_tracks": "பாடல்களைச் சேர்க்க கோப்புறையைத் தேர்ந்தெடுக்கவும்",
                 "no_supported_files_found": "தேர்ந்தெடுக்கப்பட்ட கோப்புறையில் ஆதரவு உள்ள ஒலி/காணொளி கோப்புகள் எதுவும் கிடைக்கவில்லை",
                 "tracks_added_successfully": "{count} பாடல்கள் வெற்றிகரமாக சேர்க்கப்பட்டன",
-                "error_adding_tracks": "பாடல்களைச் சேர்க்கும்போது பிழை"
+                "error_adding_tracks": "பாடல்களைச் சேர்க்கும்போது பிழை",
+                "editor_seed_info_intensity_step": "கலக்கப்பட்டது!\nவிதை: {seed} \nபயன்படுத்தப்பட்ட பரிமாற்றங்கள்: {num_swaps} \nதலைகீழ் படி: {step}",
+                "editor_seed_info_intensity": "கலக்கப்பட்டது!\nவிதை: {seed} \nபயன்படுத்தப்பட்ட பரிமாற்றங்கள்: {num_swaps}"
             },
             "te-in": {
                 "window_title_generator": "ప్లేలిస్ట్ జనరేటర్",
@@ -4149,7 +4255,7 @@ class Localization:
                 "browse_button": "బ్రౌజ్ చేయండి",
                 "playlist_name_label": "ప్లేలిస్ట్ పేరు:",
                 "seed_label": "సీడ్ (యాదృచ్ఛికం కోసం ఖాళీగా ఉంచండి):",
-                "reverse_step_label": "రివర్స్ స్టెప్ (0=ఆఫ్, 1-20):",
+                "reverse_step_label": "రివర్స్ స్టెప్ (0=ఆఫ్, 1-∞):",
                 "seed_format_label": "సీడ్ ఫార్మాట్:",
                 "generate_button": "   ప్లేలిస్ట్ జనరేట్ చేయండి   ",
                 "language_label": "భాష:",
@@ -4217,7 +4323,9 @@ class Localization:
                 "select_folder_to_add_tracks": "ట్రాక్స్ జోడించడానికి ఫోల్డర్ ఎంచుకోండి",
                 "no_supported_files_found": "ఎంచుకున్న ఫోల్డర్‌లో మద్దతు ఉన్న ఆడియో/వీడియో ఫైళ్లు ఏవీ కనుగొనబడలేదు",
                 "tracks_added_successfully": "{count} ట్రాక్స్ విజయవంతంగా జోడించబడ్డాయి",
-                "error_adding_tracks": "ట్రాక్స్ జోడించడంలో లోపం"
+                "error_adding_tracks": "ట్రాక్స్ జోడించడంలో లోపం",
+                "editor_seed_info_intensity_step": "అద్దుకున్నాడు!\nవిత్తనం: {seed} \nఅమలు చేసిన మార్పిడులు: {num_swaps} \nరివర్స్ స్టెప్: {step}",
+                "editor_seed_info_intensity": "అద్దుపడింది!\nవిత్తనం: {seed} \nవర్తింపజేసిన మార్పిడులు: {num_swaps}"
             },
             "ms-my": {
                 "window_title_generator": "Penjana Senarai Main",
@@ -4227,7 +4335,7 @@ class Localization:
                 "browse_button": "Cari",
                 "playlist_name_label": "Nama senarai main:",
                 "seed_label": "Seed (biarkan kosong untuk rawak):",
-                "reverse_step_label": "Langkah songsang (0=mati, 1-20):",
+                "reverse_step_label": "Langkah songsang (0=mati, 1-∞):",
                 "seed_format_label": "Format seed:",
                 "generate_button": "   Jana senarai main   ",
                 "language_label": "Bahasa:",
@@ -4295,7 +4403,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Pilih folder untuk menambah lagu",
                 "no_supported_files_found": "Tiada fail audio/video yang disokong ditemui dalam folder yang dipilih",
                 "tracks_added_successfully": "{count} lagu berjaya ditambah",
-                "error_adding_tracks": "Ralat semasa menambah lagu"
+                "error_adding_tracks": "Ralat semasa menambah lagu",
+                "editor_seed_info_intensity_step": "Dikocak!\nBiji: {seed} \nPertukaran digunakan: {num_swaps} \nLangkah terbalik: {step}",
+                "editor_seed_info_intensity": "Dikocak!\nBiji: {seed} \nPertukaran digunakan: {num_swaps}"
             },
             "am-et": {
                 "window_title_generator": "የፕሌይሊስት ጀነሬተር",
@@ -4305,7 +4415,7 @@ class Localization:
                 "browse_button": "ፈልግ",
                 "playlist_name_label": "የፕሌይሊስት ስም፡",
                 "seed_label": "ስድ (ዘፈቀደ ለማድረግ ባዶ ይተዉት)፡",
-                "reverse_step_label": "የተገላቢጦሽ ደረጃ (0=ጠፍቷል፣ 1-20)፡",
+                "reverse_step_label": "የተገላቢጦሽ ደረጃ (0=ጠፍቷል፣ 1-∞)፡",
                 "seed_format_label": "የስድ ቅርጸት፡",
                 "generate_button": "   ፕሌይሊስት ፍጠር   ",
                 "language_label": "ቋንቋ፡",
@@ -4373,7 +4483,9 @@ class Localization:
                 "select_folder_to_add_tracks": "ትራኮችን ለመጨመር አቃፊ ይምረጡ",
                 "no_supported_files_found": "በተመረጠው አቃፊ ውስጥ የሚደገፉ የድምፅ/ቪዲዮ ፋይሎች አልተገኙም",
                 "tracks_added_successfully": "{count} ትራኮች በተሳካ ሁኔታ ታክለዋል",
-                "error_adding_tracks": "ትራኮችን በማከል ላይ ስህተት"
+                "error_adding_tracks": "ትራኮችን በማከል ላይ ስህተት",
+                "editor_seed_info_intensity_step": "ተቀላቅሏል!\nዘር: {seed} \nየተገለበጡ ለውጦች: {num_swaps} \nየተገለበጠ ደረጃ: {step}",
+                "editor_seed_info_intensity": "ተቀላቅሏል!\nዘር: {seed} \nተፈጽሞ የሚለዋወጥ: {num_swaps}"
             },
             "sw-ke": {
                 "window_title_generator": "Kizazi cha Orodha ya Nyimbo",
@@ -4383,7 +4495,7 @@ class Localization:
                 "browse_button": "Vinjari",
                 "playlist_name_label": "Jina la Orodha ya Nyimbo:",
                 "seed_label": "Mbegu (acha wazi kwa nasibu):",
-                "reverse_step_label": "Hatua ya Kurudisha (0=zimwa, 1-20):",
+                "reverse_step_label": "Hatua ya Kurudisha (0=zimwa, 1-∞):",
                 "seed_format_label": "Umbizo la Mbegu:",
                 "generate_button": "   Tengeneza Orodha ya Nyimbo   ",
                 "language_label": "Lugha:",
@@ -4451,7 +4563,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Chagua folda ya kuongeza nyimbo",
                 "no_supported_files_found": "Hakuna faili za sauti/video zinazotumika zilizopatikana katika folda uliyochagua",
                 "tracks_added_successfully": "Nyimbo {count} zimeongezwa kwa mafanikio",
-                "error_adding_tracks": "Hitilafu wakati wa kuongeza nyimbo"
+                "error_adding_tracks": "Hitilafu wakati wa kuongeza nyimbo",
+                "editor_seed_info_intensity_step": "Imechanganywa!\nMbegu: {seed} \nKubadilishana kutumika: {num_swaps} \nHatua ya nyuma: {step}",
+                "editor_seed_info_intensity": "Imechanganywa!\nMbegu: {seed} \nBadilisha zilizotumika: {num_swaps}"
             },
             "zu-za": {
                 "window_title_generator": "Umakhi Weplaylist",
@@ -4461,7 +4575,7 @@ class Localization:
                 "browse_button": "Dlulisa amehlo",
                 "playlist_name_label": "Igama leplaylist:",
                 "seed_label": "Imbewu (shiya kungenalutho ngokungahleliwe):",
-                "reverse_step_label": "Isinyathelo sokuhlehlisa (0=valiwe, 1-20):",
+                "reverse_step_label": "Isinyathelo sokuhlehlisa (0=valiwe, 1-∞):",
                 "seed_format_label": "Ifomethi ye-seed:",
                 "generate_button": "   Yakha iplaylist   ",
                 "language_label": "Ulimi:",
@@ -4472,7 +4586,7 @@ class Localization:
                 "error_no_music_folder": "Iphutha: Kufanele ukhethe ifolda yomculo!",
                 "error_no_playlist_name": "Iphutha: Kufanele unikeze igama leplaylist!",
                 "error_folder_not_exist": "Iphutha: Ifolda ayikho!",
-                "error_reverse_step": "Iphutha: Isinyathelo sokuhlehlisa kufanele sibe phakathi kuka-0 no-20!",
+                "error_reverse_step": "Iphutha: Isinyathelo sokuhlehlisa kufanele sibe phakathi kuka-0 no-∞!",
                 "error_no_audio_files": "Iphutha: Azikho amafayili omsindo asekelwe kule folda!",
                 "shadow_seed_check": "Sebenzisa imbewu yethunzi",
                 "intensity_label": "Ukushintshana okwengeziwe (0=valiwe, 1=okuzenzakalelayo):",
@@ -4529,7 +4643,9 @@ class Localization:
                 "select_folder_to_add_tracks": "Khetha ifolda yokungeza amathrekhi",
                 "no_supported_files_found": "Ayikho ifayela yomsindo/ividiyo esekelayo etholakala kufolda ekhethiwe",
                 "tracks_added_successfully": "Amakhodi {count} angezwe ngempumelelo",
-                "error_adding_tracks": "Iphutha ekwengezeni amathrekhi"
+                "error_adding_tracks": "Iphutha ekwengezeni amathrekhi",
+                "editor_seed_info_intensity_step": "Kuhlanjululwe!\nImbewu: {seed} \nUkushintshana okusetshenzisiwe: {num_swaps} \nIsinyathelo sokuhlehla: {step}",
+                "editor_seed_info_intensity": "Kuhlanganisiwe!\nImbewu: {seed} \nUkushintshwa okusetshenzisiwe: {num_swaps}"
             }
         }
         self.lang_names = {code: data["language_name"] for code, data in self.languages.items()}
