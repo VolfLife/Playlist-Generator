@@ -85,7 +85,8 @@ class Localization:
                 "tracks_added_successfully": "Added {count} tracks successfully",
                 "error_adding_tracks": "Error adding tracks",
                 "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
-                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}",
+                "total_duration": "Total duration: {duration}"
             },
             "ru-ru": {
                 "window_title_generator": "Генератор плейлистов",
@@ -165,7 +166,8 @@ class Localization:
                 "tracks_added_successfully": "Успешно добавлено {count} треков",
                 "error_adding_tracks": "Ошибка при добавлении треков",
                 "editor_seed_info_intensity_step": "Перемешано!\nСид: {seed} \nПрименено перестановок: {num_swaps} \nРеверс: {step}",
-                "editor_seed_info_intensity": "Перемешано!\nСид: {seed} \nПрименено перестановок: {num_swaps}"
+                "editor_seed_info_intensity": "Перемешано!\nСид: {seed} \nПрименено перестановок: {num_swaps}",
+                "total_duration": "Общая продолжительность: {duration}"
             },
             "es-es": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -245,7 +247,8 @@ class Localization:
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
                 "error_adding_tracks": "Error al agregar pistas",
                 "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
-                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}",
+                "total_duration": "Duración total: {duration}"
             },
             "fr-fr": {
                 "window_title_generator": "Générateur de playlists",
@@ -325,7 +328,8 @@ class Localization:
                 "tracks_added_successfully": "{count} pistes ajoutées avec succès",
                 "error_adding_tracks": "Erreur lors de l'ajout de pistes",
                 "editor_seed_info_intensity_step": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps} \nÉtape inverse: {step}",
-                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}"
+                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}",
+                "total_duration": "Durée totale: {duration}"
             },
             "de-de": {
 				"window_title_generator": "Playlist-Generator",
@@ -405,7 +409,8 @@ class Localization:
                 "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
                 "error_adding_tracks": "Fehler beim Hinzufügen von Tracks",
                 "editor_seed_info_intensity_step": "Gemischt!\nSeed: {seed} \nAngewandte Tausche: {num_swaps} \nRückwärtsschritt: {step}",
-                "editor_seed_info_intensity": "Gemischt!\nSeed: {seed} \nVertauschungen: {num_swaps}"
+                "editor_seed_info_intensity": "Gemischt!\nSeed: {seed} \nVertauschungen: {num_swaps}",
+                "total_duration": "Gesamtdauer: {duration}"
             },
             "it-it": {
                 "window_title_generator": "Generatore di Playlist",
@@ -485,7 +490,8 @@ class Localization:
                 "tracks_added_successfully": "{count} brani aggiunti con successo",
                 "error_adding_tracks": "Errore durante l'aggiunta dei brani",
                 "editor_seed_info_intensity_step": "Mescolato!\nSeme: {seed} \nScambi applicati: {num_swaps} \nPasso inverso: {step}",
-                "editor_seed_info_intensity": "Mescolato!\nSeme: {seed} \nScambi applicati: {num_swaps}"
+                "editor_seed_info_intensity": "Mescolato!\nSeme: {seed} \nScambi applicati: {num_swaps}",
+                "total_duration": "Durata totale: {duration}"
             },
             "pl-pl": {
                 "window_title_generator": "Generator playlist",
@@ -565,7 +571,8 @@ class Localization:
                 "tracks_added_successfully": "Pomyślnie dodano {count} utworów",
                 "error_adding_tracks": "Błąd podczas dodawania utworów",
                 "editor_seed_info_intensity_step": "Przetasowane!\nZiarno: {seed} \nZastosowane zamiany: {num_swaps} \nKrok wsteczny: {step}",
-                "editor_seed_info_intensity": "Przetasowane!\nZiarno: {seed} \nZastosowane zamiany: {num_swaps}"
+                "editor_seed_info_intensity": "Przetasowane!\nZiarno: {seed} \nZastosowane zamiany: {num_swaps}",
+                "total_duration": "Całkowity czas trwania: {duration}"
             },
             "tr-tr": {
                 "window_title_generator": "Çalma Listesi Oluşturucu",
@@ -645,7 +652,8 @@ class Localization:
                 "tracks_added_successfully": "{count} parça başarıyla eklendi",
                 "error_adding_tracks": "Parça eklenirken hata oluştu",
                 "editor_seed_info_intensity_step": "Karıştırıldı!\nTohum: {seed} \nUygulanan takaslar: {num_swaps} \nTers adım: {step}",
-                "editor_seed_info_intensity": "Karıştırıldı!\nTohum: {seed} \nUygulanan takaslar: {num_swaps}"
+                "editor_seed_info_intensity": "Karıştırıldı!\nTohum: {seed} \nUygulanan takaslar: {num_swaps}",
+                "total_duration": "Toplam süre: {duration}"
             },
             "be-by": {
                 "window_title_generator": "Генератар плэйлістаў",
@@ -725,7 +733,8 @@ class Localization:
                 "tracks_added_successfully": "Паспяхова дадана {count} трэкаў",
                 "error_adding_tracks": "Памылка пры даданні трэкаў",
                 "editor_seed_info_intensity_step": "Перамешана!\nСід: {seed} \nПрыменена перастановак: {num_swaps} \nАдваротны крок: {step}",
-                "editor_seed_info_intensity": "Перамешана!\nСід: {seed} \nАбменаў прыменена: {num_swaps}"
+                "editor_seed_info_intensity": "Перамешана!\nСід: {seed} \nАбменаў прыменена: {num_swaps}",
+                "total_duration": "Агульная працягласць: {duration}"
             },
               "uk-ua": {
                 "window_title_generator": "Генератор плейлистів",
@@ -805,7 +814,8 @@ class Localization:
                 "tracks_added_successfully": "Успішно додано {count} треків",
                 "error_adding_tracks": "Помилка при додаванні треків",
                 "editor_seed_info_intensity_step": "Перемішано!\nСід: {seed} \nЗастосовано перестановок: {num_swaps} \nЗворотній крок: {step}",
-                "editor_seed_info_intensity": "Перемішано!\nНасіння: {seed} \nЗмін застосовано: {num_swaps}"
+                "editor_seed_info_intensity": "Перемішано!\nНасіння: {seed} \nЗмін застосовано: {num_swaps}",
+                "total_duration": "Загальна тривалість: {duration}"
             },
             "kk-kz": {
                 "window_title_generator": "Плейлист генераторы",
@@ -885,7 +895,8 @@ class Localization:
                 "tracks_added_successfully": "{count} трек сәтті қосылды",
                 "error_adding_tracks": "Тректерді қосу кезіндегі қате",
                 "editor_seed_info_intensity_step": "Араластырылды!\nТұқым: {seed} \nҚолданылған ауыстырулар: {num_swaps} \nКері қадам: {step}",
-                "editor_seed_info_intensity": "Араластырылды!\nТұқым: {seed} \nАуыстырулар саны: {num_swaps}"
+                "editor_seed_info_intensity": "Араластырылды!\nТұқым: {seed} \nАуыстырулар саны: {num_swaps}",
+                "total_duration": "Жалпы ұзақтығы: {duration}"
             },
             "sr-rs": {
                 "window_title_generator": "Генератор плејлиста",
@@ -965,7 +976,8 @@ class Localization:
                 "tracks_added_successfully": "Успешно додато {count} нумера",
                 "error_adding_tracks": "Грешка при додавању нумера",
                 "editor_seed_info_intensity_step": "Измешано!\nСеме: {seed} \nПримењене замене: {num_swaps} \nОбратни корак: {step}",
-                "editor_seed_info_intensity": "Izmešano!\nSeme: {seed} \nPrimenjene zamene: {num_swaps}"
+                "editor_seed_info_intensity": "Izmešano!\nSeme: {seed} \nPrimenjene zamene: {num_swaps}",
+                "total_duration": "Укупно трајање: {duration}"
             },
             "nl-nl": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -1045,7 +1057,8 @@ class Localization:
                 "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
                 "error_adding_tracks": "Fout bij toevoegen van nummers",
                 "editor_seed_info_intensity_step": "Geschud!\nZaad: {seed} \nToegepaste swaps: {num_swaps} \nTerugstap: {step}",
-                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}"
+                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}",
+                "total_duration": "Totale duur: {duration}"
             },
             "es-mx": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -1125,7 +1138,8 @@ class Localization:
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
                 "error_adding_tracks": "Error al agregar pistas",
                 "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
-                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}",
+                "total_duration": "Duración total: {duration}"
             },
             "pt-pt": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1205,7 +1219,8 @@ class Localization:
                 "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
                 "error_adding_tracks": "Erro ao adicionar faixas",
                 "editor_seed_info_intensity_step": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps} \nPasso inverso: {step}",
-                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}"
+                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}",
+                "total_duration": "Duração total: {duration}"
             },
             "pt-br": {
                 "window_title_generator": "Gerador de Playlists",
@@ -1285,7 +1300,8 @@ class Localization:
                 "tracks_added_successfully": "{count} faixas adicionadas com sucesso",
                 "error_adding_tracks": "Erro ao adicionar faixas",
                 "editor_seed_info_intensity_step": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps} \nPasso reverso: {step}",
-                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}"
+                "editor_seed_info_intensity": "Embaralhado!\nSemente: {seed} \nTrocas aplicadas: {num_swaps}",
+                "total_duration": "Duração total: {duration}"
             },
             "zh-cn": {
                 "window_title_generator": "播放列表生成器",
@@ -1365,7 +1381,8 @@ class Localization:
                 "tracks_added_successfully": "成功添加 {count} 首曲目",
                 "error_adding_tracks": "添加曲目时出错",
                 "editor_seed_info_intensity_step": "已洗牌!\n种子: {seed} \n应用交换: {num_swaps} \n反向步骤: {step}",
-                "editor_seed_info_intensity": "已洗牌!\n种子: {seed} \n应用交换: {num_swaps}"
+                "editor_seed_info_intensity": "已洗牌!\n种子: {seed} \n应用交换: {num_swaps}",
+                "total_duration": "总时长: {duration}"
             },
             "ko-kr": {
                 "window_title_generator": "플레이리스트 생성기",
@@ -1445,7 +1462,8 @@ class Localization:
                 "tracks_added_successfully": "{count}개의 트랙이 성공적으로 추가됨",
                 "error_adding_tracks": "트랙 추가 중 오류 발생",
                 "editor_seed_info_intensity_step": "셔플됨!\n시드: {seed} \n적용된 교환: {num_swaps} \n역방향 단계: {step}",
-                "editor_seed_info_intensity": "셔플됨!\n시드: {seed} \n적용된 교환: {num_swaps}"
+                "editor_seed_info_intensity": "셔플됨!\n시드: {seed} \n적용된 교환: {num_swaps}",
+                "total_duration": "총 재생 시간: {duration}"
             },
             "sl-si": {
                 "window_title_generator": "Generator seznamov predvajanja",
@@ -1525,7 +1543,8 @@ class Localization:
                 "tracks_added_successfully": "Uspešno dodanih {count} skladb",
                 "error_adding_tracks": "Napaka pri dodajanju skladb",
                 "editor_seed_info_intensity_step": "Premešano!\nSeme: {seed} \nUporabljene zamenjave: {num_swaps} \nPovratni korak: {step}",
-                "editor_seed_info_intensity": "Premešano!\nSeme: {seed} \nUporabljene zamenjave: {num_swaps}"
+                "editor_seed_info_intensity": "Premešano!\nSeme: {seed} \nUporabljene zamenjave: {num_swaps}",
+                "total_duration": "Skupni trajanje: {duration}"
             },
             "sq-al": {
                 "window_title_generator": "Gjenerues i Listave të Këngëve",
@@ -1605,7 +1624,8 @@ class Localization:
                 "tracks_added_successfully": "U shtuan me sukses {count} këngë",
                 "error_adding_tracks": "Gabim gjatë shtimit të këngëve",
                 "editor_seed_info_intensity_step": "Përzierë!\nFarë: {seed} \nShkëmbime të aplikuara: {num_swaps} \nHapi i kundërt: {step}",
-                "editor_seed_info_intensity": "Përzierë!\nFarë: {seed} \nShkëmbime të aplikuara: {num_swaps}"
+                "editor_seed_info_intensity": "Përzierë!\nFarë: {seed} \nShkëmbime të aplikuara: {num_swaps}",
+                "total_duration": "Kohëzgjatja totale: {duration}"
             },
             "hr-hr": {
                 "window_title_generator": "Generator playlisti",
@@ -1685,7 +1705,8 @@ class Localization:
                 "tracks_added_successfully": "Uspješno dodano {count} pjesama",
                 "error_adding_tracks": "Greška pri dodavanju pjesama",
                 "editor_seed_info_intensity_step": "Promiješano!\nSjeme: {seed} \nPrimijenjene zamjene: {num_swaps} \nObrnuti korak: {step}",
-                "editor_seed_info_intensity": "Promiješano!\nSjeme: {seed} \nPrimijenjene zamjene: {num_swaps}"
+                "editor_seed_info_intensity": "Promiješano!\nSjeme: {seed} \nPrimijenjene zamjene: {num_swaps}",
+                "total_duration": "Ukupno trajanje: {duration}"
             },
             "hu-hu": {
                 "window_title_generator": "Lejátszási lista generátor",
@@ -1765,7 +1786,8 @@ class Localization:
                 "tracks_added_successfully": "{count} zeneszám sikeresen hozzáadva",
                 "error_adding_tracks": "Hiba a zeneszámok hozzáadásakor",
                 "editor_seed_info_intensity_step": "Megkeverve!\nMag: {seed} \nAlkalmazott cserék: {num_swaps} \nFordított lépés: {step}",
-                "editor_seed_info_intensity": "Keverve!\nMag: {seed} \nAlkalmazott cserék: {num_swaps}"
+                "editor_seed_info_intensity": "Keverve!\nMag: {seed} \nAlkalmazott cserék: {num_swaps}",
+                "total_duration": "Teljes időtartam: {duration}"
             },
             "ro-ro": {
                 "window_title_generator": "Generator de playlist-uri",
@@ -1845,7 +1867,8 @@ class Localization:
                 "tracks_added_successfully": "{count} piese adăugate cu succes",
                 "error_adding_tracks": "Eroare la adăugarea pieselor",
                 "editor_seed_info_intensity_step": "Amestecat!\nSămânță: {seed} \nSchimburi aplicate: {num_swaps} \nPas invers: {step}",
-                "editor_seed_info_intensity": "Amestecat!\nSămânță: {seed} \nSchimburi aplicate: {num_swaps}"
+                "editor_seed_info_intensity": "Amestecat!\nSămânță: {seed} \nSchimburi aplicate: {num_swaps}",
+                "total_duration": "Durată totală: {duration}"
             },
             "cs-cz": {
                 "window_title_generator": "Generátor playlistů",
@@ -1925,7 +1948,8 @@ class Localization:
                 "tracks_added_successfully": "Úspěšně přidáno {count} skladeb",
                 "error_adding_tracks": "Chyba při přidávání skladeb",
                 "editor_seed_info_intensity_step": "Zamícháno!\nSemínko: {seed} \nPoužité prohození: {num_swaps} \nReverzní krok: {step}",
-                "editor_seed_info_intensity": "Zamícháno!\nSemínko: {seed} \nProhození aplikováno: {num_swaps}"
+                "editor_seed_info_intensity": "Zamícháno!\nSemínko: {seed} \nProhození aplikováno: {num_swaps}",
+                "total_duration": "Celková doba trvání: {duration}"
             },
             "nl-be": {
                 "window_title_generator": "Afspeellijst Generator",
@@ -2005,7 +2029,8 @@ class Localization:
                 "tracks_added_successfully": "{count} nummers succesvol toegevoegd",
                 "error_adding_tracks": "Fout bij toevoegen van nummers",
                 "editor_seed_info_intensity_step": "Geschud!\nZaad: {seed} \nToegepaste swaps: {num_swaps} \nTerugstap: {step}",
-                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}"
+                "editor_seed_info_intensity": "Geschud!\nSeed: {seed} \nToegepaste swaps: {num_swaps}",
+                "total_duration": "Totale duur: {duration}"
             },
             "fr-be": {
                 "window_title_generator": "Générateur de Playlist",
@@ -2085,7 +2110,8 @@ class Localization:
                 "tracks_added_successfully": "{count} pistes ajoutées avec succès",
                 "error_adding_tracks": "Erreur lors de l'ajout de pistes",
                 "editor_seed_info_intensity_step": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps} \nÉtape inverse: {step}",
-                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}"
+                "editor_seed_info_intensity": "Mélangé!\nGraine: {seed} \nÉchanges appliqués: {num_swaps}",
+                "total_duration": "Durée totale: {duration}"
             },
             "de-be": {
                 "window_title_generator": "Playlist Generator",
@@ -2165,7 +2191,8 @@ class Localization:
                 "tracks_added_successfully": "{count} Tracks erfolgreich hinzugefügt",
                 "error_adding_tracks": "Fehler beim Hinzufügen von Tracks",
                 "editor_seed_info_intensity_step": "Gemisch!\nSamen: {seed} \nAngewandte Tausche: {num_swaps} \nRückwärtsschritt: {step}",
-                "editor_seed_info_intensity": "Gemisch!\nSeed: {seed} \nVertauschungen: {num_swaps}"
+                "editor_seed_info_intensity": "Gemisch!\nSeed: {seed} \nVertauschungen: {num_swaps}",
+                "total_duration": "Gesamtdauer: {duration}"
             },
             "ga-ie": {
                 "window_title_generator": "Gineadóir Liosta Ealaíon",
@@ -2245,7 +2272,8 @@ class Localization:
                 "tracks_added_successfully": "{count} rianta curtha leis go rathúil",
                 "error_adding_tracks": "Earráid agus rianta á gcur leis",
                 "editor_seed_info_intensity_step": "Measctha!\nSíol: {seed} \nMalartuithe curtha i bhfeidhm: {num_swaps} \nCéim chúl: {step}",
-                "editor_seed_info_intensity": "Measctha!\nSíol: {seed} \nMalartuithe curtha i bhfeidhm: {num_swaps}"
+                "editor_seed_info_intensity": "Measctha!\nSíol: {seed} \nMalartuithe curtha i bhfeidhm: {num_swaps}",
+                "total_duration": "Fad iomlán: {duration}"
             },
             "is-is": {
                 "window_title_generator": "Spilunarlisti Generator",
@@ -2325,7 +2353,8 @@ class Localization:
                 "tracks_added_successfully": "{count} lög bætt við",
                 "error_adding_tracks": "Villa við að bæta við lögum",
                 "editor_seed_info_intensity_step": "Stokkað!\nFræ: {seed} \nNotaðir skiptingar: {num_swaps} \nBakfæra skref: {step}",
-                "editor_seed_info_intensity": "Stokkað!\nFræ: {seed} \nViðskipti notuð: {num_swaps}"
+                "editor_seed_info_intensity": "Stokkað!\nFræ: {seed} \nViðskipti notuð: {num_swaps}",
+                "total_duration": "Heildartími: {duration}"
             },
             "et-ee": {
                 "window_title_generator": "Esitusloendite Generaator",
@@ -2405,7 +2434,8 @@ class Localization:
                 "tracks_added_successfully": "{count} lugu edukalt lisatud",
                 "error_adding_tracks": "Viga lugude lisamisel",
                 "editor_seed_info_intensity_step": "Segatud!\nSeeme: {seed} \nRakendatud vahetused: {num_swaps} \nTagurpidi samm: {step}",
-                "editor_seed_info_intensity": "Segatud!\nSeeme: {seed} \nRakendatud vahetused: {num_swaps}"
+                "editor_seed_info_intensity": "Segatud!\nSeeme: {seed} \nRakendatud vahetused: {num_swaps}",
+                "total_duration": "Kogukestus: {duration}"
             },
             "nb-no": {
                 "window_title_generator": "Spilleliste-generator",
@@ -2485,7 +2515,8 @@ class Localization:
                 "tracks_added_successfully": "{count} spor lagt til",
                 "error_adding_tracks": "Feil ved tilføying av spor",
                 "editor_seed_info_intensity_step": "Blandet!\nFrø: {seed} \nBrukte bytter: {num_swaps} \nOmvendt steg: {step}",
-                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nBytter utført: {num_swaps}"
+                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nBytter utført: {num_swaps}",
+                "total_duration": "Total varighet: {duration}"
             },
             "es-cl": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2565,7 +2596,8 @@ class Localization:
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
                 "error_adding_tracks": "Error al agregar pistas",
                 "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
-                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}",
+                "total_duration": "Duración total: {duration}"
             },
             "es-ar": {
                 "window_title_generator": "Generador de listas de reproducción",
@@ -2645,7 +2677,8 @@ class Localization:
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
                 "error_adding_tracks": "Error al agregar pistas",
                 "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
-                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}",
+                "total_duration": "Duración total: {duration}"
             },
             "es-bo": {
                 "window_title_generator": "Generador de Listas de Reproducción",
@@ -2725,7 +2758,8 @@ class Localization:
                 "tracks_added_successfully": "Se agregaron {count} pistas correctamente",
                 "error_adding_tracks": "Error al agregar pistas",
                 "editor_seed_info_intensity_step": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps} \nPaso inverso: {step}",
-                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}"
+                "editor_seed_info_intensity": "¡Mezclado!\nSemilla: {seed} \nIntercambios aplicados: {num_swaps}",
+                "total_duration": "Duración total: {duration}"
             },
             "hi-in": {
                 "window_title_generator": "प्लेलिस्ट जनरेटर",
@@ -2805,7 +2839,8 @@ class Localization:
                 "tracks_added_successfully": "{count} ट्रैक सफलतापूर्वक जोड़े गए",
                 "error_adding_tracks": "ट्रैक जोड़ने में त्रुटि",
                 "editor_seed_info_intensity_step": "फेंटा गया!\nबीज: {seed} \nलागू की गई अदला-बदली: {num_swaps} \nउल्टा कदम: {step}",
-                "editor_seed_info_intensity": "फेंटा गया!\nबीज: {seed} \nलागू स्वैप: {num_swaps}"
+                "editor_seed_info_intensity": "फेंटा गया!\nबीज: {seed} \nलागू स्वैप: {num_swaps}",
+                "total_duration": "कुल अवधि: {duration}"
             },
             "en-au": {
                 "window_title_generator": "Playlist Generator",
@@ -2885,7 +2920,8 @@ class Localization:
                 "tracks_added_successfully": "Added {count} tracks successfully",
                 "error_adding_tracks": "Error adding tracks",
                 "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
-                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}",
+                "total_duration": "Total duration: {duration}"
             },
             "en-ca": {
                 "window_title_generator": "Playlist Generator",
@@ -2965,7 +3001,8 @@ class Localization:
                 "tracks_added_successfully": "Added {count} tracks successfully",
                 "error_adding_tracks": "Error adding tracks",
                 "editor_seed_info_intensity_step": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps} \nReverse step: {step}",
-                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}"
+                "editor_seed_info_intensity": "Shuffled!\nSeed: {seed} \nSwaps applied: {num_swaps}",
+                "total_duration": "Total duration: {duration}"
             },
             "ja-jp": {
                 "window_title_generator": "プレイリスト生成ツール",
@@ -3045,7 +3082,8 @@ class Localization:
                 "tracks_added_successfully": "{count} トラックを正常に追加しました",
                 "error_adding_tracks": "トラックの追加中にエラーが発生しました",
                 "editor_seed_info_intensity_step": "シャッフルされました!\nシード: {seed} \n適用された交換: {num_swaps} \n逆ステップ: {step}",
-                "editor_seed_info_intensity": "シャッフルされました！\nシード: {seed} \n適用された交換: {num_swaps}"
+                "editor_seed_info_intensity": "シャッフルされました！\nシード: {seed} \n適用された交換: {num_swaps}",
+                "total_duration": "合計時間: {duration}"
             },
             "da-dk": {
                 "window_title_generator": "Playlist Generator",
@@ -3125,7 +3163,8 @@ class Localization:
                 "tracks_added_successfully": "{count} spor tilføjet",
                 "error_adding_tracks": "Fejl ved tilføjelse af spor",
                 "editor_seed_info_intensity_step": "Blandet!\nFrø: {seed} \nAnvendte bytter: {num_swaps} \nOmvendt trin: {step}",
-                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nAnvendte byt: {num_swaps}"
+                "editor_seed_info_intensity": "Blandet!\nFrø: {seed} \nAnvendte byt: {num_swaps}",
+                "total_duration": "Samlet varighed: {duration}"
             },
             "sv-se": {
                 "window_title_generator": "Spellista Generator",
@@ -3205,7 +3244,8 @@ class Localization:
                 "tracks_added_successfully": "{count} spår lades till",
                 "error_adding_tracks": "Fel vid tillägg av spår",
                 "editor_seed_info_intensity_step": "Blandad!\nFrö: {seed} \nTillämpade byten: {num_swaps} \nOmvänd steg: {step}",
-                "editor_seed_info_intensity": "Blandad!\nFrö: {seed} \nTillämpade byten: {num_swaps}"
+                "editor_seed_info_intensity": "Blandad!\nFrö: {seed} \nTillämpade byten: {num_swaps}",
+                "total_duration": "Total varaktighet: {duration}"
             },
             "fi-fi": {
                 "window_title_generator": "Soittolistageneraattori",
@@ -3285,7 +3325,8 @@ class Localization:
                 "tracks_added_successfully": "{count} raidat lisättiin onnistuneesti",
                 "error_adding_tracks": "Virhe raidat lisättäessä",
                 "editor_seed_info_intensity_step": "Sekoitettu!\nSiemen: {seed} \nKäytetyt vaihdot: {num_swaps} \nKäänteinen askel: {step}",
-                "editor_seed_info_intensity": "Sekoitettu!\nSiemen: {seed} \nTehdyt vaihdot: {num_swaps}"
+                "editor_seed_info_intensity": "Sekoitettu!\nSiemen: {seed} \nTehdyt vaihdot: {num_swaps}",
+                "total_duration": "Kokonaiskesto: {duration}"
             },
             "af-za": {
                 "window_title_generator": "Speellys Generator",
@@ -3365,7 +3406,8 @@ class Localization:
                 "tracks_added_successfully": "{count} snitte suksesvol bygevoeg",
                 "error_adding_tracks": "Fout met byvoeging van snitte",
                 "editor_seed_info_intensity_step": "Geskuifel!\nSaad: {seed} \nToegepaste ruilings: {num_swaps} \nOmgekeerde stap: {step}",
-                "editor_seed_info_intensity": "Geskuifel!\nSaad: {seed} \nToegepaste ruilings: {num_swaps}"
+                "editor_seed_info_intensity": "Geskuifel!\nSaad: {seed} \nToegepaste ruilings: {num_swaps}",
+                "total_duration": "Totale duur: {duration}"
             },
             "vi-vn": {
                 "window_title_generator": "Trình tạo playlist",
@@ -3445,7 +3487,8 @@ class Localization:
                 "tracks_added_successfully": "Đã thêm thành công {count} bài hát",
                 "error_adding_tracks": "Lỗi khi thêm bài hát",
                 "editor_seed_info_intensity_step": "Đã xáo trộn!\nHạt giống: {seed} \nHoán đổi áp dụng: {num_swaps} \nBước đảo ngược: {step}",
-                "editor_seed_info_intensity": "Đã xáo trộn!\nHạt giống: {seed} \nHoán đổi áp dụng: {num_swaps}"
+                "editor_seed_info_intensity": "Đã xáo trộn!\nHạt giống: {seed} \nHoán đổi áp dụng: {num_swaps}",
+                "total_duration": "Tổng thời lượng: {duration}"
             },
             "id-id": {
                 "window_title_generator": "Pembuat Daftar Putar",
@@ -3525,7 +3568,8 @@ class Localization:
                 "tracks_added_successfully": "{count} trek berhasil ditambahkan",
                 "error_adding_tracks": "Kesalahan saat menambahkan trek",
                 "editor_seed_info_intensity_step": "Diacak!\nSeed: {seed} \nPertukaran diterapkan: {num_swaps} \nLangkah terbalik: {step}",
-                "editor_seed_info_intensity": "Diacak!\nSeed: {seed} \nPertukaran diterapkan: {num_swaps}"
+                "editor_seed_info_intensity": "Diacak!\nSeed: {seed} \nPertukaran diterapkan: {num_swaps}",
+                "total_duration": "Durasi total: {duration}"
             },
             "el-gr": {
                 "window_title_generator": "Δημιουργός Λιστών Αναπαραγωγής",
@@ -3605,7 +3649,8 @@ class Localization:
                 "tracks_added_successfully": "Προστέθηκαν {count} κομμάτια με επιτυχία",
                 "error_adding_tracks": "Σφάλμα κατά την προσθήκη κομματιών",
                 "editor_seed_info_intensity_step": "Ανακάτεμα!\nΣπόρος: {seed} \nΕφαρμοσμένες ανταλλαγές: {num_swaps} \nΑντίστροφο βήμα: {step}",
-                "editor_seed_info_intensity": "Ανακάτεμα!\nΣπόρος: {seed} \nΕφαρμοσμένες ανταλλαγές: {num_swaps}"
+                "editor_seed_info_intensity": "Ανακάτεμα!\nΣπόρος: {seed} \nΕφαρμοσμένες ανταλλαγές: {num_swaps}",
+                "total_duration": "Συνολική διάρκεια: {duration}"
             },
             "bg-bg": {
                 "window_title_generator": "Генератор на плейлисти",
@@ -3685,7 +3730,8 @@ class Localization:
                 "tracks_added_successfully": "Успешно добавени {count} песни",
                 "error_adding_tracks": "Грешка при добавяне на песни",
                 "editor_seed_info_intensity_step": "Разбъркано!\nСеме: {seed} \nПриложени размени: {num_swaps} \nОбратна стъпка: {step}",
-                "editor_seed_info_intensity": "Разбъркано!\nСеме: {seed} \nПриложени размени: {num_swaps}"
+                "editor_seed_info_intensity": "Разбъркано!\nСеме: {seed} \nПриложени размени: {num_swaps}",
+                "total_duration": "Общо време: {duration}"
             },
             "lt-lt": {
                 "window_title_generator": "Grojaraščių generatorius",
@@ -3765,7 +3811,8 @@ class Localization:
                 "tracks_added_successfully": "Sėkmingai pridėta {count} takelių",
                 "error_adding_tracks": "Klaida pridedant takelius",
                 "editor_seed_info_intensity_step": "Išmaišyta!\nSėkla: {seed} \nPritaikyti sukeitimai: {num_swaps} \nAtvirkštinis žingsnis: {step}",
-                "editor_seed_info_intensity": "Sumaišyta!\nSėkla: {seed} \nTaikomi sukeitimai: {num_swaps}"
+                "editor_seed_info_intensity": "Sumaišyta!\nSėkla: {seed} \nTaikomi sukeitimai: {num_swaps}",
+                "total_duration": "Bendra trukmė: {duration}"
             },
             "lv-lv": {
                 "window_title_generator": "Playlistu Ģenerators",
@@ -3845,7 +3892,8 @@ class Localization:
                 "tracks_added_successfully": "Veiksmīgi pievienotas {count} dziesmas",
                 "error_adding_tracks": "Kļūda, pievienojot dziesmas",
                 "editor_seed_info_intensity_step": "Sajaukts!\nSēkla: {seed} \nPiemērotie mainījumi: {num_swaps} \nReversais solis: {step}",
-                "editor_seed_info_intensity": "Sajaikts!\nSēkla: {seed} \nPielietotie maiņi: {num_swaps}"
+                "editor_seed_info_intensity": "Sajaikts!\nSēkla: {seed} \nPielietotie maiņi: {num_swaps}",
+                "total_duration": "Kopējais ilgums: {duration}"
             },
             "mt-mt": {
                 "window_title_generator": "Ġeneratur ta' Playlist",
@@ -3925,7 +3973,8 @@ class Localization:
                 "tracks_added_successfully": "{count} trakki miżjuda b'suċċess",
                 "error_adding_tracks": "Żball waqt iż-żid ta' trakki",
                 "editor_seed_info_intensity_step": "Imxarrab!\nŻerriegħa: {seed} \nSkambji applikati: {num_swaps} \nPass lura: {step}",
-                "editor_seed_info_intensity": "Imħawwad!\nŻerriegħa: {seed} \nSkambji applikati: {num_swaps}"
+                "editor_seed_info_intensity": "Imħawwad!\nŻerriegħa: {seed} \nSkambji applikati: {num_swaps}",
+                "total_duration": "Durata totali: {duration}"
             },
             "mk-mk": {
                 "window_title_generator": "Генератор на плејлисти",
@@ -4005,7 +4054,8 @@ class Localization:
                 "tracks_added_successfully": "Успешно додадени {count} песни",
                 "error_adding_tracks": "Грешка при додавање песни",
                 "editor_seed_info_intensity_step": "Измешано!\nСеме: {seed} \nПрименети замены: {num_swaps} \nОбратен чекор: {step}",
-                "editor_seed_info_intensity": "Измешано!\nСеме: {seed} \nПрименети замени: {num_swaps}"
+                "editor_seed_info_intensity": "Измешано!\nСеме: {seed} \nПрименети замени: {num_swaps}",
+                "total_duration": "Вкупно времетраење: {duration}"
             },
             "sk-sk": {
                 "window_title_generator": "Generátor playlistu",
@@ -4085,7 +4135,8 @@ class Localization:
                 "tracks_added_successfully": "Úspešne pridaných {count} skladieb",
                 "error_adding_tracks": "Chyba pri pridávaní skladieb",
                 "editor_seed_info_intensity_step": "Zamiešané!\nSemeno: {seed} \nPoužité výmeny: {num_swaps} \nSpätný krok: {step}",
-                "editor_seed_info_intensity": "Zamiešané!\nSemeno: {seed} \nPoužité výmeny: {num_swaps}"
+                "editor_seed_info_intensity": "Zamiešané!\nSemeno: {seed} \nPoužité výmeny: {num_swaps}",
+                "total_duration": "Celkové trvanie: {duration}"
             },
             "he-il": {
                 "window_title_generator": "מחולל פלייליסט",
@@ -4165,7 +4216,8 @@ class Localization:
                 "tracks_added_successfully": "נוספו בהצלחה {count} רצועות",
                 "error_adding_tracks": "שגיאה בהוספת רצועות",
                 "editor_seed_info_intensity_step": "עורבב!\nזרע: {seed} \nהחלפות שהוחלו: {num_swaps} \nצעד הפוך: {step}",
-                "editor_seed_info_intensity": "עורבב!\nזרע: {seed} \nהחלפות מיושמות: {num_swaps}"
+                "editor_seed_info_intensity": "עורבב!\nזרע: {seed} \nהחלפות מיושמות: {num_swaps}",
+                "total_duration": "משך זמן כולל: {duration}"
             },
             "ta-in": {
                 "window_title_generator": "பிளேலிஸ்ட் ஜெனரேட்டர்",
@@ -4245,7 +4297,8 @@ class Localization:
                 "tracks_added_successfully": "{count} பாடல்கள் வெற்றிகரமாக சேர்க்கப்பட்டன",
                 "error_adding_tracks": "பாடல்களைச் சேர்க்கும்போது பிழை",
                 "editor_seed_info_intensity_step": "கலக்கப்பட்டது!\nவிதை: {seed} \nபயன்படுத்தப்பட்ட பரிமாற்றங்கள்: {num_swaps} \nதலைகீழ் படி: {step}",
-                "editor_seed_info_intensity": "கலக்கப்பட்டது!\nவிதை: {seed} \nபயன்படுத்தப்பட்ட பரிமாற்றங்கள்: {num_swaps}"
+                "editor_seed_info_intensity": "கலக்கப்பட்டது!\nவிதை: {seed} \nபயன்படுத்தப்பட்ட பரிமாற்றங்கள்: {num_swaps}",
+                "total_duration": "மொத்த காலம்: {duration}"
             },
             "te-in": {
                 "window_title_generator": "ప్లేలిస్ట్ జనరేటర్",
@@ -4325,7 +4378,8 @@ class Localization:
                 "tracks_added_successfully": "{count} ట్రాక్స్ విజయవంతంగా జోడించబడ్డాయి",
                 "error_adding_tracks": "ట్రాక్స్ జోడించడంలో లోపం",
                 "editor_seed_info_intensity_step": "అద్దుకున్నాడు!\nవిత్తనం: {seed} \nఅమలు చేసిన మార్పిడులు: {num_swaps} \nరివర్స్ స్టెప్: {step}",
-                "editor_seed_info_intensity": "అద్దుపడింది!\nవిత్తనం: {seed} \nవర్తింపజేసిన మార్పిడులు: {num_swaps}"
+                "editor_seed_info_intensity": "అద్దుపడింది!\nవిత్తనం: {seed} \nవర్తింపజేసిన మార్పిడులు: {num_swaps}",
+                "total_duration": "మొత్తం కాలం: {duration}"
             },
             "ms-my": {
                 "window_title_generator": "Penjana Senarai Main",
@@ -4405,7 +4459,8 @@ class Localization:
                 "tracks_added_successfully": "{count} lagu berjaya ditambah",
                 "error_adding_tracks": "Ralat semasa menambah lagu",
                 "editor_seed_info_intensity_step": "Dikocak!\nBiji: {seed} \nPertukaran digunakan: {num_swaps} \nLangkah terbalik: {step}",
-                "editor_seed_info_intensity": "Dikocak!\nBiji: {seed} \nPertukaran digunakan: {num_swaps}"
+                "editor_seed_info_intensity": "Dikocak!\nBiji: {seed} \nPertukaran digunakan: {num_swaps}",
+                "total_duration": "Jumlah masa: {duration}"
             },
             "am-et": {
                 "window_title_generator": "የፕሌይሊስት ጀነሬተር",
@@ -4485,7 +4540,8 @@ class Localization:
                 "tracks_added_successfully": "{count} ትራኮች በተሳካ ሁኔታ ታክለዋል",
                 "error_adding_tracks": "ትራኮችን በማከል ላይ ስህተት",
                 "editor_seed_info_intensity_step": "ተቀላቅሏል!\nዘር: {seed} \nየተገለበጡ ለውጦች: {num_swaps} \nየተገለበጠ ደረጃ: {step}",
-                "editor_seed_info_intensity": "ተቀላቅሏል!\nዘር: {seed} \nተፈጽሞ የሚለዋወጥ: {num_swaps}"
+                "editor_seed_info_intensity": "ተቀላቅሏል!\nዘር: {seed} \nተፈጽሞ የሚለዋወጥ: {num_swaps}",
+                "total_duration": "ጠቅላላ ቆይታ: {duration}"
             },
             "sw-ke": {
                 "window_title_generator": "Kizazi cha Orodha ya Nyimbo",
@@ -4565,7 +4621,8 @@ class Localization:
                 "tracks_added_successfully": "Nyimbo {count} zimeongezwa kwa mafanikio",
                 "error_adding_tracks": "Hitilafu wakati wa kuongeza nyimbo",
                 "editor_seed_info_intensity_step": "Imechanganywa!\nMbegu: {seed} \nKubadilishana kutumika: {num_swaps} \nHatua ya nyuma: {step}",
-                "editor_seed_info_intensity": "Imechanganywa!\nMbegu: {seed} \nBadilisha zilizotumika: {num_swaps}"
+                "editor_seed_info_intensity": "Imechanganywa!\nMbegu: {seed} \nBadilisha zilizotumika: {num_swaps}",
+                "total_duration": "Muda wa jumla: {duration}"
             },
             "zu-za": {
                 "window_title_generator": "Umakhi Weplaylist",
@@ -4645,7 +4702,8 @@ class Localization:
                 "tracks_added_successfully": "Amakhodi {count} angezwe ngempumelelo",
                 "error_adding_tracks": "Iphutha ekwengezeni amathrekhi",
                 "editor_seed_info_intensity_step": "Kuhlanjululwe!\nImbewu: {seed} \nUkushintshana okusetshenzisiwe: {num_swaps} \nIsinyathelo sokuhlehla: {step}",
-                "editor_seed_info_intensity": "Kuhlanganisiwe!\nImbewu: {seed} \nUkushintshwa okusetshenzisiwe: {num_swaps}"
+                "editor_seed_info_intensity": "Kuhlanganisiwe!\nImbewu: {seed} \nUkushintshwa okusetshenzisiwe: {num_swaps}",
+                "total_duration": "Isikhathi esiphelele: {duration}"
             }
         }
         self.lang_names = {code: data["language_name"] for code, data in self.languages.items()}

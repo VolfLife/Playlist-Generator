@@ -113,6 +113,7 @@ class PlaylistGenerator:
         
         self.create_widgets()
         self.show_version_info()
+        self.load_time()
         
         if self.last_folders:
             if len(self.last_folders) == 1:
@@ -205,8 +206,8 @@ class PlaylistGenerator:
                 if 'last_folders' in settings and isinstance(settings['last_folders'], list):
                     # Оставляем только существующие папки
                     self.last_folders = [f for f in settings['last_folders'] if self.is_valid_folders([f])]
-                    print(f"[DEBUG] Выбраны папки: {self.last_folders}")
-                    
+                    print(f"[DEBUG] Выбраны папки: {self.last_folders}")          
+                            
                 return settings
         except (FileNotFoundError, json.JSONDecodeError):
             print(f"[DEBUG] Файл настроек не найден. Был создан новый.")
@@ -234,8 +235,19 @@ class PlaylistGenerator:
                 json.dump(settings, f, ensure_ascii=False, indent=4)
         except IOError as e:
             print(self.localization.tr("error_save_settings").format(error=e))
-    
-    
+
+    def load_time(self):
+        # Вызываем подсчет времени для загруженных папок
+         if self.last_folders:
+            total_seconds = self.time_count(self.last_folders)
+            if total_seconds > 0:
+                formatted_duration = self.format_duration(total_seconds)
+                self.seed_info.config(
+                    text=self.localization.tr("total_duration").format(duration=formatted_duration),
+                    fg="green"
+                )     
+                
+                
     def open_github(self, event=None):
         """Обработчик клика по GitHub ссылке"""
         import webbrowser
@@ -572,6 +584,10 @@ class PlaylistGenerator:
         self.last_folders = []
         self.save_settings()
         self.hide_folder_entry_tooltip()
+        self.seed_info.config(
+                        text="",
+                        fg="green"
+                    )
         print(f"[DEBUG] Поле ввода очищена")
         
     def update_ui_texts(self):
@@ -629,9 +645,121 @@ class PlaylistGenerator:
                 print(f"[DEBUG] Были выбраны папки: {display_text}")
             self.folder_entry.delete(0, tk.END)
             self.folder_entry.insert(0, display_text)
+            # Вызываем подсчет времени для ВСЕХ выбранных папок
+            if self.last_folders:
+                total_seconds = self.time_count(self.last_folders)  # Передаем все папки, а не только последнюю
+                if total_seconds > 0:
+                    formatted_duration = self.format_duration(total_seconds)
+                    self.seed_info.config(
+                        text=self.localization.tr("total_duration").format(duration=formatted_duration),
+                        fg="green"
+                    )
+                print(f"[DEBUG] Общая продолжительность: {formatted_duration}")
             self.save_settings()
 
-               
+
+    def format_duration(self, total_seconds):
+        """Форматирует продолжительность в формате Y:M:W:D:H:M:S, пропуская нулевые значения"""
+        # Константы времени
+        MINUTE = 60
+        HOUR = 60 * MINUTE
+        DAY = 24 * HOUR
+        WEEK = 7 * DAY
+        MONTH = 30 * DAY  # Упрощенное значение
+        YEAR = 365 * DAY   # Упрощенное значение
+        
+        # Вычисляем каждую единицу времени
+        years = int(total_seconds // YEAR)
+        remaining = total_seconds % YEAR
+        
+        months = int(remaining // MONTH)
+        remaining %= MONTH
+        
+        weeks = int(remaining // WEEK)
+        remaining %= WEEK
+        
+        days = int(remaining // DAY)
+        remaining %= DAY
+        
+        hours = int(remaining // HOUR)
+        remaining %= HOUR
+        
+        minutes = int(remaining // MINUTE)
+        seconds = remaining % MINUTE
+        
+        # Собираем только значимые значения
+        parts = []
+        if years > 0:
+            parts.append(f"{years}")
+        if months > 0 or parts:  # Добавляем месяцы если есть годы
+            parts.append(f"{months}")
+        if weeks > 0 or parts:  # Добавляем недели если есть более крупные единицы
+            parts.append(f"{weeks}")
+        if days > 0 or parts:
+            parts.append(f"{days}")
+        if hours > 0 or parts:
+            parts.append(f"{hours:02d}")
+        if minutes > 0 or parts:
+            parts.append(f"{minutes:02d}")
+        
+        # Секунды всегда добавляем с двумя знаками после запятой
+        parts.append(f"{seconds:05.2f}")  # Формат 35.00
+        
+        # Объединяем части через двоеточие
+        formatted = ":".join(parts)
+        
+        # Для случаев, когда продолжительность меньше минуты
+        if "H" not in formatted and "M" not in formatted and "S" in formatted:
+            # Формат MM:SS.00 (например 35.00 -> 00:35.00)
+            seconds_only = float(formatted.replace("S", ""))
+            minutes_part = int(seconds_only // 60)
+            seconds_part = seconds_only % 60
+            formatted = f"{minutes_part:02d}:{seconds_part:05.2f}"
+        elif "H" not in formatted and "M" in formatted and "S" in formatted:
+            # Формат MM:SS.00 (например 17M:35.00S -> 17:35.00)
+            m_part = formatted.split("M")[0]
+            s_part = formatted.split(":")[-1].replace("S", "")
+            formatted = f"{int(m_part):02d}:{float(s_part):05.2f}"
+        
+        return formatted
+
+    def time_count(self, folders):
+        """Подсчитывает общую продолжительность аудиофайлов в выбранных папках (в секундах)"""
+        from mutagen import File
+        from mutagen.flac import FLAC
+        from mutagen.mp3 import MP3
+        from mutagen.ogg import OggFileType
+        from mutagen.wave import WAVE
+        from mutagen.aiff import AIFF
+        from mutagen.mp4 import MP4
+        from mutagen.asf import ASF
+        
+        total_seconds = 0.0
+        audio_extensions = {
+                # Аудио
+                '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.aif', '.alac', '.dsf', '.dff', '.mka', '.ac3', '.dts',
+                # Видео
+                '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.ts', '.m2ts', '.3gp', '.vob', '.ogv'
+            }
+        
+        for folder in folders:  # Обрабатываем каждую папку в списке
+            try:
+                for root, _, files in os.walk(folder):
+                    for file in files:
+                        if Path(file).suffix.lower() in audio_extensions:
+                            full_path = os.path.join(root, file)
+                            try:
+                                audio = File(full_path)
+                                if audio and hasattr(audio, 'info'):
+                                    total_seconds += audio.info.length
+                            except Exception as e:
+                                print(f"[WARNING] Ошибка чтения {file}: {e}")
+            except (OSError, UnicodeDecodeError) as e:
+                print(f"[ERROR] Ошибка сканирования {folder}: {e}")
+            
+        return total_seconds
+
+    
     def stable_hash(self, s):
         """Детерминированная замена hash() с использованием hashlib"""
         return int(hashlib.md5(str(s).encode()).hexdigest(), 16) % (10**12)
@@ -1393,7 +1521,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.19 by VolfLife   ")
+        print("    Playlist Generator v4.20 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
