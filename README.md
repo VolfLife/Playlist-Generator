@@ -111,12 +111,12 @@ Edits and saves data from existing playlists without requiring local track files
 
 	2.1. Install required packages
 	```
-	pip install pyinstaller fonttools
+	pip install pyinstaller fonttools mutagen
 	```
 
  	2.2. Compile the application
 	```
-	pyinstaller --onefile --hidden-import=_pylong --hidden-import=fontTools --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
+	pyinstaller --onefile --hidden-import=_pylong --hidden-import=fontTools --hidden-import=mutagen --windowed --add-data "version_info.py;." --add-data "action_symbols.ttf;." --add-data "Icon.ico;." --icon=Icon.ico --name "Playlist Generator" --version-file version_info.txt "PlaylistGenerator.py"
 	```
 
  3. The compiled `.exe` file will be generated in the *`dist`* folder
