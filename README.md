@@ -35,8 +35,10 @@ To download the program, go to the [Releases](https://github.com/VolfLife/Playli
 #Made by VolfLife's Playlist Generator
 #GENERATED:2025-03-29 01:24:00
 #PLAYLIST:my_playlist
+#DURATION:52:33.09
 #SEED:7034926188901
 #SHADOW_SEED:1104258672009899
+#NUM_SWAPS:21
 #REVERSE_STEP:19
 #TRACKS:25
 ...
