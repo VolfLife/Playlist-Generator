@@ -87,6 +87,21 @@ class PlaylistEditor:
         
         self.root.iconbitmap(self.icon_path)
 
+    def save_language_settings(self):
+        """Сохраняет настройки языка"""
+        try:
+            with open('playlist_settings.json', 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            settings = {}
+        
+        settings['language'] = self.localization.current_lang
+        
+        with open('playlist_settings.json', 'w', encoding='utf-8') as f:
+            json.dump(settings, f, ensure_ascii=False, indent=4)
+        
+        print(f"[DEBUG] Язык сохранен: {self.localization.current_lang}")        
+
         
     def load_language_settings(self):
         """Загружает настройки языка с той же логикой"""
@@ -904,6 +919,70 @@ class PlaylistEditor:
         except Exception as e:
             self.show_message(f"{self.localization.tr('error_adding_tracks')}: {str(e)}", "red")
         
+    def change_language(self, event=None):
+        """Обработчик смены языка"""
+        selected_name = self.language_var.get()
+        # Находим код языка по выбранному названию
+        for code, name in self.localization.lang_names.items():
+            if name == selected_name:
+                new_lang = code
+                break
+        else:
+            new_lang = "en-us"  # fallback
+            print(f"[DEBUG] Неподдерживаемый язык. Авто–язык: {new_lang}")
+    
+        if new_lang != self.localization.current_lang:
+            self.localization.set_language(new_lang)
+            self.save_language_settings()
+            # Обновляем заголовок окна
+            self.root.title(self.localization.tr("window_title_editor"))
+            # Обновляем текст
+            self.playlist_name_label.config(text=self.localization.tr("playlist_name_label"))
+            self.seed_label.config(text=self.localization.tr("seed_label"))
+            self.swaps_label.config(text=self.localization.tr("intensity_label"))
+            self.seed_format_label.config(text=self.localization.tr("seed_format_label"))
+            self.reverse_label.config(text=self.localization.tr("reverse_step_label"))
+            self.save_label.config(text=self.localization.tr("save_button"))
+            self.shuffle_label.config(text=self.localization.tr("shuffle_button"))
+            self.language_label.config(text=self.localization.tr("language_label"))        
+            # Обновляем список форматов сида
+            self.seed_format_combobox['values'] = self.localization.get_seed_format_options()
+
+            # Генерируем имя плейлиста
+            if self.file_paths:
+                base_name = os.path.basename(self.file_paths[0])
+                for ext in ['.m3u8', '.m3u', '.txt', '.pls', '.xspf', '.asx', '.json', '.wax', '.wvx', '.wpl', '.xml']:
+                    if base_name.lower().endswith(ext):
+                        base_name = base_name[:-len(ext)]
+                        break
+                
+                # Добавляем количество файлов если их >1
+                if len(self.file_paths) > 1:
+                    self.playlist_name = f"{base_name}_and_{len(self.file_paths)-1}_more"
+                else:
+                    self.playlist_name = base_name
+                
+                # Обновляем поле ввода имени
+                if hasattr(self, 'name_entry'):
+                    self.name_entry.delete(0, tk.END)
+                    shuffled_text = self.localization.tr("shuffled")
+                    self.name_entry.insert(0, f"{self.playlist_name}_{shuffled_text}")
+            
+            # Получаем текущее значение формата сида
+            current_seed_format = self.seed_format_combobox.get()
+            # Список форматов, при которых текущее значение не должно меняться
+            numeric_formats = ["Только цифры", "Digits only", "Solo dígitos", "Nur Zahlen", "Solo numeri", "Tylko cyfry", 
+                            "Толькі лічбы", "Тільки цифри", "Тек сандар", "Само бројеви", "Chiffres uniquement", "Sólo números", "Apenas números", "Sadece rakamlar", "Apenas dígitos", "Alleen cijfers", "仅数字", "숫자만", "Samo številke", "Vetëm numra", "Samo brojevi", "Csak számok", "Doar cifre", "Pouze čísla", "Alleen cijfers", "Chiffres seulement", "Nur Zahlen", "Numbers only", "Aðeins tölur", "Ainult numbrid", "Bare tall", "Solo números", "केवल संख्याएँ", "数字のみ", "Kun tal", "Endast siffror", "Vain numerot", "Slegs Syfers", "Chỉ số", "Hanya angka", "Dhigití amháin", "Μόνο αριθμοί", "Само цифри", "Tik skaičiai", "Tikai cipari", "Numri biss", "Само бројки", "Iba číslice", "מספרים בלבד", "எண்கள் மட்டும்", "అంకెలు మాత్రమే", "Nombor sahaja", "ቁጥሮች ብቻ", "Nambari pekee", "Izinombolo kuphela"]
+            # Проверяем, находится ли текущее значение в списке форматов
+            if current_seed_format in numeric_formats:
+                # Если текущее значение в списке, не меняем его
+                self.seed_format_combobox['values'] = self.localization.get_seed_format_options()
+                self.seed_format_combobox.current(0)
+            else:
+                # Если текущее значение не в списке, устанавливаем значение по умолчанию
+                self.seed_format_combobox.current(1)  # Устанавливаем второе значение как значение по умолчанию
+                
+        
     
     def create_widgets(self, root):
         """Создает интерфейс редактора"""
@@ -944,7 +1023,7 @@ class PlaylistEditor:
         
         # Фрейм для таблицы с ползунком
         table_frame = ttk.Frame(main_frame)
-        table_frame.pack(fill=tk.BOTH, expand=False, pady=(0, 15))
+        table_frame.pack(fill=tk.BOTH, expand=False, pady=(0, 5))
         table_frame.grid_propagate(False) 
         
         # Уменьшаем количество видимых строк в таблице на 1, чтобы компенсировать добавление поля поиска
@@ -981,6 +1060,59 @@ class PlaylistEditor:
             self.tree.insert('', 'end', values=(i, name))
         
         # Фрейм для полей ввода
+        manage_frame = ttk.Frame(main_frame)
+        manage_frame.pack(fill=tk.X, pady=0)
+        # Кнопки управления
+        self.redo_btn = ttk.Button(
+            manage_frame, 
+            text="e", 
+            width=17,
+            style='Symbol.TButton',
+            command=self.redo_action, 
+            state='disabled'
+            )
+        self.redo_btn.pack(side=tk.RIGHT, padx=2)
+        
+        
+        self.undo_btn = ttk.Button(
+            manage_frame, 
+            text="d", 
+            width=17,
+            style='Symbol.TButton',
+            command=self.undo_action
+            )
+        self.undo_btn.pack(side=tk.RIGHT, padx=2)
+
+
+        self.delete_btn = ttk.Button(
+            manage_frame, 
+            text="c", 
+            width=19,
+            style='Symbol.TButton',
+            command=self.delete_tracks
+            )
+        self.delete_btn.pack(side=tk.RIGHT, padx=2)
+        
+        self.move_down_btn = ttk.Button(
+            manage_frame, 
+            text="b", 
+            width=17,
+            style='Symbol.TButton',
+            command=self.move_down
+            )
+        self.move_down_btn.pack(side=tk.RIGHT, padx=2)
+
+
+        self.move_up_btn = ttk.Button(
+            manage_frame,
+            text="a", 
+            width=17, 
+            style='Symbol.TButton',
+            command=self.move_up
+            )
+        self.move_up_btn.pack(side=tk.RIGHT, padx=2)
+        
+        # Фрейм для полей ввода
         input_frame = ttk.Frame(main_frame)
         input_frame.pack(fill=tk.X, pady=5)
 
@@ -988,41 +1120,48 @@ class PlaylistEditor:
         input_frame.columnconfigure(1, weight=1)  # Это важно для растягивания Entry полей
 
         # Поле имени плейлиста
-        tk.Label(input_frame, text=self.localization.tr("playlist_name_label")).grid(row=0, column=0, sticky="w", padx=5, pady=3)
+        self.playlist_name_label = tk.Label(input_frame, text=self.localization.tr("playlist_name_label"))
+        self.playlist_name_label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
         self.name_entry = ttk.Entry(input_frame)
-        self.name_entry.grid(row=0, column=1, padx=5, pady=3, sticky="ew")
+        self.name_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         self.name_entry.insert(0, self.playlist_name)
 
         self.name_entry.bind("<Button-3>", self.clear_playlist_entry)
         
         # Поле сида
-        tk.Label(input_frame, text=self.localization.tr("seed_label")).grid(row=1, column=0, sticky="w", padx=5, pady=3)
+        self.seed_label = tk.Label(input_frame, text=self.localization.tr("seed_label"))
+        self.seed_label.grid(row=1, column=0, sticky="w", padx=5, pady=5)
         self.seed_entry = ttk.Entry(input_frame)
-        self.seed_entry.grid(row=1, column=1, padx=5, pady=3, sticky="ew")
+        self.seed_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
         self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
-
+        
         # Поле перестановок
-        tk.Label(input_frame, text=self.localization.tr("intensity_label")).grid(
+        self.swaps_label = tk.Label(input_frame, text=self.localization.tr("intensity_label"))
+        self.swaps_label.grid(
             row=2, column=0, sticky="w", padx=5, pady=3)
-        self.intensity_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
+        self.intensity_entry = ttk.Entry(input_frame, width=10)  # Оставляем width=5 только для этого поля, если нужно
         self.intensity_entry.insert(0, "")
-        self.intensity_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
+        self.intensity_entry.grid(row=2, column=1, padx=5, pady=5, sticky="w")
         
         self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
         
+        # Формат сида
+        self.seed_format_label = tk.Label(input_frame, text=self.localization.tr("seed_format_label"))
+        self.seed_format_label.grid(
+            row=2, column=1, sticky="w", padx=85, pady=3)
+              
         # Поле шага реверса
-        tk.Label(input_frame, text=self.localization.tr("reverse_step_label")).grid(
+        self.reverse_label = tk.Label(input_frame, text=self.localization.tr("reverse_step_label"))
+        self.reverse_label.grid(
             row=3, column=0, sticky="w", padx=5, pady=3)
-        self.step_entry = ttk.Entry(input_frame, width=5)  # Оставляем width=5 только для этого поля, если нужно
+        self.step_entry = ttk.Entry(input_frame, width=10)  # Оставляем width=5 только для этого поля, если нужно
         self.step_entry.insert(0, "")
         self.step_entry.grid(row=3, column=1, padx=5, pady=3, sticky="w")
         
         self.step_entry.bind("<Button-3>", self.clear_step_entry)
-                
-        # Формат сида
-        tk.Label(input_frame, text=self.localization.tr("seed_format_label")).grid(
-            row=4, column=0, sticky="w", padx=5, pady=3)
+        
+        # Ползунок формата сида
         self.seed_format_combobox = ttk.Combobox(
             input_frame, 
             values=self.localization.tr("seed_formats"), 
@@ -1030,18 +1169,13 @@ class PlaylistEditor:
             width=18
         )
         self.seed_format_combobox.current(0)
-        self.seed_format_combobox.grid(row=4, column=1, padx=5, pady=3, sticky="w")
+        self.seed_format_combobox.grid(row=3, column=1, padx=85, pady=3, sticky="w")
         self.seed_format_combobox.bind("<<ComboboxSelected>>", self.update_seed_format)
-        
         
         # Фрейм для кнопок
         btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X, pady=(10, 15))
+        btn_frame.pack(fill=tk.X, pady=(10, 5))
         
-        ttk.Button(btn_frame, text=self.localization.tr("shuffle_button"), command=self.shuffle_tracks).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text=self.localization.tr("save_button"), command=self.save_playlist).pack(side=tk.LEFT)
-                
-
         # Combobox формата
         self.format_combobox = ttk.Combobox(
             btn_frame,
@@ -1049,13 +1183,51 @@ class PlaylistEditor:
             state="readonly",
             width=8
         )
-        self.format_combobox.pack(side=tk.LEFT, padx=12)
+        self.format_combobox.pack(side=tk.RIGHT, padx=12)
         self.format_combobox.set(self.format_m3u8)
         self.format_combobox.bind("<<ComboboxSelected>>", self.change_format)
+
+        self.save_label = ttk.Button(btn_frame, text=self.localization.tr("save_button"), command=self.save_playlist)
+        self.save_label.pack(side=tk.RIGHT, padx=5)
+        self.shuffle_label = ttk.Button(btn_frame, text=self.localization.tr("shuffle_button"), command=self.shuffle_tracks)
+        self.shuffle_label.pack(side=tk.RIGHT, padx=5)
+
+        self.language_label = tk.Label(btn_frame, text=self.localization.tr("language_label"))
+        self.language_label.pack(side=tk.LEFT, padx=(10, 5))
+    
+        # Создаем список языков в формате (название, код)
+        lang_options = [(self.localization.lang_names[code], code) 
+                        for code in self.localization.languages]
+        
+        # Сортируем по названию языка
+        lang_options.sort()
+    
+        self.language_var = tk.StringVar()
+        # Устанавливаем текущий язык
+        current_lang_name = self.localization.lang_names.get(self.localization.current_lang, "English")
+        self.language_var.set(current_lang_name)
+    
+        self.language_dropdown = ttk.Combobox(
+            btn_frame, 
+            textvariable=self.language_var,
+            values=[name for name, code in lang_options],  # Только названия
+            state="readonly"
+        )
+        self.language_dropdown.pack(side=tk.LEFT)
+        self.language_dropdown.bind("<<ComboboxSelected>>", self.change_language)
+        
+        # Добавляем подсказку при наведении курсора для языка
+        self.translation_tooltip = tk.Label(self.root, text="Translations are machine-generated \nand may contain errors", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.translation_tooltip.place_forget()
+        self.language_dropdown.bind("<Enter>", self.show_translation_tooltip)
+        self.language_dropdown.bind("<Leave>", self.hide_translation_tooltip)
+        
+        
         
         # Поле для сообщений
         message_frame = ttk.Frame(main_frame)
-        message_frame.pack(fill=tk.X, pady=16)
+        message_frame.pack(fill=tk.X, pady=7)
         
         # Фиксируем высоту фрейма сообщений
         message_frame.pack_propagate(False)  # Отключаем автоматическое изменение размера
@@ -1094,68 +1266,38 @@ class PlaylistEditor:
         
         # Привязка правой кнопки мыши для открытия редактора путей
         self.tree.bind("<Button-3>", self.create_path_editor_window)
-        
-        
+               
         self.update_display()
-        
         
         self.create_github_link()  # Создаем ссылку на GitHub
         
         # Убедимся, что ссылка поверх информации
         self.github_link.lift()  # Поднимаем на передний план
- 
 
         
-        # Кнопки управления
-        self.redo_btn = ttk.Button(
-            btn_frame, 
-            text="e", 
-            width=5,
-            style='Symbol.TButton',
-            command=self.redo_action, 
-            state='disabled'
-            )
-        self.redo_btn.pack(side=tk.RIGHT, padx=2)
         
         
-        self.undo_btn = ttk.Button(
-            btn_frame, 
-            text="d", 
-            width=5,
-            style='Symbol.TButton',
-            command=self.undo_action
-            )
-        self.undo_btn.pack(side=tk.RIGHT, padx=2)
+        # Добавляем подсказку при наведении курсора для сида
+        self.seed_tooltip = tk.Label(self.root, text="", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.seed_tooltip.place_forget()
+        self.seed_entry.bind("<Enter>", self.show_seed_tooltip)
+        self.seed_entry.bind("<Leave>", self.hide_seed_tooltip)
+  
+        # Добавляем подсказку при наведении курсора для перестановок
+        self.swaps_tooltip = tk.Label(self.root, text="", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.swaps_tooltip.place_forget()
+        self.intensity_entry.bind("<Enter>", self.show_swaps_tooltip)
+        self.intensity_entry.bind("<Leave>", self.hide_swaps_tooltip)
+  
+        # Добавляем подсказку при наведении курсора для реверса
+        self.reverse_tooltip = tk.Label(self.root, text="", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.reverse_tooltip.place_forget()
+        self.step_entry.bind("<Enter>", self.show_reverse_tooltip)
+        self.step_entry.bind("<Leave>", self.hide_reverse_tooltip)
 
-
-        self.delete_btn = ttk.Button(
-            btn_frame, 
-            text="c", 
-            width=5,
-            style='Symbol.TButton',
-            command=self.delete_tracks
-            )
-        self.delete_btn.pack(side=tk.RIGHT, padx=2)
-        
-        self.move_down_btn = ttk.Button(
-            btn_frame, 
-            text="b", 
-            width=5,
-            style='Symbol.TButton',
-            command=self.move_down
-            )
-        self.move_down_btn.pack(side=tk.RIGHT, padx=2)
-
-
-        self.move_up_btn = ttk.Button(
-            btn_frame,
-            text="a", 
-            width=5, 
-            style='Symbol.TButton',
-            command=self.move_up
-            )
-        self.move_up_btn.pack(side=tk.RIGHT, padx=2)
-        
 
     def show_tree_tooltip(self, event=None):
         # Получаем текущий текст подсказки
@@ -1204,8 +1346,108 @@ class PlaylistEditor:
 
     def hide_search_tooltip(self, event=None):
         # Скрываем подсказку
-        if hasattr(self, 'tree_tooltip'):
+        if hasattr(self, 'search_tooltip'):
             self.search_tooltip.place_forget()    
+
+    def show_seed_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0-∞, empty=random "
+        self.seed_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.seed_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.seed_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.seed_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.seed_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.seed_entry.winfo_y() + 479  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.seed_tooltip.place(x=x, y=y)
+
+    def hide_seed_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'seed_tooltip'):
+            self.seed_tooltip.place_forget()
+
+    def show_swaps_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        self.swaps_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.swaps_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.intensity_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.intensity_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.swaps_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + 10 + (entry_width - tooltip_width) // 2
+        y = self.intensity_entry.winfo_y() + 479  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.swaps_tooltip.place(x=x, y=y)
+
+    def hide_swaps_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'swaps_tooltip'):
+            self.swaps_tooltip.place_forget()
+    
+    def show_reverse_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        self.reverse_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.reverse_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.step_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.step_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.reverse_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + 10 + (entry_width - tooltip_width) // 2
+        y = self.step_entry.winfo_y() + 479  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.reverse_tooltip.place(x=x, y=y)
+
+    def hide_reverse_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'reverse_tooltip'):
+            self.reverse_tooltip.place_forget()
+
+    def show_translation_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " Translations are machine-generated \nand may contain errors"
+        self.translation_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.translation_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.language_dropdown.winfo_x()  # Позиция поля ввода
+        entry_width = self.language_dropdown.winfo_width()  # Ширина поля
+        tooltip_width = self.translation_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + 10 + (entry_width - tooltip_width) // 2
+        y = self.language_dropdown.winfo_y() + 561  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.translation_tooltip.place(x=x, y=y)
+
+    def hide_translation_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'translation_tooltip'):
+            self.translation_tooltip.place_forget()
 
     def clear_playlist_entry(self, event=None):
         self.name_entry.delete(0, tk.END)

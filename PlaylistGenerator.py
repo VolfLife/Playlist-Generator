@@ -139,7 +139,7 @@ class PlaylistGenerator:
     
         # Устанавливаем положение и размер
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        self.root.minsize(540, 361)
+        self.root.minsize(540, 300)
     
         if self.last_folders:
             self.folder_entry.insert(0, self.last_folders)
@@ -319,9 +319,13 @@ class PlaylistGenerator:
             # Обновляем заголовок окна
             self.root.title(self.localization.tr("window_title_generator"))
             # Обновляем текст кнопки генерации
-            self.generate_btn.config(text=self.localization.tr("generate_button"))
             self.browse_btn.config(text=self.localization.tr("browse_button"))
+            self.seed_label.config(text=self.localization.tr("seed_label"))
+            self.swaps_label.config(text=self.localization.tr("intensity_label"))
+            self.seed_format_label.config(text=self.localization.tr("seed_format_label"))
+            self.reverse_label.config(text=self.localization.tr("reverse_step_label"))
             self.shadow_seed_check.config(text=self.localization.tr("shadow_seed_check"))
+            self.generate_btn.config(text=self.localization.tr("generate_button"))
             # Обновляем остальной интерфейс
             self.update_ui_texts()
         
@@ -398,33 +402,40 @@ class PlaylistGenerator:
         
         self.playlist_entry.bind("<Button-3>", self.clear_playlist_entry)
         
-        tk.Label(self.root, text=self.localization.tr("seed_label")).grid(row=2, column=0, sticky="w", padx=10, pady=5)
+        self.seed_label = tk.Label(self.root, text=self.localization.tr("seed_label"))
+        self.seed_label.grid(row=2, column=0, sticky="w", padx=10, pady=5)
         self.seed_entry = ttk.Entry(self.root, width=40)
         self.seed_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         self.seed_entry.bind("<Button-3>", self.clear_seed_entry)
 
         # Поле для перестановок
-        tk.Label(self.root, text=self.localization.tr("intensity_label")).grid(row=3, column=0, sticky="w", padx=10, pady=5)
-        self.intensity_entry = ttk.Entry(self.root, width=40)
-        self.intensity_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
+        self.swaps_label = tk.Label(self.root, text=self.localization.tr("intensity_label"))
+        self.swaps_label.grid(row=3, column=0, sticky="w", padx=10, pady=5)
+        self.intensity_entry = ttk.Entry(self.root, width=10)
+        self.intensity_entry.grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
         self.intensity_entry.bind("<Button-3>", self.clear_intensity_entry)
 
+        # Выбор формата сида
+        self.seed_format_label = tk.Label(self.root, text=self.localization.tr("seed_format_label"))
+        self.seed_format_label.grid(row=3, column=1, sticky="w", padx=85, pady=5)
+                
+
         # Поле для шага реверса
-        tk.Label(self.root, text=self.localization.tr("reverse_step_label")).grid(row=4, column=0, sticky="w", padx=10, pady=5)
-        self.step_entry = ttk.Entry(self.root, width=40)
-        self.step_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+        self.reverse_label = tk.Label(self.root, text=self.localization.tr("reverse_step_label"))
+        self.reverse_label.grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        self.step_entry = ttk.Entry(self.root, width=10)
+        self.step_entry.grid(row=4, column=1, padx=5, pady=5, sticky="w")
 
         self.step_entry.bind("<Button-3>", self.clear_step_entry)
 
-        # Выбор формата сида
-        tk.Label(self.root, text=self.localization.tr("seed_format_label")).grid(row=5, column=0, sticky="w", padx=10, pady=5)
+        # Ползунок формата сида
         self.seed_format = ttk.Combobox(self.root, 
                                       values=self.localization.tr("seed_formats"), 
                                       state="readonly")
         self.seed_format.current(0)
-        self.seed_format.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
+        self.seed_format.grid(row=4, column=1, sticky="w", padx=85, pady=5)
 
         # Чекбокс для теневого сида
         self.use_shadow_seed = tk.BooleanVar()
@@ -450,7 +461,7 @@ class PlaylistGenerator:
         
         # Выбор языка
         language_frame = ttk.Frame(self.root)
-        language_frame.grid(row=7, column=0, columnspan=3, pady=5, sticky="ew")
+        language_frame.grid(row=6, column=0, columnspan=3, pady=5, sticky="ew")
     
         self.language_label = tk.Label(language_frame, text=self.localization.tr("language_label"))
         self.language_label.pack(side=tk.LEFT, padx=(10, 5))
@@ -507,7 +518,27 @@ class PlaylistGenerator:
         # Поле для вывода информации
         self.seed_info = tk.Label(self.root, text="", fg="green", bg=self.root.cget('bg'))
         self.seed_info.grid(row=8, column=0, columnspan=3, pady=5)
-        
+
+        # Добавляем подсказку при наведении курсора для сида
+        self.seed_tooltip = tk.Label(self.root, text="0=off, 1=auto, 2-∞", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.seed_tooltip.place_forget()
+        self.seed_entry.bind("<Enter>", self.show_seed_tooltip)
+        self.seed_entry.bind("<Leave>", self.hide_seed_tooltip)
+  
+        # Добавляем подсказку при наведении курсора для перестановок
+        self.swaps_tooltip = tk.Label(self.root, text="0=off, 1=auto, 2-∞", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.swaps_tooltip.place_forget()
+        self.intensity_entry.bind("<Enter>", self.show_swaps_tooltip)
+        self.intensity_entry.bind("<Leave>", self.hide_swaps_tooltip)
+  
+        # Добавляем подсказку при наведении курсора для реверса
+        self.reverse_tooltip = tk.Label(self.root, text="0=off, 1=auto, 2-∞", 
+                                           bg="beige", relief="solid", borderwidth=1)
+        self.reverse_tooltip.place_forget()
+        self.step_entry.bind("<Enter>", self.show_reverse_tooltip)
+        self.step_entry.bind("<Leave>", self.hide_reverse_tooltip)
         
         self.create_github_link()  # Создаем ссылку на GitHub
         
@@ -556,15 +587,91 @@ class PlaylistGenerator:
         
         # Центрируем подсказку относительно поля ввода
         x = entry_x + (entry_width - tooltip_width) // 2
-        y = self.language_dropdown.winfo_y() + 203  # Фиксированный отступ по Y
+        y = self.language_dropdown.winfo_y() + 141  # Фиксированный отступ по Y
         
         # Устанавливаем позицию
         self.translation_tooltip.place(x=x, y=y)
 
     def hide_translation_tooltip(self, event=None):
         # Скрываем подсказку
-        if hasattr(self, 'folder_entry_tooltip'):
+        if hasattr(self, 'translation_tooltip'):
             self.translation_tooltip.place_forget()
+
+    def show_seed_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0-∞, empty=random "
+        self.seed_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.seed_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.seed_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.seed_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.seed_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.seed_entry.winfo_y() + 20  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.seed_tooltip.place(x=x, y=y)
+
+    def hide_seed_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'seed_tooltip'):
+            self.seed_tooltip.place_forget()
+
+    def show_swaps_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        self.swaps_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.swaps_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.intensity_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.intensity_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.swaps_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.intensity_entry.winfo_y() + 20  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.swaps_tooltip.place(x=x, y=y)
+
+    def hide_swaps_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'swaps_tooltip'):
+            self.swaps_tooltip.place_forget()
+    
+    def show_reverse_tooltip(self, event=None):
+        # Получаем текущий текст подсказки
+        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        self.reverse_tooltip.config(text=tooltip_text)
+        
+        # Принудительно обновляем геометрию для актуальных размеров
+        self.reverse_tooltip.update_idletasks()
+        
+        # Рассчитываем позицию
+        entry_x = self.step_entry.winfo_x()  # Позиция поля ввода
+        entry_width = self.step_entry.winfo_width()  # Ширина поля
+        tooltip_width = self.reverse_tooltip.winfo_reqwidth()  # Ширина подсказки
+        
+        # Центрируем подсказку относительно поля ввода
+        x = entry_x + (entry_width - tooltip_width) // 2
+        y = self.step_entry.winfo_y() + 20  # Фиксированный отступ по Y
+        
+        # Устанавливаем позицию
+        self.reverse_tooltip.place(x=x, y=y)
+
+    def hide_reverse_tooltip(self, event=None):
+        # Скрываем подсказку
+        if hasattr(self, 'reverse_tooltip'):
+            self.reverse_tooltip.place_forget()
+    
     
     def clear_playlist_entry(self, event=None):
         self.playlist_entry.delete(0, tk.END)
@@ -600,13 +707,7 @@ class PlaylistGenerator:
             (0, 0, "music_folder_label"),
             (0, 2, "browse_button"),
             (1, 0, "playlist_name_label"),
-            (2, 0, "seed_label"),
-            (3, 0, "reverse_step_label"),
-            (4, 0, "intensity_label"),
-            (5, 0, "seed_format_label"),
-            (6, 0, "shadow_seed_check"),
-            (7, 1, "generate_button"),
-            (7, 0, "language_label") # Для label в language_frame   
+            (2, 0, "language_label") # Для label в language_frame   
         ]
         
         for row, col, key in widgets_to_update:
@@ -1539,7 +1640,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.20 by VolfLife   ")
+        print("    Playlist Generator v4.21 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
