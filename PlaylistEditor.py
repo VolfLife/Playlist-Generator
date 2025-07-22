@@ -1184,7 +1184,7 @@ class PlaylistEditor:
             state="readonly",
             width=8
         )
-        self.format_combobox.pack(side=tk.RIGHT, padx=12)
+        self.format_combobox.pack(side=tk.RIGHT, padx=6)
         self.format_combobox.set(self.format_m3u8)
         self.format_combobox.bind("<<ComboboxSelected>>", self.change_format)
 
