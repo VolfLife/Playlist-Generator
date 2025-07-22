@@ -937,6 +937,7 @@ class PlaylistEditor:
             # Обновляем заголовок окна
             self.root.title(self.localization.tr("window_title_editor"))
             # Обновляем текст
+            self.tree.heading('name', text=self.localization.tr("track_name"))
             self.playlist_name_label.config(text=self.localization.tr("playlist_name_label"))
             self.seed_label.config(text=self.localization.tr("seed_label"))
             self.swaps_label.config(text=self.localization.tr("intensity_label"))
