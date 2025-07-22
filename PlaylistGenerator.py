@@ -624,7 +624,7 @@ class PlaylistGenerator:
 
     def show_swaps_tooltip(self, event=None):
         # Получаем текущий текст подсказки
-        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        tooltip_text = " empty=off, 1=auto, 2-∞ "
         self.swaps_tooltip.config(text=tooltip_text)
         
         # Принудительно обновляем геометрию для актуальных размеров
@@ -649,7 +649,7 @@ class PlaylistGenerator:
     
     def show_reverse_tooltip(self, event=None):
         # Получаем текущий текст подсказки
-        tooltip_text = " 0=off, 1=auto, 2-∞ "
+        tooltip_text = " empty=off, 1=auto, 2-∞ "
         self.reverse_tooltip.config(text=tooltip_text)
         
         # Принудительно обновляем геометрию для актуальных размеров
