@@ -1194,7 +1194,7 @@ class PlaylistEditor:
         self.shuffle_label.pack(side=tk.RIGHT, padx=5)
 
         self.language_label = tk.Label(btn_frame, text=self.localization.tr("language_label"))
-        self.language_label.pack(side=tk.LEFT, padx=(10, 5))
+        self.language_label.pack(side=tk.LEFT, padx=5)
     
         # Создаем список языков в формате (название, код)
         lang_options = [(self.localization.lang_names[code], code) 
@@ -1228,7 +1228,7 @@ class PlaylistEditor:
         
         # Поле для сообщений
         message_frame = ttk.Frame(main_frame)
-        message_frame.pack(fill=tk.X, pady=7)
+        message_frame.pack(fill=tk.X, pady=12)
         
         # Фиксируем высоту фрейма сообщений
         message_frame.pack_propagate(False)  # Отключаем автоматическое изменение размера
