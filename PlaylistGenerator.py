@@ -139,7 +139,7 @@ class PlaylistGenerator:
     
         # Устанавливаем положение и размер
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        self.root.minsize(540, 300)
+        self.root.minsize(540, 344)
     
         if self.last_folders:
             self.folder_entry.insert(0, self.last_folders)
@@ -445,7 +445,7 @@ class PlaylistGenerator:
             variable=self.use_shadow_seed
             #command=self.toggle_step_entry
         )
-        self.shadow_seed_check.grid(row=6, column=0, columnspan=3, pady=5)
+        self.shadow_seed_check.grid(row=5, column=0, columnspan=3, pady=5)
                 
         
         # Добавляем подсказку при наведении курсора
@@ -1269,7 +1269,8 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f"#DURATION:{self.formatted_duration}\n")
                 f.write(f"#SEED:{seed}\n")
-                f.write(f"#SHADOW_SEED:{shadow_seed}\n")
+                if self.use_shadow_seed.get():
+                    f.write(f"#SHADOW_SEED:{shadow_seed}\n")
                 
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f"#NUM_SWAPS:{num_swaps}\n")
@@ -1301,7 +1302,8 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f"#DURATION:{self.formatted_duration}\n")                
                 f.write(f"#SEED:{seed}\n")
-                f.write(f"#SHADOW_SEED:{shadow_seed}\n")
+                if self.use_shadow_seed.get():
+                    f.write(f"#SHADOW_SEED:{shadow_seed}\n")
                 
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f"#NUM_SWAPS:{num_swaps}\n")    
@@ -1328,7 +1330,8 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f";DURATION:{self.formatted_duration}\n")                
                 f.write(f";SEED:{seed}\n")
-                f.write(f";SHADOW_SEED:{shadow_seed}\n")
+                if self.use_shadow_seed.get():
+                    f.write(f";SHADOW_SEED:{shadow_seed}\n")
                 
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f";NUM_SWAPS:{num_swaps}\n")    
@@ -1365,8 +1368,9 @@ class PlaylistGenerator:
                 f.write(f'<Title>{saxutils.escape(name)}</Title>\n')
                 if self.formatted_duration is not None:
                     f.write(f'<Abstract>DURATION:{self.formatted_duration}</Abstract>\n')
-                f.write(f'<Abstract>SEED:{seed} | SHADOW_SEED:{shadow_seed}</Abstract>\n')
-                
+                f.write(f'<Abstract>SEED:{seed}</Abstract>\n')
+                if self.use_shadow_seed.get():
+                    f.write(f'<Abstract>SHADOW_SEED:{shadow_seed}</Abstract>\n')
                 if num_swaps is not None and num_swaps > 0:
                     f.write(f'<Abstract>NUM_SWAPS:{num_swaps}</Abstract>\n')
                 if reverse_step is not None and reverse_step > 0:
@@ -1404,7 +1408,7 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f'    DURATION:{self.formatted_duration}\n')
                 f.write(f'    SEED:{seed}\n')
-                if shadow_seed:
+                if self.use_shadow_seed.get():
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
                 if num_swaps:
                     f.write(f'    NUM_SWAPS:{num_swaps}\n')
@@ -1460,7 +1464,7 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f'    DURATION:{self.formatted_duration}\n')
                 f.write(f'    SEED:{seed}\n')
-                if shadow_seed:
+                if self.use_shadow_seed.get():
                     f.write(f'    SHADOW_SEED:{shadow_seed}\n')
                 if num_swaps:
                     f.write(f'    NUM_SWAPS:{num_swaps}\n')
@@ -1501,7 +1505,7 @@ class PlaylistGenerator:
                     "generator": "VolfLife's Playlist Generator",
                     "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "seed": seed,
-                    "shadow_seed": shadow_seed,
+                    "shadow_seed": shadow_seed if self.use_shadow_seed.get() else None,
                     "num_swaps": num_swaps if num_swaps and num_swaps > 0 else None,
                     "reverse_step": reverse_step if reverse_step and reverse_step > 0 else None,
                     "num_tracks": num_tracks
@@ -1537,7 +1541,7 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write(f'      DURATION:{self.formatted_duration}\n')
                 f.write(f'      SEED:{seed}\n')
-                if shadow_seed:
+                if self.use_shadow_seed.get():
                     f.write(f'      SHADOW_SEED:{shadow_seed}\n')
                 if num_swaps:
                     f.write(f'      NUM_SWAPS:{num_swaps}\n')
@@ -1578,7 +1582,7 @@ class PlaylistGenerator:
                 if self.formatted_duration is not None:
                     f.write('    DURATION:{}\n'.format(self.formatted_duration))
                 f.write('    SEED:{}\n'.format(seed))
-                if shadow_seed:
+                if self.use_shadow_seed.get():
                     f.write('    SHADOW_SEED:{}\n'.format(shadow_seed))
                 if num_swaps:
                     f.write('    NUM_SWAPS:{}\n'.format(num_swaps))
