@@ -79,7 +79,7 @@ Creates a playlist from scratch. Simply launch the executable to enter generator
 
 	* **Format**: Select output format (`.m3u`/`.pls`/etc.)
 
-5. Click "Generate playlist" button. The playlist will be saved in the program’s directory
+5. Click *`Generate playlist`* button. The playlist will be saved in the program’s directory
 
 ### Editor Mode
 ___
@@ -99,11 +99,11 @@ Edits and saves data from existing playlists without requiring local track files
 
 	* Reorder with drag-and-drop or ▲/▼ buttons
 
-  	* Delete tracks
-
-	* Edit track paths and names
+  	* Edit track paths and names
 
 	* Import from folders
+
+	* Delete tracks
 	
 	* Undo/redo actions
 
