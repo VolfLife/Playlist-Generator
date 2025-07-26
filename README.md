@@ -28,6 +28,8 @@ To download the program, go to the [Releases](https://github.com/VolfLife/Playli
 
 * Custom extra swaps & segmented block reversal algorithms for complex shuffling
 
+* Сounter of the total duration of tracks from the selected folder(s)
+
 * Preserves playlist metadata:
 
 ```
