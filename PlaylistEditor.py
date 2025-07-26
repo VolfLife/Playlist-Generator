@@ -3212,29 +3212,39 @@ class PlaylistEditor:
         self.selected_for_edit = selected_items
 
     def create_path_editor_tab(self, parent, selected_items):
-        """Создает содержимое вкладки для изменения пути"""
+        """Создает содержимое вкладки для изменения путей с отображением имен, но редактированием путей"""
         # Фрейм для таблицы
         table_frame = ttk.Frame(parent)
         table_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Таблица с выделенными треками
-        tree = ttk.Treeview(table_frame, columns=('num', 'name'), show='headings')
-        tree.heading('num', text=self.localization.tr("track_number"))
-        tree.heading('name', text=self.localization.tr("track_name"))
-        tree.column('num', width=50, anchor='center')
-        tree.column('name', width=400, anchor='w')
+        # Таблица с выделенными треками (показываем имена, но храним пути)
+        self.path_editor_tree = ttk.Treeview(table_frame, columns=('num', 'name'), show='headings')
+        self.path_editor_tree.heading('num', text=self.localization.tr("track_number"))
+        self.path_editor_tree.heading('name', text=self.localization.tr("track_name"))
+        self.path_editor_tree.column('num', width=50, anchor='center')
+        self.path_editor_tree.column('name', width=400, anchor='w')
         
-        # Заполняем таблицу выделенными треками
+        # Заполняем таблицу (показываем имена, но храним пути)
+        self.path_editor_items = {}  # Словарь для связи item_id с треками
         for item in selected_items:
             values = self.tree.item(item)['values']
-            if len(values) >= 2:
-                tree.insert('', 'end', values=(values[0], values[1]))
+            if len(values) >= 3:  # Ожидаем путь в values[2]
+                # Показываем имя (values[1]), но храним путь (values[2])
+                item_id = self.path_editor_tree.insert('', 'end', values=(values[0], values[1]))
+                self.path_editor_items[item_id] = {
+                    'original_item': item,
+                    'original_path': values[2],  # Храним полный путь
+                    'display_name': values[1]     # Храним отображаемое имя
+                }
         
-        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
-        tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.path_editor_tree.yview)
+        self.path_editor_tree.configure(yscrollcommand=scrollbar.set)
         
-        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.path_editor_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Включаем редактирование путей по двойному клику
+        self.path_editor_tree.bind("<Double-1>", self.on_path_editor_double_click)
         
         # Фрейм для поля ввода пути
         path_frame = ttk.Frame(parent, padding="10")
@@ -3242,9 +3252,10 @@ class PlaylistEditor:
         
         ttk.Label(path_frame, text=self.localization.tr("new_path_label")).pack(anchor='w')
         
-        # Поле ввода пути
-        self.new_path_entry = ttk.Entry(path_frame)
-        self.new_path_entry.pack(fill=tk.X, pady=5)
+        # Поле ввода пути (будет показывать путь при выборе трека)
+        self.path_editor_entry = ttk.Entry(path_frame)
+        self.path_editor_entry.pack(fill=tk.X, pady=5)
+        self.path_editor_entry.bind("<Button-3>", self.clear_editor_entry)
         
         # Кнопка "Обзор"
         browse_btn = ttk.Button(
@@ -3254,6 +3265,12 @@ class PlaylistEditor:
             command=self.browse_folder
         )
         browse_btn.pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Привязываем событие изменения текста
+        self.path_editor_entry.bind("<KeyRelease>", self.on_path_entry_changed)
+        
+        # Привязываем выбор трека в таблице к полю ввода
+        self.path_editor_tree.bind("<<TreeviewSelect>>", self.on_path_editor_selection)
         
         # Подсказка
         ttk.Label(path_frame, 
@@ -3266,22 +3283,140 @@ class PlaylistEditor:
         
         ttk.Button(button_frame, 
                   text=self.localization.tr("apply_button"), 
-                  command=self.apply_new_paths).pack(side=tk.LEFT, padx=5)
+                  command=self.apply_new_paths_from_editor).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, 
                   text=self.localization.tr("cancel_button"), 
                   command=self.path_editor.destroy).pack(side=tk.LEFT)
-        
-        # Автозаполнение пути из первого выделенного трека
-        if selected_items:
-            first_item = selected_items[0]
-            values = self.tree.item(first_item)['values']
-            if len(values) >= 2:
-                full_path = values[2]  # Теперь здесь полный путь
-                dir_path = os.path.dirname(full_path)
-                self.new_path_entry.delete(0, tk.END)
-                self.new_path_entry.insert(0, dir_path)
-                print(f"[DEBUG] Данные трека = {self.tree.item(first_item)}")
 
+
+    def clear_editor_entry(self, event=None):
+        self.path_editor_entry.delete(0, tk.END)
+
+
+    def on_path_editor_selection(self, event):
+        """Обновляет поле ввода пути при выборе трека в таблице"""
+        selected = self.path_editor_tree.selection()
+        if selected:
+            # Получаем полный путь и извлекаем только директорию
+            full_path = self.path_editor_items[selected[0]]['original_path']
+            dir_path = os.path.dirname(full_path)
+            # Заменяем обратные слеши на прямые для единообразия
+            dir_path = dir_path.replace('\\', '/')
+            self.path_editor_entry.delete(0, tk.END)
+            self.path_editor_entry.insert(0, dir_path)
+
+    def on_path_editor_double_click(self, event):
+        """Обработчик двойного клика для редактирования пути трека"""
+        region = self.path_editor_tree.identify("region", event.x, event.y)
+        if region == "cell":
+            column = self.path_editor_tree.identify_column(event.x)
+            item = self.path_editor_tree.identify_row(event.y)
+            
+            if column == "#2":  # Колонка с именем (но редактируем путь)
+                # Получаем путь из хранимых данных и извлекаем директорию
+                full_path = self.path_editor_items[item]['original_path']
+                dir_path = os.path.dirname(full_path).replace('\\', '/')
+                
+                x, y, width, height = self.path_editor_tree.bbox(item, column)
+                
+                # Создаем временное поле ввода поверх ячейки
+                entry = ttk.Entry(self.path_editor_tree)
+                entry.place(x=x, y=y, width=width, height=height)
+                entry.insert(0, dir_path)
+                entry.select_range(0, tk.END)
+                entry.focus()
+                
+                # Привязываем события
+                entry.bind("<Return>", lambda e: self.finish_path_edit(item, entry, full_path))
+                entry.bind("<FocusOut>", lambda e: self.finish_path_edit(item, entry, full_path))
+                entry.bind("<Escape>", lambda e: entry.destroy())
+
+    def finish_path_edit(self, item, entry, original_full_path):
+        """Завершает редактирование пути и обновляет значение"""
+        new_dir_path = entry.get().strip()
+        original_dir_path = os.path.dirname(original_full_path).replace('\\', '/')
+        
+        # Получаем имя файла из оригинального пути
+        filename = os.path.basename(original_full_path)
+        
+        # Проверка на реальное изменение
+        if new_dir_path != original_dir_path:
+            # Собираем новый полный путь
+            new_full_path = f"{new_dir_path}/{filename}" if new_dir_path else filename
+            new_full_path = new_full_path.replace('\\', '/')
+            
+            # Обновляем хранимый путь
+            self.path_editor_items[item]['original_path'] = new_full_path
+            
+            # Обновляем поле ввода, если редактируемый трек выбран
+            selected = self.path_editor_tree.selection()
+            if item in selected:
+                self.path_editor_entry.delete(0, tk.END)
+                self.path_editor_entry.insert(0, new_dir_path)
+        
+        entry.destroy()
+
+    def on_path_entry_changed(self, event):
+        """Обновляет путь выбранного трека при изменении поля ввода"""
+        selected = self.path_editor_tree.selection()
+        if selected:
+            new_dir_path = self.path_editor_entry.get().strip()
+            item_id = selected[0]
+            original_full_path = self.path_editor_items[item_id]['original_path']
+            
+            # Получаем имя файла из оригинального пути
+            filename = os.path.basename(original_full_path)
+            
+            # Собираем новый полный путь
+            new_full_path = f"{new_dir_path}/{filename}" if new_dir_path else filename
+            new_full_path = new_full_path.replace('\\', '/')
+            
+            # Проверка на реальное изменение
+            if new_full_path != original_full_path:
+                self.path_editor_items[item_id]['original_path'] = new_full_path
+            
+            
+    def apply_new_paths_from_editor(self):
+        """Применяет новые пути из редактора к основному списку треков"""
+        try:
+            if self.temp_list is None:
+                self.temp_list = [track.copy() for track in self.display_tracks]
+            
+            # Обновляем пути в temp_list
+            for item_id, item_data in self.path_editor_items.items():
+                new_path = item_data['original_path']
+                original_item = item_data['original_item']
+                
+                # Находим трек в основном списке
+                main_values = self.tree.item(original_item, 'values')
+                if main_values and len(main_values) >= 3:
+                    track_num = int(main_values[0]) - 1
+                    if 0 <= track_num < len(self.temp_list):
+                        track = self.temp_list[track_num]
+                        original_path = track.get("original_path", track["path"])
+                        
+                        # Проверка на реальное изменение
+                        if new_path != original_path:
+                            self.modified_paths[original_path] = new_path
+                            track["path"] = new_path
+                            track["was_modified"] = True
+                            track["original_path"] = original_path
+                        else:
+                            track["was_modified"] = False
+            
+            self.display_tracks = self.temp_list.copy()
+            self.update_display()
+            self.save_state()
+            
+            self.show_message(self.localization.tr("paths_updated"), "green")
+            if self.path_editor:
+                self.path_editor.destroy()
+                self.path_editor = None
+                
+        except Exception as e:
+            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")
+        
+        
     def create_name_editor_tab(self, parent, selected_items):
         """Создает содержимое вкладки для изменения имен с двумя способами редактирования"""
         # Фрейм для таблицы (уменьшенный размер)
@@ -3324,6 +3459,7 @@ class PlaylistEditor:
         # Поле ввода для редактирования выделенного трека
         self.name_editor_entry = ttk.Entry(name_frame)
         self.name_editor_entry.pack(fill=tk.X, pady=5)
+        self.name_editor_entry.bind("<Button-3>", self.clear_name_entry)
         
         # Привязываем событие изменения текста
         self.name_editor_entry.bind("<KeyRelease>", self.on_name_entry_changed)
@@ -3346,6 +3482,11 @@ class PlaylistEditor:
         ttk.Button(button_frame, 
                   text=self.localization.tr("cancel_button"), 
                   command=self.path_editor.destroy).pack(side=tk.LEFT)
+
+
+    def clear_name_entry(self, event=None):
+        self.name_editor_entry.delete(0, tk.END)
+
 
     def on_name_editor_double_click(self, event):
         """Обработчик двойного клика для редактирования имени трека"""
@@ -3474,105 +3615,5 @@ class PlaylistEditor:
             self.new_path_entry.insert(0, folder_path)
     
     
-    def apply_new_paths(self):
-        try:
-            new_path = self.new_path_entry.get().strip()
-            if not new_path:
-                raise ValueError(self.localization.tr("error_empty_path"))
-            
-            new_path = os.path.normpath(new_path)
-            if not new_path.endswith(os.sep):
-                new_path += os.sep
-            
-            # Создаем временный список если его еще нет
-            if self.temp_list is None:
-                self.temp_list = [track.copy() for track in self.display_tracks]
-            
-            # Получаем ID выделенных элементов в Treeview
-            selected_items = self.tree.selection()
-            
-            for item in selected_items:
-                # Получаем реальный индекс через теги или данные
-                item_values = self.tree.item(item, 'values')
-                if not item_values or len(item_values) < 2:
-                    continue
-                    
-                # Находим трек по номеру (первое значение в строке)
-                track_num = int(item_values[0]) - 1  # -1 потому что нумерация с 1
-                
-                if 0 <= track_num < len(self.temp_list):
-                    track = self.temp_list[track_num]
-                    original_path = track.get("original_path", track["path"])
-                    filename = track["name"]
-                    new_full_path = os.path.normpath(new_path + filename)
-                    
-                    # Обновляем словарь изменённых путей
-                    self.modified_paths[original_path] = new_full_path
-                    
-                    # Обновляем трек
-                    track["path"] = new_full_path
-                    track["was_modified"] = True
-                    track["was_restored"] = False
-                    track["original_path"] = original_path
-                    
-                    if track.get('was_name_modified', False):
-                        track["was_name_modified"] = True
-                        
-            self.display_tracks = self.temp_list.copy()
-            self.update_display()
-            self.save_state()
-            
-            self.shuffled_list = None
-            self.show_message(self.localization.tr("paths_updated"), "green")
-            if self.path_editor:
-                self.path_editor.destroy()
-                self.path_editor = None
-                
-        except Exception as e:
-            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")
-
-
-    def apply_new_names(self):
-        """Применяет новые имена к выделенным трекам"""
-        try:
-            new_name = self.new_name_entry.get().strip()
-            if not new_name:
-                raise ValueError(self.localization.tr("error_empty_name"))
-            
-            if self.temp_list is None:
-                self.temp_list = [track.copy() for track in self.display_tracks]
-            
-            selected_items = self.tree.selection()
-            
-            for item in selected_items:
-                item_values = self.tree.item(item, 'values')
-                if not item_values or len(item_values) < 2:
-                    continue
-                    
-                track_num = int(item_values[0]) - 1
-                
-                if 0 <= track_num < len(self.temp_list):
-                    track = self.temp_list[track_num]
-                    if 'original_name' not in track:
-                        track['original_name'] = track['name']
-                    
-                    track['name'] = new_name
-                    track['was_name_modified'] = True
-                    
-                    if track.get('was_modified', False):
-                        track['was_modified'] = True
-                    
-            self.display_tracks = self.temp_list.copy()
-            self.update_display()
-            self.save_state()
-            
-            self.shuffled_list = None
-            self.show_message(self.localization.tr("names_updated"), "green")
-            if self.path_editor:
-                self.path_editor.destroy()
-                self.path_editor = None
-                
-        except Exception as e:
-            self.show_message(f"{self.localization.tr('error')}: {str(e)}", "red")
         
         

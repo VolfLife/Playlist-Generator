@@ -1046,19 +1046,21 @@ class PlaylistGenerator:
         # Обрезаем нули
         seed_trimmed = seed.lstrip('0') or '0'
         
-        
-        # Всегда генерируем теневой сид, даже если не используется
-        shadow_seed = self.generate_shadow_seed(num_tracks, seed_trimmed)
-        
-        # Обрезаем нули
-        shadow_seed_trimmed = shadow_seed.lstrip('0') or '0'
-        
-        
         print(f"[DEBUG] Основной сид = {seed}")
-        print(f"[DEBUG] Теневой сид = {shadow_seed} ")
-        
         print(f"[DEBUG] Использованный основной сид = {seed_trimmed}")
-        print(f"[DEBUG] Использованный теневой сид = {shadow_seed_trimmed}")
+        
+        
+        # Генерируем теневой сид
+        if self.use_shadow_seed.get():
+            shadow_seed = self.generate_shadow_seed(num_tracks, seed_trimmed)
+            print(f"[DEBUG] Теневой сид = {shadow_seed} ")
+            # Обрезаем нули
+            shadow_seed_trimmed = shadow_seed.lstrip('0') or '0'
+            print(f"[DEBUG] Использованный теневой сид = {shadow_seed_trimmed}")
+        else:
+            shadow_seed = None
+            shadow_seed_trimmed = None
+        
 
         # Определяем путь для сохранения
         if getattr(sys, 'frozen', False):
@@ -1659,7 +1661,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.21 by VolfLife   ")
+        print("    Playlist Generator v4.22 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
