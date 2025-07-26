@@ -1694,9 +1694,7 @@ if __name__ == "__main__":
         else:
             # Иначе открываем генератор
             root = tk.Tk()
-            print("До загрузки FontLoader")    
             font_loader = FontLoader()		
-            print("После загрузки FontLoader")
             # Проверяем, что иконка загружена
             icon_path = font_loader.icon_ico if font_loader.icon_ico else None
             
