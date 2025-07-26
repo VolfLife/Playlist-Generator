@@ -1,4 +1,5 @@
 import os
+import atexit
 import code
 import ctypes
 import subprocess
@@ -11,15 +12,18 @@ import string
 import json
 import locale
 import logging
+import traceback
 import urllib.parse
 import xml.sax.saxutils as saxutils
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
-from PlaylistEditor import PlaylistEditor  # Импорт нового класса
-from Localization import Localization
 from FontLoader import FontLoader
+from Localization import Localization
+from PlaylistEditor import PlaylistEditor 
+
+
 
 def is_shift_pressed():
     """Проверяет, зажата ли клавиша Shift при запуске"""
@@ -76,6 +80,7 @@ def setup_logging_and_console():
         sys.stdout = file_out
         sys.stderr = file_err
     
+    
 def handle_exception(type, value, traceback):
     """Обработчик неотловленных исключений"""
     if sys.stdout:  # Если вывод доступен
@@ -88,9 +93,8 @@ def handle_exception(type, value, traceback):
     messagebox.showerror("Критическая ошибка", str(value))
 
 
-
 class PlaylistGenerator:
-    def __init__(self, root, file_to_open=None, font_loader=None, icon_path=None):
+    def __init__(self, root, file_to_open=None, font_loader=None):
         
         self.debug_mode = is_shift_pressed() or not getattr(sys, 'frozen', False)
         
@@ -100,8 +104,12 @@ class PlaylistGenerator:
         
         
         self.root = root
-        self.font_loader = font_loader or FontLoader()
-        self.icon_path = icon_path
+        self.font_loader = font_loader if font_loader is not None else FontLoader()
+        # Получаем путь к иконке правильно
+        self.icon_path = icon_path if icon_path is not None else (
+            self.font_loader.icon_ico if hasattr(self.font_loader, 'icon_ico') else None
+        )
+        print(f"Иконка {self.icon_path}")
         self.localization = Localization()
         self.last_folders = []
         self.visited_github = False
@@ -147,7 +155,14 @@ class PlaylistGenerator:
         
         # Обновляем поле ввода с последними папками
         self.update_folder_entry()
-        self.root.iconbitmap(self.icon_path)
+        
+        try:
+            if self.icon_path and os.path.exists(self.icon_path):
+                self.root.iconbitmap(self.icon_path)
+            else:
+                print(f"[WARNING] Файл иконки не найден: {self.icon_path}")
+        except Exception as e:
+            print(f"[ERROR] Ошибка загрузки иконки: {e}")
     
     def is_valid_folders(self, paths):
         """Проверяет, существуют ли все папки в списке"""
@@ -587,7 +602,7 @@ class PlaylistGenerator:
         
         # Центрируем подсказку относительно поля ввода
         x = entry_x + (entry_width - tooltip_width) // 2
-        y = self.language_dropdown.winfo_y() + 141  # Фиксированный отступ по Y
+        y = self.language_dropdown.winfo_y() + 172  # Фиксированный отступ по Y
         
         # Устанавливаем позицию
         self.translation_tooltip.place(x=x, y=y)
@@ -1063,7 +1078,7 @@ class PlaylistGenerator:
         reverse_step = None
         if step == 1:       
             # Определяем шаг реверса (1-20)
-            reverse_step = random.randint(2, 20)
+            reverse_step = random.randint(2, 21)
             print(f"[DEBUG] Реверс = {reverse_step}")
             
             if self.use_shadow_seed.get():
@@ -1661,22 +1676,39 @@ if __name__ == "__main__":
             traceback.print_exc()
         messagebox.showerror("Ошибка", f"Произошла ошибка: {str(e)}")
         sys.exit(1)
+
+    try:
+                    
+        # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
+        file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
         
-    # Создаем FontLoader заране	    
-    font_loader = FontLoader()		
-    icon_path = font_loader.icon_ico  # Получаем путь к иконке
-    
-    # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
-    file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
-    
-    # Если переданы файлы, открываем редактор
-    if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', '.asx', '.xspf', '.json', '.wax', '.wvx', '.wpl', '.xml')) for fp in file_paths):
-        editor_root = tk.Tk()
-        PlaylistEditor(editor_root, file_paths)
-        editor_root.mainloop()
-    else:
-        # Иначе открываем генератор
-        root = tk.Tk()
-        app = PlaylistGenerator(root, file_paths[0] if file_paths else None, font_loader, icon_path)
-        root.mainloop()
-    
+        # Если переданы файлы, открываем редактор
+        if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', '.asx', '.xspf', '.json', '.wax', '.wvx', '.wpl', '.xml')) for fp in file_paths):
+            editor_root = tk.Tk()
+            font_loader = FontLoader()
+            # Проверяем, что иконка загружена
+            icon_path = font_loader.icon_ico if font_loader.icon_ico else None
+            font_path = font_loader._font_path
+            PlaylistEditor(editor_root, file_paths, icon_path, font_path)
+            editor_root.mainloop()
+        else:
+            # Иначе открываем генератор
+            root = tk.Tk()
+            print("До загрузки FontLoader")    
+            font_loader = FontLoader()		
+            print("После загрузки FontLoader")
+            # Проверяем, что иконка загружена
+            icon_path = font_loader.icon_ico if font_loader.icon_ico else None
+            
+            
+            if icon_path and not os.path.exists(icon_path):
+                print(f"[WARNING] Icon path exists but file not found: {icon_path}")
+                icon_path = None
+            # Получаем шрифт ТОЛЬКО после создания root окна
+            
+            app = PlaylistGenerator(root, file_paths[0] if file_paths else None, icon_path)
+            root.mainloop()
+    except Exception as e:
+        print(f"[CRITICAL] Main application error: {str(e)}")
+        traceback.print_exc()
+        messagebox.showerror("Fatal Error", f"The application failed to start:\n{str(e)}")

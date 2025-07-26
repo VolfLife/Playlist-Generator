@@ -5,11 +5,15 @@ import datetime
 import hashlib
 import math
 import string
+import tempfile
 import json
 import locale
 import time
 import uuid
 import urllib.parse
+import ctypes
+from tkinter import font
+from ctypes import wintypes
 import xml.sax.saxutils as saxutils
 from pathlib import Path
 import tkinter as tk
@@ -18,10 +22,11 @@ from Localization import Localization
 from FontLoader import FontLoader            
 
 class PlaylistEditor:
-    def __init__(self, root, file_paths=None):
+    def __init__(self, root, file_paths, icon_path, font_path):
         self.root = root
         self.font_loader = FontLoader()		
         self.icon_path = self.font_loader.icon_ico
+        self.font_path = self.font_loader._font_name
         self.localization = Localization()
         self.visited_github = False
         self.github_link = None
@@ -63,7 +68,6 @@ class PlaylistEditor:
         self.selected_for_edit = []
         
         try:
-            self.symbol_font = self.font_loader.symbol_font
             self.create_widgets(root)
             self.load_playlist()
             # История для Undo/Redo
@@ -995,7 +999,7 @@ class PlaylistEditor:
         
         # Указываем только имя семейства шрифта (без объекта Font)
         style.configure('Symbol.TButton', 
-                      font=(self.font_loader.symbol_font, 9),
+                      font=(self.font_path, 9),
                       padding=2)
 
         # Фрейм для поиска
@@ -2565,7 +2569,7 @@ class PlaylistEditor:
                     step = int(step_value)
                     if 0 < step:
                         if step == 1:
-                            step = random.randint(2, 20)
+                            step = random.randint(2, 21)
                         
                         # Реверсируем блоки в shuffled_list
                         print(f"[DEBUG] Реверс = {step}")
