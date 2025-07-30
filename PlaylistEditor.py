@@ -79,7 +79,7 @@ class PlaylistEditor:
             self.show_version_info()
             self.original_paths = self.full_paths.copy()  # Сохраняем оригинал
             
-            self.center_window(540, 600)
+            self.center_window(540, 738)
             
         except Exception as e:
             messagebox.showerror(
@@ -3229,14 +3229,14 @@ class PlaylistEditor:
         for item in selected_items:
             values = self.tree.item(item)['values']
             if len(values) >= 3:  # Ожидаем путь в values[2]
-                # Показываем имя (values[1]), но храним путь (values[2])
                 item_id = self.path_editor_tree.insert('', 'end', values=(values[0], values[1]))
                 self.path_editor_items[item_id] = {
                     'original_item': item,
                     'original_path': values[2],  # Храним полный путь
-                    'display_name': values[1]     # Храним отображаемое имя
-                }
-        
+                    'display_name': values[1],    # Храним отображаемое имя
+                    'num': values[0]              # Добавляем номер трека
+                }        
+                
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.path_editor_tree.yview)
         self.path_editor_tree.configure(yscrollcommand=scrollbar.set)
         
@@ -3294,16 +3294,16 @@ class PlaylistEditor:
 
 
     def on_path_editor_selection(self, event):
-        """Обновляет поле ввода пути при выборе трека в таблице"""
+        """Обновляет поле ввода пути при выборе треков в таблице"""
         selected = self.path_editor_tree.selection()
         if selected:
-            # Получаем полный путь и извлекаем только директорию
+            # Для множественного выбора берем путь первого выделенного элемента
             full_path = self.path_editor_items[selected[0]]['original_path']
             dir_path = os.path.dirname(full_path)
-            # Заменяем обратные слеши на прямые для единообразия
             dir_path = dir_path.replace('\\', '/')
             self.path_editor_entry.delete(0, tk.END)
             self.path_editor_entry.insert(0, dir_path)
+        
 
     def on_path_editor_double_click(self, event):
         """Обработчик двойного клика для редактирования пути трека"""
@@ -3357,24 +3357,19 @@ class PlaylistEditor:
         entry.destroy()
 
     def on_path_entry_changed(self, event):
-        """Обновляет путь выбранного трека при изменении поля ввода"""
-        selected = self.path_editor_tree.selection()
-        if selected:
+        """Обновляет путь выбранных треков при изменении поля ввода"""
+        selected_items = self.path_editor_tree.selection()
+        if selected_items:
             new_dir_path = self.path_editor_entry.get().strip()
-            item_id = selected[0]
-            original_full_path = self.path_editor_items[item_id]['original_path']
             
-            # Получаем имя файла из оригинального пути
-            filename = os.path.basename(original_full_path)
-            
-            # Собираем новый полный путь
-            new_full_path = f"{new_dir_path}/{filename}" if new_dir_path else filename
-            new_full_path = new_full_path.replace('\\', '/')
-            
-            # Проверка на реальное изменение
-            if new_full_path != original_full_path:
-                self.path_editor_items[item_id]['original_path'] = new_full_path
-            
+            for item_id in selected_items:
+                original_full_path = self.path_editor_items[item_id]['original_path']
+                filename = os.path.basename(original_full_path)
+                new_full_path = f"{new_dir_path}/{filename}" if new_dir_path else filename
+                new_full_path = new_full_path.replace('\\', '/')
+                
+                if new_full_path != original_full_path:
+                    self.path_editor_items[item_id]['original_path'] = new_full_path            
             
     def apply_new_paths_from_editor(self):
         """Применяет новые пути из редактора к основному списку треков"""
@@ -3382,20 +3377,17 @@ class PlaylistEditor:
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
-            # Обновляем пути в temp_list
             for item_id, item_data in self.path_editor_items.items():
                 new_path = item_data['original_path']
                 original_item = item_data['original_item']
                 
-                # Находим трек в основном списке
                 main_values = self.tree.item(original_item, 'values')
                 if main_values and len(main_values) >= 3:
-                    track_num = int(main_values[0]) - 1
+                    track_num = int(item_data['num']) - 1  # Используем сохраненный номер
                     if 0 <= track_num < len(self.temp_list):
                         track = self.temp_list[track_num]
                         original_path = track.get("original_path", track["path"])
                         
-                        # Проверка на реальное изменение
                         if new_path != original_path:
                             self.modified_paths[original_path] = new_path
                             track["path"] = new_path
@@ -3438,9 +3430,10 @@ class PlaylistEditor:
                 item_id = self.name_editor_tree.insert('', 'end', values=(values[0], values[1]))
                 self.name_editor_items[item_id] = {
                     'original_item': item,
-                    'original_name': values[1]
+                    'original_name': values[1],
+                    'num': values[0]              # Добавляем номер трека
                 }
-        
+            
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.name_editor_tree.yview)
         self.name_editor_tree.configure(yscrollcommand=scrollbar.set)
         
@@ -3532,27 +3525,28 @@ class PlaylistEditor:
         
         
     def on_name_editor_selection(self, event):
-        """Обновляет поле ввода при выборе трека в таблице"""
+        """Обновляет поле ввода при выборе треков в таблице"""
         selected = self.name_editor_tree.selection()
         if selected:
+            # Для множественного выбора берем имя первого выделенного элемента
             values = self.name_editor_tree.item(selected[0], 'values')
             if len(values) >= 2:
                 self.name_editor_entry.delete(0, tk.END)
                 self.name_editor_entry.insert(0, values[1])
-
+                
     def on_name_entry_changed(self, event):
-        """Обновляет имя выбранного трека при изменении поля ввода"""
-        selected = self.name_editor_tree.selection()
-        if selected:
+        """Обновляет имя выбранных треков при изменении поля ввода"""
+        selected_items = self.name_editor_tree.selection()
+        if selected_items:
             new_name = self.name_editor_entry.get()
-            values = list(self.name_editor_tree.item(selected[0], 'values'))
-            original_name = self.name_editor_items[selected[0]]['original_name']
             
-            # Добавляем проверку на реальное изменение
-            if new_name != original_name:  # Только если имя действительно изменилось
-                values[1] = new_name
-                self.name_editor_tree.item(selected[0], values=values)
-            
+            for item_id in selected_items:
+                values = list(self.name_editor_tree.item(item_id, 'values'))
+                original_name = self.name_editor_items[item_id]['original_name']
+                
+                if new_name != original_name:
+                    values[1] = new_name
+                    self.name_editor_tree.item(item_id, values=values)          
             
     def apply_new_names_from_editor(self):
         """Применяет новые имена из редактора к основному списку треков"""
@@ -3560,29 +3554,23 @@ class PlaylistEditor:
             if self.temp_list is None:
                 self.temp_list = [track.copy() for track in self.display_tracks]
             
-            # Обновляем имена в temp_list на основе изменений в редакторе
             for item_id, item_data in self.name_editor_items.items():
                 values = self.name_editor_tree.item(item_id, 'values')
                 if len(values) >= 2:
                     new_name = values[1]
-                    original_item = item_data['original_item']
+                    track_num = int(item_data['num']) - 1  # Используем сохраненный номер
                     
-                    # Находим трек в основном списке
-                    main_values = self.tree.item(original_item, 'values')
-                    if main_values and len(main_values) >= 2:
-                        track_num = int(main_values[0]) - 1
-                        if 0 <= track_num < len(self.temp_list):
-                            track = self.temp_list[track_num]
-                            original_name = track.get('original_name', track['name'])
-                            
-                            # Добавляем проверку на реальное изменение
-                            if new_name != original_name:  # Только если имя действительно изменилось
-                                if 'original_name' not in track:
-                                    track['original_name'] = track['name']
-                                track['name'] = new_name
-                                track['was_name_modified'] = True
-                            else:  # Если имя не изменилось
-                                track['was_name_modified'] = False  # Убедимся, что флаг сброшен
+                    if 0 <= track_num < len(self.temp_list):
+                        track = self.temp_list[track_num]
+                        original_name = track.get('original_name', track['name'])
+                        
+                        if new_name != original_name:
+                            if 'original_name' not in track:
+                                track['original_name'] = track['name']
+                            track['name'] = new_name
+                            track['was_name_modified'] = True
+                        else:
+                            track['was_name_modified'] = False
         
             self.display_tracks = self.temp_list.copy()
             self.update_display()

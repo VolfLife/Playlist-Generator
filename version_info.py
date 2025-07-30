@@ -1,6 +1,6 @@
 # version_info.py
 version_info = {
-    "version": "4.22",
+    "version": "4.23",
     "author": "VolfLife",
     "description": "Playlist Generator",
     "copyright": "Copyright (c) 2025 VolfLife",

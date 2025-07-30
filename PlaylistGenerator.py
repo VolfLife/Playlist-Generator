@@ -134,7 +134,7 @@ class PlaylistGenerator:
 
         # Установка размеров окна
         window_width = 540
-        window_height = 310
+        window_height = 344
         root.resizable(width=False, height=False)
     
         # Получаем размеры экрана
@@ -1661,7 +1661,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.22 by VolfLife   ")
+        print("    Playlist Generator v4.23 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
