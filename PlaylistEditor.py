@@ -3236,7 +3236,7 @@ class PlaylistEditor:
                     'display_name': values[1],    # Храним отображаемое имя
                     'num': values[0]              # Добавляем номер трека
                 }        
-                
+                        
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.path_editor_tree.yview)
         self.path_editor_tree.configure(yscrollcommand=scrollbar.set)
         
@@ -3287,6 +3287,12 @@ class PlaylistEditor:
         ttk.Button(button_frame, 
                   text=self.localization.tr("cancel_button"), 
                   command=self.path_editor.destroy).pack(side=tk.LEFT)
+                  
+        # Автоматическое выделение первого трека, если он один
+        first_selected = self.auto_select_first_item(self.path_editor_tree, self.path_editor_items)
+        if first_selected:
+            # Имитируем событие выбора, чтобы обновить поле ввода
+            self.on_path_editor_selection(None)
 
 
     def clear_editor_entry(self, event=None):
@@ -3294,16 +3300,21 @@ class PlaylistEditor:
 
 
     def on_path_editor_selection(self, event):
-        """Обновляет поле ввода пути при выборе треков в таблице"""
+        """Обновляет поле ввода пути при выборе трека в таблице"""
         selected = self.path_editor_tree.selection()
         if selected:
-            # Для множественного выбора берем путь первого выделенного элемента
             full_path = self.path_editor_items[selected[0]]['original_path']
-            dir_path = os.path.dirname(full_path)
-            dir_path = dir_path.replace('\\', '/')
+            dir_path = os.path.dirname(full_path).replace('\\', '/')
             self.path_editor_entry.delete(0, tk.END)
             self.path_editor_entry.insert(0, dir_path)
-        
+        elif event is None:  # Если событие вызвано программно (не пользователем)
+            # Пытаемся получить текущее выделение
+            selected = self.path_editor_tree.selection()
+            if not selected and len(self.path_editor_items) == 1:
+                # Если выделения нет, но есть один элемент - выделяем его
+                first_item = next(iter(self.path_editor_items.keys()))
+                self.path_editor_tree.selection_set(first_item)
+                self.on_path_editor_selection(None)  # Рекурсивный вызов        
 
     def on_path_editor_double_click(self, event):
         """Обработчик двойного клика для редактирования пути трека"""
@@ -3434,6 +3445,7 @@ class PlaylistEditor:
                     'num': values[0]              # Добавляем номер трека
                 }
             
+        
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.name_editor_tree.yview)
         self.name_editor_tree.configure(yscrollcommand=scrollbar.set)
         
@@ -3475,6 +3487,12 @@ class PlaylistEditor:
         ttk.Button(button_frame, 
                   text=self.localization.tr("cancel_button"), 
                   command=self.path_editor.destroy).pack(side=tk.LEFT)
+                  
+        # Автоматическое выделение первого трека, если он один
+        first_selected = self.auto_select_first_item(self.name_editor_tree, self.name_editor_items)
+        if first_selected:
+            # Имитируем событие выбора, чтобы обновить поле ввода
+            self.on_name_editor_selection(None)
 
 
     def clear_name_entry(self, event=None):
@@ -3525,15 +3543,22 @@ class PlaylistEditor:
         
         
     def on_name_editor_selection(self, event):
-        """Обновляет поле ввода при выборе треков в таблице"""
+        """Обновляет поле ввода при выборе трека в таблице"""
         selected = self.name_editor_tree.selection()
         if selected:
-            # Для множественного выбора берем имя первого выделенного элемента
             values = self.name_editor_tree.item(selected[0], 'values')
             if len(values) >= 2:
                 self.name_editor_entry.delete(0, tk.END)
                 self.name_editor_entry.insert(0, values[1])
-                
+        elif event is None:  # Если событие вызвано программно (не пользователем)
+            # Пытаемся получить текущее выделение
+            selected = self.name_editor_tree.selection()
+            if not selected and len(self.name_editor_items) == 1:
+                # Если выделения нет, но есть один элемент - выделяем его
+                first_item = next(iter(self.name_editor_items.keys()))
+                self.name_editor_tree.selection_set(first_item)
+                self.on_name_editor_selection(None)  # Рекурсивный вызов
+            
     def on_name_entry_changed(self, event):
         """Обновляет имя выбранных треков при изменении поля ввода"""
         selected_items = self.name_editor_tree.selection()
@@ -3601,7 +3626,17 @@ class PlaylistEditor:
             # Вставляем путь в поле ввода
             self.new_path_entry.delete(0, tk.END)
             self.new_path_entry.insert(0, folder_path)
-    
+            
+            
+    def auto_select_first_item(self, tree_widget, items_dict):
+        """Автоматически выделяет первый элемент, если он единственный"""
+        if len(items_dict) == 1:  # Если только один элемент
+            first_item = next(iter(items_dict.keys()))  # Получаем первый (и единственный) item_id
+            tree_widget.selection_set(first_item)  # Выделяем его
+            tree_widget.focus(first_item)  # Устанавливаем фокус
+            tree_widget.see(first_item)  # Прокручиваем к элементу, если нужно
+            return first_item
+        return None    
     
         
         
