@@ -3623,10 +3623,16 @@ class PlaylistEditor:
         
         # Если пользователь выбрал папку (не нажал "Отмена")
         if folder_path:
-            # Вставляем путь в поле ввода
-            self.new_path_entry.delete(0, tk.END)
-            self.new_path_entry.insert(0, folder_path)
+            # Нормализуем путь (заменяем обратные слеши на прямые)
+            folder_path = folder_path.replace('\\', '/')
             
+            # Вставляем путь в поле ввода редактора путей
+            if hasattr(self, 'path_editor_entry') and self.path_editor_entry.winfo_exists():
+                self.path_editor_entry.delete(0, tk.END)
+                self.path_editor_entry.insert(0, folder_path)
+                
+                # Автоматически применяем изменения ко всем выделенным трекам
+                self.on_path_entry_changed(None)            
             
     def auto_select_first_item(self, tree_widget, items_dict):
         """Автоматически выделяет первый элемент, если он единственный"""
