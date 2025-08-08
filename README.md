@@ -16,7 +16,7 @@ To download the program, go to the [Releases](https://github.com/VolfLife/Playli
 
 	* For generating:	 `.m3u8, .m3u, .pls, .wpl, .asx, .xspf, .json, .xml, .txt`
 
-	* For editing: 		`.m3u8, .m3u, .pls, .wpl, .asx, .wax, .wvx, .xspf, .json, .xml, .txt`
+	* For editing: 		`.m3u8, .m3u, .pls, .wpl, .asx, .xspf, .json, .xml, .txt` + `.wax, .wvx,`
 
 * Supported audio and video formats:
 
