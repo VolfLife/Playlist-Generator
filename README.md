@@ -101,7 +101,7 @@ Edits and saves data from existing playlists without requiring local track files
 
   	* Edit track paths and names
 
-	* Import from folders
+	* Import from folders/playlists with drag-and-drop
 
 	* Delete tracks
 	
@@ -115,7 +115,7 @@ Edits and saves data from existing playlists without requiring local track files
 
 	2.1. Install required packages
 	```
-	pip install pyinstaller fonttools mutagen
+	pip install pyinstaller fonttools mutagen tkinterdnd2
 	```
 
  	2.2. Compile the application
