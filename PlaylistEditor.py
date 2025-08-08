@@ -916,7 +916,7 @@ class PlaylistEditor:
             if valid_files:
                 self.add_playlists_from_files(valid_files)
             else:
-                self.show_message(self.localization.tr("no_valid_playlists_dropped"), "red")
+                self.show_message(self.localization.tr("error_adding_tracks"), "red")
                 
         except Exception as e:
             self.show_message(f"{self.localization.tr('error_processing_drop')}: {str(e)}", "red")
