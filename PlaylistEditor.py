@@ -21,6 +21,14 @@ from tkinter import ttk, messagebox
 from Localization import Localization
 from FontLoader import FontLoader            
 
+try:
+    from tkinterdnd2 import TkinterDnD, DND_FILES
+    HAS_DND = True
+except ImportError:
+    HAS_DND = False
+    print("Предупреждение: drag-and-drop не будет работать (не установлен tkinterdnd2)")
+
+
 class PlaylistEditor:
     def __init__(self, root, file_paths, icon_path, font_path):
         self.root = root
@@ -70,7 +78,8 @@ class PlaylistEditor:
         try:
             self.create_widgets(root)
             self.load_playlist()
-            # История для Undo/Redo
+            if HAS_DND:
+                self.setup_drag_and_drop()            # История для Undo/Redo
             self.history = []
             self.history_index = -1
             self.save_state(force_save=True)  # Сохраняем начальное состояние
@@ -276,7 +285,7 @@ class PlaylistEditor:
                                         continue
                                     
                                     # Получаем название трека из тега Title или из имени файла
-                                    title = entry.findtext('Title', '').strip() or os.path.basename(clean_path)
+                                    title = os.path.basename(clean_path) or entry.findtext('Title', '').strip()
                                     
                                     temp_list.append({
                                         "path": clean_path,
@@ -855,6 +864,725 @@ class PlaylistEditor:
         self.update_display()
 
 
+    def setup_drag_and_drop(self):
+        """Кросс-платформенная настройка drag-and-drop"""
+        if sys.platform == 'win32' and not HAS_DND:
+            # Нативная реализация для Windows
+            self.root.bind('<DragEnter>')
+            self.root.bind('<DragLeave>')
+            self.root.bind('<Drop>', self.on_windows_drop)
+            
+            self.tree.bind('<DragEnter>')
+            self.tree.bind('<DragLeave>')
+            self.tree.bind('<Drop>', self.on_windows_drop)
+        elif HAS_DND:
+            # Используем tkinterdnd2
+            self.root.drop_target_register(DND_FILES)
+            self.root.dnd_bind('<<DragEnter>>')
+            self.root.dnd_bind('<<DragLeave>>')
+            self.root.dnd_bind('<<Drop>>', self.on_playlist_drop)
+            
+            self.tree.drop_target_register(DND_FILES)
+            self.tree.dnd_bind('<<DragEnter>>')
+            self.tree.dnd_bind('<<DragLeave>>')
+            self.tree.dnd_bind('<<Drop>>', self.on_playlist_drop)
+
+
+    def on_windows_drop(self, event):
+        """Обработка для Windows без tkinterdnd2"""
+        try:
+            file_path = event.data.strip('"')
+            self.add_playlists_from_files([file_path])
+        except Exception as e:
+            self.show_message(f"Ошибка: {str(e)}", "red")
+        
+
+
+    def on_playlist_drop(self, event):
+        """Обрабатывает событие перетаскивания файлов (включая множественные)"""
+        try:
+            # Для Windows без tkinterdnd2
+            if sys.platform == 'win32' and not HAS_DND:
+                file_path = event.data.strip('"')
+                files = [file_path]
+            else:
+                # Для tkinterdnd2 и других ОС
+                raw_data = event.data
+                files = self._parse_dropped_files(raw_data)
+            
+            # Нормализация и проверка файлов
+            valid_files = self._validate_files(files)
+            
+            if valid_files:
+                self.add_playlists_from_files(valid_files)
+            else:
+                self.show_message(self.localization.tr("no_valid_playlists_dropped"), "red")
+                
+        except Exception as e:
+            self.show_message(f"{self.localization.tr('error_processing_drop')}: {str(e)}", "red")
+            import traceback
+            traceback.print_exc()
+
+    def _parse_dropped_files(self, raw_data):
+        """Разбирает строку с перетащенными файлами на отдельные пути"""
+        files = []
+        
+        # Обрабатываем разные форматы данных:
+        if isinstance(raw_data, (list, tuple)):
+            # Если данные уже пришли как список
+            files = list(raw_data)
+        elif raw_data.startswith('{') and raw_data.endswith('}'):
+            # Формат {file1} {file2} {file3}
+            files = [f.strip(' {}') for f in raw_data.split('} {')]
+        else:
+            # Пробуем разобрать как строку с путями
+            try:
+                # Разделяем по пробелам, сохраняя пути в кавычках
+                import shlex
+                files = list(shlex.shlex(raw_data, posix=False))
+            except:
+                # Если не получилось, пробуем просто разделить по пробелам
+                files = raw_data.split()
+        
+        return files
+
+    def _validate_files(self, files):
+        """Проверяет и нормализует список файлов"""
+        valid_files = []
+        supported_formats = {'.m3u', '.m3u8', '.txt', '.pls', '.wpl', '.asx', '.xspf', '.json', '.xml'}
+        
+        for file_path in files:
+            try:
+                # Очистка и нормализация пути
+                clean_path = file_path.strip(' \t\n\r"\'{}')
+                norm_path = os.path.normpath(clean_path)
+                
+                # Проверка расширения
+                ext = os.path.splitext(norm_path)[1].lower()
+                if ext not in supported_formats:
+                    continue
+                    
+                # Проверка существования файла
+                if os.path.isfile(norm_path):
+                    valid_files.append(norm_path)
+                else:
+                    print(f"[WARNING] Файл не найден: {norm_path}")
+                    
+            except Exception as e:
+                print(f"[ERROR] Ошибка обработки пути {file_path}: {str(e)}")
+                continue
+        
+        return valid_files
+
+    def add_playlists_from_files(self, file_paths):
+        """Добавляет треки из переданных файлов плейлистов в текущий список"""
+        import urllib
+        try:
+            new_tracks = []
+            total_added = 0
+            supported_formats = {
+                # Аудио
+                '.mp3', '.flac', '.ogg', '.wav', '.m4a', '.aac', '.wma', '.opus', '.aiff', '.aif', '.alac', '.dsf', '.dff', '.mka', '.ac3', '.dts',
+                # Видео
+                '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg', '.ts', '.m2ts', '.3gp', '.vob', '.ogv'
+            }
+
+            for file_path in file_paths:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        ext = os.path.splitext(file_path)[1].lower()
+                        
+                        if ext in ('.m3u', '.m3u8', '.txt'):
+                            # Обработка M3U/M3U8/TXT форматов
+                            for line_num, line in enumerate(f, 1):
+                                line = line.strip()
+                                if line and not line.startswith('#'):
+                                    clean_path = line.strip('"\' \t')
+                                    normalized_path = os.path.normpath(clean_path).replace('\\', '/').strip('"\' \t')
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    new_track = {
+                                        "path": normalized_path,
+                                        "name": os.path.basename(normalized_path),
+                                        "num": len(self.display_tracks) + len(new_tracks) + 1,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": normalized_path,
+                                        "was_modified": False,
+                                        "was_name_modified": False,
+                                        "was_moved": False,
+                                        "found": False
+                                    }
+                                    new_tracks.append(new_track)
+                                    total_added += 1
+                                    
+                                    
+                        elif ext in ('.pls'):
+                            # Обработка PLS формата
+                            for line_num, line in enumerate(f, 1):
+                                line = line.strip()
+                                if not line or line.startswith(';') or line.startswith('['):
+                                    continue
+                                    
+                                if line.lower().startswith('file'):
+                                    # Извлекаем путь к файлу
+                                    _, file_path_pls = line.split('=', 1)
+                                    clean_path = file_path_pls.strip('"\' \t')
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    normalized_path = os.path.normpath(clean_path).replace('\\', '/')
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    new_tracks.append({
+                                        "path": normalized_path,
+                                        "name": os.path.basename(normalized_path),
+                                        "num": line_num,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": normalized_path,
+                                        "was_modified": False,
+                                    })
+                                    total_added += 1
+                                    
+                                    
+                        elif ext in ('.asx'):
+                            # Обработка ASX формата
+                            try:
+                                from xml.etree import ElementTree as ET
+                                tree = ET.parse(file_path)
+                                root = tree.getroot()
+                                
+                                for entry_num, entry in enumerate(root.findall('.//Entry'), 1):
+                                    ref = entry.find('Ref')
+                                    if ref is not None:
+                                        href = ref.get('href', '').strip()
+                                        if not href:
+                                            continue
+                                        
+                                        # Декодирование URL-encoded путей (если нужно)
+                                        clean_path = urllib.parse.unquote(href) if '%' in href else href
+                                        clean_path = os.path.normpath(clean_path).replace('\\', '/').strip('"\' \t')
+                                        
+                                        if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                            continue
+                                        
+                                        # Получаем название трека из тега Title или из имени файла
+                                        title = os.path.basename(clean_path) or entry.findtext('Title', '').strip() 
+                                        
+                                        # Генерируем уникальный ID для трека
+                                        track_id = str(uuid.uuid4())
+                                        
+                                        new_tracks.append({
+                                            "path": clean_path,
+                                            "name": saxutils.unescape(title),  # Декодируем XML-entities
+                                            "num": entry_num,
+                                            "track_id": track_id,
+                                            "source": "added_from_drag_and_drop",
+                                            "original_path": clean_path,
+                                            "was_modified": False
+                                        })
+                                        total_added += 1
+                                        
+                            except ET.ParseError as e:
+                                print(f"[ERROR] Ошибка разбора ASX файла {file_path}: {str(e)}")
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка обработки ASX файла {file_path}: {str(e)}")
+                                    
+                                    
+                                    
+                        elif ext == '.xspf':
+                            # Обработка XSPF формата
+                            import xml.etree.ElementTree as ET
+                            import re
+                            
+                            try:
+                                # Сначала читаем файл как текст и экранируем проблемные символы
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    content = f.read()
+                                
+                                # Заменяем неэкранированные амперсанды (кроме XML-сущностей)
+                                content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                                
+                                # Парсим исправленный XML
+                                root = ET.fromstring(content)
+                                ns = {'ns': 'http://xspf.org/ns/0/'}
+                                
+                                for track_num, track in enumerate(root.findall('.//ns:track', ns), 1):
+                                    location_element = track.find('ns:location', ns)
+                                    
+                                    if location_element is None or not location_element.text:
+                                        print(f"Warning: Empty <location> in track {track_num}")
+                                        continue
+                                    
+                                    # Получаем и очищаем location
+                                    location = location_element.text.strip()
+                                    
+                                    # Сначала декодируем URL-кодирование
+                                    location = urllib.parse.unquote(location)
+                                        
+                                    # Удаляем file:/// если присутствует (с учетом возможного file://)
+                                    if location.startswith(('file:///', 'file://')):
+                                        location = re.sub(r'^file:///*', '', location)
+                                      
+                                    location = urllib.parse.unquote(location)  # Декодируем URL-кодирование
+                                    
+                                    # Получаем название трека (если есть)
+                                    title = track.find('ns:title', ns)
+                                    display_name = os.path.basename(location)
+                                    
+                                    clean_path = location.strip('"\' \t')
+                                    
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    
+                                    normalized_path = os.path.normpath(clean_path).replace('\\', '/')
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    new_tracks.append({
+                                        "path": normalized_path,
+                                        "name": display_name,
+                                        "num": track_num,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": normalized_path,
+                                        "was_modified": False
+                                    })
+                                    total_added += 1
+                            except ET.ParseError as e:
+                                print(f"[ERROR] Ошибка разбора XSPF файла {file_path}: {str(e)}")
+                                continue
+                                    
+                                    
+                                    
+                        elif ext == '.wax':
+                            # Обработка WAX формата (SMIL-based)
+                            import xml.etree.ElementTree as ET
+                            import re
+                            import urllib.parse
+                            
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    content = f.read()
+                                
+                                # Экранируем специальные символы в XML
+                                content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                                
+                                # Парсим XML с учетом namespace
+                                namespaces = {
+                                    'smil': 'http://www.w3.org/2001/SMIL20/Language'
+                                }
+                                root = ET.fromstring(content)
+                                
+                                track_num = 1
+                                for media in root.findall('.//smil:media', namespaces):
+                                    if 'src' not in media.attrib or not media.attrib['src']:
+                                        print(f"Warning: Empty src attribute in track {track_num}")
+                                        continue
+                                    
+                                    # Обрабатываем путь
+                                    location = media.attrib['src'].strip()
+                                    
+                                    # Удаляем file:///
+                                    if location.startswith('file:///'):
+                                        location = location[8:]  # Удаляем file:///
+                                    elif location.startswith('file://'):
+                                        location = location[7:]  # Удаляем file://
+                                    
+                                    # Декодируем URL-кодирование
+                                    location = urllib.parse.unquote(location)
+                                    
+                                    # Получаем имя трека из параметров (если есть)
+                                    title = None
+                                    original_filename = None
+                                    for param in media.findall('smil:param', namespaces):
+                                        if param.get('name') == 'title':
+                                            title = param.get('value')
+                                        elif param.get('name') == 'originalFilename':
+                                            original_filename = param.get('value')
+                                    
+                                    # Определяем display_name
+                                    if title:
+                                        display_name = title
+                                    elif original_filename:
+                                        display_name = os.path.splitext(original_filename)[0]
+                                    else:
+                                        display_name = os.path.basename(location)
+                                    
+                                    # Нормализуем путь
+                                    clean_path = os.path.normpath(location).replace('\\', '/')
+                                    
+                                    # Пропускаем неподдерживаемые форматы
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    # Добавляем трек в список
+                                    new_tracks.append({
+                                        "path": clean_path,
+                                        "name": os.path.basename(location),
+                                        "num": track_num,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": clean_path,
+                                        "was_modified": False
+                                    })
+                                    total_added += 1
+                                    track_num += 1
+                                    
+                            except ET.ParseError as e:
+                                print(f"[ERROR] Ошибка разбора WAX файла {file_path}: {str(e)}")
+                                continue
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка обработки WAX файла {file_path}: {str(e)}")
+                                continue                    
+                                    
+                                    
+                        elif ext == '.wvx':
+                            # Обработка WVX формата (SMIL-based)
+                            import xml.etree.ElementTree as ET
+                            import re
+                            import urllib.parse
+                            
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    content = f.read()
+                                
+                                # Экранируем специальные символы в XML
+                                content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                                
+                                # Парсим XML
+                                root = ET.fromstring(content)
+                                
+                                track_num = 1
+                                for media in root.findall('.//media'):
+                                    if 'src' not in media.attrib or not media.attrib['src']:
+                                        print(f"Warning: Empty src attribute in track {track_num}")
+                                        continue
+                                    
+                                    # Обрабатываем путь
+                                    location = media.attrib['src'].strip()
+                                    
+                                    # Удаляем file:/// и декодируем URL
+                                    if location.startswith('file:///'):
+                                        location = urllib.parse.unquote(location[8:])
+                                    elif location.startswith('file://'):
+                                        location = urllib.parse.unquote(location[7:])
+                                    elif location.startswith(('http://', 'https://', 'mms://')):
+                                        # Для онлайн-ресурсов оставляем как есть
+                                        pass
+                                    else:
+                                        location = urllib.parse.unquote(location)
+                                    
+                                    # Получаем метаданные
+                                    title = media.attrib.get('title')
+                                    artist = media.attrib.get('artist')
+                                    album = media.attrib.get('albumTitle')
+                                    
+                                    # Формируем отображаемое имя
+                                    if title and artist:
+                                        display_name = f"{artist} - {title}"
+                                    elif title:
+                                        display_name = title
+                                    else:
+                                        display_name = os.path.basename(location)
+                                    
+                                    # Для локальных файлов нормализуем путь
+                                    if not location.startswith(('http://', 'https://', 'mms://')):
+                                        clean_path = os.path.normpath(location).replace('\\', '/')
+                                    else:
+                                        clean_path = location
+                                    
+                                    # Пропускаем неподдерживаемые форматы для локальных файлов
+                                    if not location.startswith(('http://', 'https://', 'mms://')):
+                                        if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                            continue
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    # Добавляем трек в список
+                                    new_tracks.append({
+                                        "path": clean_path,
+                                        "name": os.path.basename(location),
+                                        "num": track_num,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": clean_path,
+                                        "was_modified": False,
+                                        "metadata": {
+                                            "artist": artist,
+                                            "title": title,
+                                            "album": album
+                                        }
+                                    })
+                                    total_added += 1
+                                    track_num += 1
+                                    
+                            except ET.ParseError as e:
+                                print(f"[ERROR] Ошибка разбора WVX файла {file_path}: {str(e)}")
+                                continue
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка обработки WVX файла {file_path}: {str(e)}")
+                                continue
+                                    
+                                    
+                        elif ext == '.json':
+                            # Обработка JSON формата
+                            try:
+                                playlist_data = json.load(f)
+                                
+                                # Проверяем структуру JSON
+                                if not isinstance(playlist_data, dict):
+                                    raise ValueError("Invalid JSON playlist format: expected dictionary")
+                                
+                                # Получаем треки из разных возможных структур JSON
+                                tracks = playlist_data.get('tracks') or playlist_data.get('items') or []
+                                
+                                for track in tracks:
+                                    # Поддержка разных форматов пути в JSON
+                                    file_path = track.get('path') or track.get('file') or track.get('location') or ''
+                                    
+                                    if not file_path:
+                                        continue
+                                    
+                                    # Нормализация пути
+                                    clean_path = os.path.normpath(file_path.strip('"\' \t')).replace('\\', '/')
+                                    
+                                    # Проверка расширения файла
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    # Добавляем трек во временный список
+                                    new_tracks.append({
+                                        "path": clean_path,
+                                        "name": os.path.basename(clean_path),
+                                        "num": track.get('position') or track.get('track_number') or len(tracks) + 1,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": clean_path,
+                                        "was_modified": False,
+                                        "was_moved": False,
+                                        "was_restored": False,
+                                        "original_name": track.get('title') or track.get('name') or os.path.basename(clean_path)
+                                    })
+                                    total_added += 1
+                            except json.JSONDecodeError as e:
+                                print(f"[ERROR] Ошибка разбора JSON файла {file_path}: {str(e)}")
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка обработки JSON файла {file_path}: {str(e)}")
+                        
+                        elif ext == '.wpl':
+                            # Обработка WPL формата
+                            try:
+                                from xml.etree import ElementTree as ET
+                                tree = ET.parse(file_path)
+                                root = tree.getroot()
+                                
+                                # Находим все media-элементы в последовательности
+                                for entry_num, media in enumerate(root.findall('.//media'), 1):
+                                    src = media.get('src', '').strip()
+                                    if not src:
+                                        continue
+                                    
+                                    # Очистка пути (удаление лишних кавычек, пробелов)
+                                    clean_path = os.path.normpath(src).replace('\\', '/').strip('"\' \t')
+                                    
+                                    # Проверка поддерживаемого формата файла
+                                    if not any(clean_path.lower().endswith(ext) for ext in supported_formats):
+                                        continue
+                                    
+                                    # Получаем название трека из атрибута title или имени файла
+                                    title = media.get('title', '').strip() or os.path.basename(clean_path)
+                                    
+                                    # Генерируем уникальный ID для трека
+                                    track_id = str(uuid.uuid4())
+                                    
+                                    new_tracks.append({
+                                        "path": clean_path,
+                                        "name": saxutils.unescape(title),  # Декодируем XML-entities
+                                        "num": entry_num,
+                                        "track_id": track_id,
+                                        "source": "added_from_drag_and_drop",
+                                        "original_path": clean_path,
+                                        "was_modified": False
+                                    })
+                                    total_added += 1
+                            except ET.ParseError as e:
+                                print(f"[ERROR] Ошибка разбора WPL файла {file_path}: {str(e)}")
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка обработки WPL файла {file_path}: {str(e)}")
+                                    
+                                    
+                        elif ext == '.xml':
+                            try:
+                                from xml.etree import ElementTree as ET
+                                import re
+                                
+                                # Читаем весь файл для обработки
+                                content = f.read()
+                                
+                                # Экранируем невалидные XML-символы
+                                content = re.sub(r'&(?!amp;|lt;|gt;|apos;|quot;|\#\d+;)', '&amp;', content)
+                                
+                                # Удаляем все meta-теги с rel="filename" до парсинга
+                                content = re.sub(r'<meta\s+rel="filename"[^>]*>.*?</meta>', '', content, flags=re.IGNORECASE|re.DOTALL)
+                                
+                                try:
+                                    root = ET.fromstring(content)
+                                except ET.ParseError:
+                                    # Пробуем добавить корневой тег для неполных XML
+                                    content = f'<root>{content}</root>'
+                                    root = ET.fromstring(content)
+                                
+                                # Словарь для хранения найденных треков
+                                found_tracks = []
+                                
+                                # 1. Пытаемся обработать как iTunes Library
+                                if root.find('.//dict/dict') is not None:
+                                    print("Detected iTunes Library format")
+                                    tracks = []
+                                    current_track = {}
+                                    
+                                    for elem in root.findall('.//dict/dict/dict'):
+                                        key = None
+                                        for child in elem:
+                                            if child.tag == 'key':
+                                                key = child.text
+                                            elif key:
+                                                current_track[key.lower()] = child.text if child.text else ''
+                                                key = None
+                                        
+                                        if 'location' in current_track:
+                                            location = current_track['location']
+                                            location = re.sub(r'^file:///*', '', location)
+                                            location = urllib.parse.unquote(location)
+                                            location = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                            
+                                            name = current_track.get('name', os.path.basename(location))
+                                            found_tracks.append((location, name))
+                                        
+                                        current_track = {}
+                                
+                                # 2. Пытаемся обработать как XSPF
+                                elif root.find('.//track') is not None or root.find('.//Track') is not None:
+                                    print("Detected XSPF format")
+                                    for track in root.findall('.//track') + root.findall('.//Track'):
+                                        location = None
+                                        title = None
+                                        
+                                        # Получаем location
+                                        loc_elem = track.find('location') or track.find('Location')
+                                        if loc_elem is not None and loc_elem.text:
+                                            location = loc_elem.text.strip()
+                                            location = re.sub(r'^file:///*', '', location)
+                                            location = urllib.parse.unquote(location)
+                                            location = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                        
+                                        # Получаем title
+                                        title_elem = track.find('title') or track.find('Title')
+                                        if title_elem is not None and title_elem.text:
+                                            title = title_elem.text.strip()
+                                        
+                                        if location:
+                                            found_tracks.append((
+                                                location,
+                                                title if title else os.path.splitext(os.path.basename(location))[0]
+                                            ))
+                                
+                                # 3. Общий поиск медиа-путей в XML
+                                else:
+                                    print("Detected generic XML format")
+                                    def find_paths(element):
+                                        paths = []
+                                        # Проверяем атрибуты
+                                        for attr, value in element.attrib.items():
+                                            if any(value.lower().endswith(ext) for ext in supported_formats):
+                                                clean_path = re.sub(r'^file:///*', '', value)
+                                                clean_path = urllib.parse.unquote(clean_path)
+                                                paths.append(clean_path)
+                                        
+                                        # Проверяем текст элемента
+                                        if element.text and any(element.text.strip().lower().endswith(ext) for ext in supported_formats):
+                                            clean_path = re.sub(r'^file:///*', '', element.text.strip())
+                                            clean_path = urllib.parse.unquote(clean_path)
+                                            paths.append(clean_path)
+                                        
+                                        # Рекурсивно проверяем дочерние элементы
+                                        for child in element:
+                                            paths.extend(find_paths(child))
+                                        
+                                        return paths
+                                    
+                                    paths = find_paths(root)
+                                    found_tracks = [(path, os.path.splitext(os.path.basename(path))[0]) for path in paths]
+                                
+                                # Добавляем найденные треки в temp_list
+                                for track_num, (location, title) in enumerate(found_tracks, 1):
+                                    if any(location.lower().endswith(ext) for ext in supported_formats):
+                                        normalized_path = os.path.normpath(location).replace('\\', '/').strip('"\' \t')
+                                        
+                                        # Генерируем уникальный ID для трека
+                                        track_id = str(uuid.uuid4())
+                                        
+                                        new_tracks.append({
+                                            "path": normalized_path,
+                                            "name": os.path.basename(location),
+                                            "num": track_num,
+                                            "track_id": track_id,
+                                            "source": "added_from_drag_and_drop",
+                                            "original_path": normalized_path,
+                                            "was_modified": False
+                                        })
+                                        total_added += 1
+                                        print(f"Added track: {title} | {normalized_path}")
+                                
+                                print(f"Total tracks added from XML: {len(temp_list)}")
+                                
+                            except Exception as e:
+                                print(f"[ERROR] Ошибка загрузки XML плейлиста {file_path}: {str(e)}")
+                                import traceback
+                                traceback.print_exc()
+                                    
+                                    
+                                    
+                except Exception as e:
+                    print(f"[ERROR] Ошибка обработки файла {file_path}: {str(e)}")
+                    continue
+            
+            if not new_tracks:
+                self.show_message(self.localization.tr("error_adding_tracks"), "red")
+                return
+            
+            # Добавляем новые треки к текущему списку
+            self.temp_list = [track.copy() for track in self.display_tracks]
+            self.temp_list.extend(new_tracks)
+            self.display_tracks = self.temp_list.copy()
+            
+            # Обновляем отображение
+            self.update_display()
+            self.save_state()
+            
+            # Показываем сообщение об успешном добавлении
+            self.show_message(
+                self.localization.tr("tracks_added_successfully").format(count=total_added), 
+                "green"
+            )
+            
+        except Exception as e:
+            self.show_message(f"{self.localization.tr('error_adding_tracks')}: {str(e)}", "red")
+
+
     def add_tracks(self):
         """Добавляет поддерживаемые аудио и видео файлы из выбранного каталога"""
         from tkinter import filedialog
@@ -993,7 +1721,7 @@ class PlaylistEditor:
         """Создает интерфейс редактора"""
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
-        
+                
         # Используем загруженный шрифт
         style = ttk.Style(root)
         
@@ -2770,7 +3498,7 @@ class PlaylistEditor:
                     "path": new_path,
                     "name": track['name'],
                     "num": idx,
-                    'track_id': track.get('track_id', None),
+                    'track_id': None, #track.get('track_id', None)
                     "original_path": track.get("original_path", track['path']),
                     "original_name": track.get("original_name", track['name']),
                     "was_modified": track.get("was_modified", False),

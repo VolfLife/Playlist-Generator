@@ -22,7 +22,7 @@ from tkinter import ttk
 from FontLoader import FontLoader
 from Localization import Localization
 from PlaylistEditor import PlaylistEditor 
-
+from tkinterdnd2 import TkinterDnD, DND_FILES
 
 
 def is_shift_pressed():
@@ -1661,7 +1661,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.24 by VolfLife   ")
+        print("    Playlist Generator v4.25 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
@@ -1680,13 +1680,21 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-                    
+         
+        try:
+            from tkinterdnd2 import TkinterDnD, DND_FILES
+            HAS_DND = True
+        except ImportError:
+            HAS_DND = False
+            print("Предупреждение: drag-and-drop не будет работать (не установлен tkinterdnd2)")
+
+    
         # Получаем все переданные файлы (игнорируем первый аргумент - это путь к скрипту)
         file_paths = sys.argv[1:] if len(sys.argv) > 1 else None
         
         # Если переданы файлы, открываем редактор
         if file_paths and any(fp.lower().endswith(('.m3u8', '.m3u', '.txt', '.pls', '.asx', '.xspf', '.json', '.wax', '.wvx', '.wpl', '.xml')) for fp in file_paths):
-            editor_root = tk.Tk()
+            editor_root = TkinterDnD.Tk() if HAS_DND else tk.Tk()
             font_loader = FontLoader()
             # Проверяем, что иконка загружена
             icon_path = font_loader.icon_ico if font_loader.icon_ico else None
