@@ -899,81 +899,250 @@ class PlaylistEditor:
 
 
     def on_playlist_drop(self, event):
-        """Обрабатывает событие перетаскивания файлов (включая множественные)"""
+        """Обработчик перетаскивания с исправленной обработкой множественных файлов"""
         try:
-            # Для Windows без tkinterdnd2
-            if sys.platform == 'win32' and not HAS_DND:
-                file_path = event.data.strip('"')
-                files = [file_path]
-            else:
-                # Для tkinterdnd2 и других ОС
-                raw_data = event.data
-                files = self._parse_dropped_files(raw_data)
-            
-            # Нормализация и проверка файлов
+            files = self._parse_dropped_files(event.data)
             valid_files = self._validate_files(files)
             
-            if valid_files:
-                self.add_playlists_from_files(valid_files)
-            else:
-                self.show_message(self.localization.tr("error_adding_tracks"), "red")
+            if not valid_files:
+                print(f"[DEBUG] No valid files in: {files}")
+                self.show_message(self.localization.tr("no_valid_playlists_dropped"), "red")
+                return
                 
+            self.add_playlists_from_files(valid_files)
+            
         except Exception as e:
-            self.show_message(f"{self.localization.tr('error_processing_drop')}: {str(e)}", "red")
+            error_msg = f"Drop error: {str(e)}"
+            print(f"[ERROR] {error_msg}")
+            self.show_message(error_msg, "red")
             import traceback
             traceback.print_exc()
 
-    def _parse_dropped_files(self, raw_data):
-        """Разбирает строку с перетащенными файлами на отдельные пути"""
-        files = []
+    def _parse_dropped_files(self, data):
+        """Универсальный парсер перетащенных файлов"""
+        print(f"[DEBUG] Raw drop data: {data}")
         
-        # Обрабатываем разные форматы данных:
-        if isinstance(raw_data, (list, tuple)):
-            # Если данные уже пришли как список
-            files = list(raw_data)
-        elif raw_data.startswith('{') and raw_data.endswith('}'):
-            # Формат {file1} {file2} {file3}
-            files = [f.strip(' {}') for f in raw_data.split('} {')]
-        else:
-            # Пробуем разобрать как строку с путями
+        # Если данные уже в виде списка
+        if isinstance(data, (list, tuple)):
+            return [os.path.abspath(str(p)) for p in data]
+        
+        # Если это не строка, возвращаем пустой список
+        if not isinstance(data, str):
+            return []
+        
+        # Удаляем обрамляющие фигурные скобки если есть
+        data = data.strip('{}')
+        
+        # Разделяем пути, учитывая:
+        # 1. Пути в кавычках
+        # 2. Пути в фигурных скобках 
+        # 3. Обычные пути с пробелами
+        paths = []
+        current = ""
+        in_quotes = False
+        in_braces = False
+        
+        i = 0
+        while i < len(data):
+            char = data[i]
+            
+            # Обработка кавычек
+            if char == '"':
+                if in_quotes:
+                    paths.append(current)
+                    current = ""
+                    in_quotes = False
+                else:
+                    in_quotes = True
+                i += 1
+                continue
+                
+            # Обработка фигурных скобок
+            if char == '{' and not in_quotes:
+                in_braces = True
+                i += 1
+                continue
+                
+            if char == '}' and not in_quotes and in_braces:
+                if current:
+                    paths.append(current)
+                    current = ""
+                in_braces = False
+                i += 1
+                continue
+                
+            # Разделитель для обычных путей
+            if char == ' ' and not in_quotes and not in_braces:
+                if current:
+                    paths.append(current)
+                    current = ""
+                i += 1
+                continue
+                
+            current += char
+            i += 1
+        
+        # Добавляем последний путь
+        if current:
+            paths.append(current)
+        
+        # Очистка и нормализация путей
+        cleaned_paths = []
+        for path in paths:
+            path = path.strip(' "\'{}')
+            if not path:
+                continue
+                
+            # Исправление для Windows (замена / на \)
+            if sys.platform == 'win32':
+                path = path.replace('/', '\\')
+                
             try:
-                # Разделяем по пробелам, сохраняя пути в кавычках
-                import shlex
-                files = list(shlex.shlex(raw_data, posix=False))
-            except:
-                # Если не получилось, пробуем просто разделить по пробелам
-                files = raw_data.split()
+                norm_path = os.path.normpath(path)
+                abs_path = os.path.abspath(norm_path)
+                cleaned_paths.append(abs_path)
+                print(f"[DEBUG] Processed path: {abs_path}")
+            except Exception as e:
+                print(f"[ERROR] Path processing failed: {str(e)}")
+                continue
         
-        return files
-
+        return cleaned_paths
+    
     def _validate_files(self, files):
-        """Проверяет и нормализует список файлов"""
-        valid_files = []
+        """Проверяет и нормализует пути файлов"""
+        supported = {'.m3u', '.m3u8', '.txt', '.pls', '.wpl', '.asx', '.xspf', '.json', '.xml'}
+        valid = []
+        
+        for path in files:
+            try:
+                # Нормализация пути
+                clean_path = path.strip(' "\'')
+                norm_path = os.path.normpath(clean_path)
+                abs_path = os.path.abspath(norm_path)
+                
+                # Проверка расширения
+                ext = os.path.splitext(abs_path)[1].lower()
+                if ext not in supported:
+                    print(f"[DEBUG] Unsupported format: {abs_path}")
+                    continue
+                    
+                # Проверка существования
+                if not os.path.isfile(abs_path):
+                    print(f"[DEBUG] File not found: {abs_path}")
+                    continue
+                    
+                valid.append(abs_path)
+                print(f"[DEBUG] Valid file: {abs_path}")
+                
+            except Exception as e:
+                print(f"[ERROR] Path validation failed: {str(e)}")
+                continue
+        
+        return valid
+    
+    def _extract_dropped_files(self, data):
+        """Корректно извлекает список файлов, включая пути с пробелами"""
+        if isinstance(data, (list, tuple)):
+            return [os.path.normpath(str(path)) for path in data]
+        
+        if not isinstance(data, str):
+            return []
+        
+        # Дебаг информации
+        print(f"\n[DEBUG] Raw drop data: {data}")
+        
+        # Windows передает пути в формате: {path1} {path2} или "path1" "path2"
+        # Удаляем обрамляющие фигурные скобки если есть
+        cleaned = data.strip('{}')
+        
+        # Разделяем пути, учитывая пробелы и кавычки
+        files = []
+        current = ""
+        in_quotes = False
+        for char in cleaned:
+            if char == '"':
+                if in_quotes:
+                    files.append(current)
+                    current = ""
+                in_quotes = not in_quotes
+            elif char == ' ' and not in_quotes:
+                if current:
+                    files.append(current)
+                    current = ""
+            else:
+                current += char
+        
+        if current:
+            files.append(current)
+        
+        # Обработка особых случаев Windows
+        if sys.platform == 'win32':
+            # Объединяем разделенные пути (когда путь содержит пробелы)
+            merged_files = []
+            i = 0
+            while i < len(files):
+                path = files[i]
+                # Проверяем, является ли частью пути (существует ли при объединении со следующей частью)
+                while i + 1 < len(files) and not os.path.exists(path):
+                    path += " " + files[i+1]
+                    i += 1
+                if os.path.exists(path):
+                    merged_files.append(path)
+                i += 1
+            files = merged_files
+        
+        # Нормализация путей
+        normalized = []
+        for path in files:
+            try:
+                # Удаляем лишние кавычки и пробелы
+                clean_path = path.strip(' "\'')
+                if not clean_path:
+                    continue
+                    
+                # Преобразуем в абсолютный путь
+                abs_path = os.path.abspath(clean_path)
+                normalized.append(abs_path)
+                
+                print(f"[DEBUG] Processed path: {abs_path}")
+            except Exception as e:
+                print(f"[ERROR] Error processing path {path}: {str(e)}")
+        
+        return normalized
+    
+    
+    def _validate_file_paths(self, files):
+        """Проверяет файлы с улучшенными сообщениями об ошибках"""
         supported_formats = {'.m3u', '.m3u8', '.txt', '.pls', '.wpl', '.asx', '.xspf', '.json', '.xml'}
+        valid_files = []
         
         for file_path in files:
             try:
-                # Очистка и нормализация пути
-                clean_path = file_path.strip(' \t\n\r"\'{}')
-                norm_path = os.path.normpath(clean_path)
-                
-                # Проверка расширения
-                ext = os.path.splitext(norm_path)[1].lower()
-                if ext not in supported_formats:
+                if not os.path.exists(file_path):
+                    print(f"[WARNING] Path does not exist: {file_path}")
                     continue
                     
-                # Проверка существования файла
-                if os.path.isfile(norm_path):
-                    valid_files.append(norm_path)
-                else:
-                    print(f"[WARNING] Файл не найден: {norm_path}")
+                if not os.path.isfile(file_path):
+                    print(f"[WARNING] Not a file: {file_path}")
+                    continue
                     
+                ext = os.path.splitext(file_path)[1].lower()
+                if ext not in supported_formats:
+                    print(f"[WARNING] Unsupported format {ext}: {file_path}")
+                    continue
+                    
+                valid_files.append(file_path)
+                
             except Exception as e:
-                print(f"[ERROR] Ошибка обработки пути {file_path}: {str(e)}")
-                continue
+                print(f"[ERROR] Validation failed for {file_path}: {str(e)}")
         
-        return valid_files
-
+        if not valid_files:
+            print("[DEBUG] No valid files found. Details:")
+            for f in files:
+                print(f"- {f} (exists: {os.path.exists(f)}, isfile: {os.path.isfile(f)})")
+        
+        return valid_files    
+    
     def add_playlists_from_files(self, file_paths):
         """Добавляет треки из переданных файлов плейлистов в текущий список"""
         import urllib
