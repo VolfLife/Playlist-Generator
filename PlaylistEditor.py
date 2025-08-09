@@ -897,15 +897,14 @@ class PlaylistEditor:
             self.show_message(f"Ошибка: {str(e)}", "red")
         
 
-
     def on_playlist_drop(self, event):
-        """Обработчик перетаскивания с исправленной обработкой множественных файлов"""
+        """Обработчик перетаскивания для всех случаев"""
         try:
-            files = self._parse_dropped_files(event.data)
+            files = self._extract_files_from_event(event)
             valid_files = self._validate_files(files)
             
             if not valid_files:
-                print(f"[DEBUG] No valid files in: {files}")
+                print(f"[DEBUG] Invalid files: {files}")
                 self.show_message(self.localization.tr("no_valid_playlists_dropped"), "red")
                 return
                 
@@ -918,46 +917,29 @@ class PlaylistEditor:
             import traceback
             traceback.print_exc()
 
-    def _parse_dropped_files(self, data):
-        """Универсальный парсер перетащенных файлов"""
-        print(f"[DEBUG] Raw drop data: {data}")
+    def _extract_files_from_event(self, event):
+        """Универсальный обработчик для всех форматов перетаскивания"""
+        data = event.data
+        print(f"[DEBUG] Raw drop data: {repr(data)}")
         
         # Если данные уже в виде списка
         if isinstance(data, (list, tuple)):
             return [os.path.abspath(str(p)) for p in data]
         
-        # Если это не строка, возвращаем пустой список
         if not isinstance(data, str):
             return []
         
-        # Удаляем обрамляющие фигурные скобки если есть
-        data = data.strip('{}')
-        
-        # Разделяем пути, учитывая:
-        # 1. Пути в кавычках
-        # 2. Пути в фигурных скобках 
-        # 3. Обычные пути с пробелами
+        # Разделяем на отдельные пути
         paths = []
         current = ""
-        in_quotes = False
         in_braces = False
+        in_quotes = False
         
         i = 0
         while i < len(data):
             char = data[i]
             
-            # Обработка кавычек
-            if char == '"':
-                if in_quotes:
-                    paths.append(current)
-                    current = ""
-                    in_quotes = False
-                else:
-                    in_quotes = True
-                i += 1
-                continue
-                
-            # Обработка фигурных скобок
+            # Обработка начала/конца блока
             if char == '{' and not in_quotes:
                 in_braces = True
                 i += 1
@@ -971,8 +953,19 @@ class PlaylistEditor:
                 i += 1
                 continue
                 
-            # Разделитель для обычных путей
-            if char == ' ' and not in_quotes and not in_braces:
+            # Обработка кавычек
+            if char == '"':
+                if in_quotes:
+                    paths.append(current)
+                    current = ""
+                    in_quotes = False
+                else:
+                    in_quotes = True
+                i += 1
+                continue
+                
+            # Разделитель только вне блоков
+            if char == ' ' and not in_braces and not in_quotes:
                 if current:
                     paths.append(current)
                     current = ""
@@ -982,64 +975,163 @@ class PlaylistEditor:
             current += char
             i += 1
         
-        # Добавляем последний путь
         if current:
             paths.append(current)
         
-        # Очистка и нормализация путей
-        cleaned_paths = []
+        # Нормализация путей
+        normalized = []
+        for path in paths:
+            path = path.strip(' {}"\'')
+            if not path:
+                continue
+                
+            # Исправление для Windows
+            if sys.platform == 'win32':
+                path = path.replace('/', '\\')
+                
+            try:
+                # Проверка существования файла (для путей с пробелами)
+                if not os.path.exists(path) and ' ' in path:
+                    # Пробуем найти существующий путь
+                    parts = path.split(' ')
+                    for j in range(len(parts), 0, -1):
+                        test_path = ' '.join(parts[:j])
+                        if os.path.exists(test_path):
+                            path = test_path
+                            break
+                
+                abs_path = os.path.abspath(os.path.normpath(path))
+                normalized.append(abs_path)
+                print(f"[DEBUG] Processed path: {abs_path}")
+            except Exception as e:
+                print(f"[ERROR] Path error: {str(e)}")
+                continue
+        
+        return normalized
+    
+    
+    def _parse_complex_format(self, data):
+        """Обрабатывает форматы с кавычками и фигурными скобками"""
+        paths = []
+        current = ""
+        in_braces = False
+        in_quotes = False
+        
+        i = 0
+        while i < len(data):
+            char = data[i]
+            
+            if char == '{' and not in_quotes:
+                in_braces = True
+                i += 1
+                continue
+                
+            if char == '}' and not in_quotes and in_braces:
+                if current:
+                    paths.append(current)
+                    current = ""
+                in_braces = False
+                i += 1
+                continue
+                
+            if char == '"':
+                if in_quotes:
+                    paths.append(current)
+                    current = ""
+                    in_quotes = False
+                else:
+                    in_quotes = True
+                i += 1
+                continue
+                
+            current += char
+            i += 1
+        
+        if current:
+            paths.append(current)
+        
+        return self._normalize_paths(paths)
+
+    def _parse_simple_format(self, data):
+        """Обрабатывает простой формат с пробелами в качестве разделителей"""
+        # Пробуем сначала разделить по пробелам
+        temp_paths = data.split()
+        
+        # Проверяем, есть ли пути с пробелами
+        actual_paths = []
+        i = 0
+        while i < len(temp_paths):
+            path = temp_paths[i]
+            
+            # Если путь существует - добавляем как есть
+            if os.path.exists(path):
+                actual_paths.append(path)
+                i += 1
+            else:
+                # Пробуем собрать путь из нескольких частей
+                combined = path
+                j = i + 1
+                while j < len(temp_paths):
+                    test_path = combined + ' ' + temp_paths[j]
+                    if os.path.exists(test_path):
+                        combined = test_path
+                        j += 1
+                    else:
+                        break
+                
+                if os.path.exists(combined):
+                    actual_paths.append(combined)
+                    i = j
+                else:
+                    actual_paths.append(path)
+                    i += 1
+        
+        return self._normalize_paths(actual_paths)
+
+    def _normalize_paths(self, paths):
+        """Нормализует список путей"""
+        normalized = []
         for path in paths:
             path = path.strip(' "\'{}')
             if not path:
                 continue
                 
-            # Исправление для Windows (замена / на \)
             if sys.platform == 'win32':
                 path = path.replace('/', '\\')
                 
             try:
-                norm_path = os.path.normpath(path)
-                abs_path = os.path.abspath(norm_path)
-                cleaned_paths.append(abs_path)
+                abs_path = os.path.abspath(os.path.normpath(path))
+                normalized.append(abs_path)
                 print(f"[DEBUG] Processed path: {abs_path}")
             except Exception as e:
-                print(f"[ERROR] Path processing failed: {str(e)}")
+                print(f"[ERROR] Path error: {str(e)}")
                 continue
         
-        return cleaned_paths
+        return normalized
+    
     
     def _validate_files(self, files):
-        """Проверяет и нормализует пути файлов"""
+        """Проверяет существование файлов и их расширения"""
         supported = {'.m3u', '.m3u8', '.txt', '.pls', '.wpl', '.asx', '.xspf', '.json', '.xml'}
         valid = []
         
         for path in files:
             try:
-                # Нормализация пути
-                clean_path = path.strip(' "\'')
-                norm_path = os.path.normpath(clean_path)
-                abs_path = os.path.abspath(norm_path)
-                
-                # Проверка расширения
-                ext = os.path.splitext(abs_path)[1].lower()
+                if not os.path.isfile(path):
+                    print(f"[DEBUG] File not found: {path}")
+                    continue
+                    
+                ext = os.path.splitext(path)[1].lower()
                 if ext not in supported:
-                    print(f"[DEBUG] Unsupported format: {abs_path}")
+                    print(f"[DEBUG] Unsupported format: {path}")
                     continue
                     
-                # Проверка существования
-                if not os.path.isfile(abs_path):
-                    print(f"[DEBUG] File not found: {abs_path}")
-                    continue
-                    
-                valid.append(abs_path)
-                print(f"[DEBUG] Valid file: {abs_path}")
-                
+                valid.append(path)
             except Exception as e:
-                print(f"[ERROR] Path validation failed: {str(e)}")
+                print(f"[ERROR] Validation failed: {str(e)}")
                 continue
         
-        return valid
-    
+        return valid    
         
     def add_playlists_from_files(self, file_paths):
         """Добавляет треки из переданных файлов плейлистов в текущий список"""
