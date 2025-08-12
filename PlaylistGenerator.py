@@ -720,7 +720,6 @@ class PlaylistGenerator:
         print(f"[DEBUG] Поле ввода очищена")
         
         
-
     def toggle_step_entry(self):
         """Блокировка/разблокировка поля шага реверса"""
         if self.use_shadow_seed.get():
@@ -729,6 +728,7 @@ class PlaylistGenerator:
             self.step_entry.insert(0, "0")
         else:
             self.step_entry.config(state='normal')
+
 
     def browse_folders(self):
         selected_dir = filedialog.askdirectory()
