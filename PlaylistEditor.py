@@ -1628,7 +1628,7 @@ class PlaylistEditor:
             self.temp_list = [track.copy() for track in self.display_tracks]
             self.temp_list.extend(new_tracks)
             self.display_tracks = self.temp_list.copy()
-            
+            self.shuffled_list = None
             # Обновляем отображение
             self.update_display()
             self.save_state()
