@@ -334,20 +334,24 @@ class PlaylistGenerator:
             # Обновляем заголовок окна
             self.root.title(self.localization.tr("window_title_generator"))
             # Обновляем текст кнопки генерации
+            self.music_folder_label.config(text=self.localization.tr("music_folder_label"))
             self.browse_btn.config(text=self.localization.tr("browse_button"))
+            self.playlist_name_label.config(text=self.localization.tr("playlist_name_label"))
             self.seed_label.config(text=self.localization.tr("seed_label"))
             self.swaps_label.config(text=self.localization.tr("intensity_label"))
             self.seed_format_label.config(text=self.localization.tr("seed_format_label"))
             self.reverse_label.config(text=self.localization.tr("reverse_step_label"))
             self.shadow_seed_check.config(text=self.localization.tr("shadow_seed_check"))
+            self.language_label.config(text=self.localization.tr("language_label"))
             self.generate_btn.config(text=self.localization.tr("generate_button"))
-            # Обновляем остальной интерфейс
-            self.update_ui_texts()
         
             # Обновляем список форматов сида
             self.seed_format['values'] = self.localization.get_seed_format_options()
 
-            
+            # Обновляем текст подсказки
+            if hasattr(self, 'folder_entry_tooltip'):
+                self.folder_entry_tooltip.config(text=self.localization.tr("folder_entry_tooltip"))
+
             # Получаем текущее значение формата сида
             current_seed_format = self.seed_format.get()
             # Список форматов, при которых текущее значение не должно меняться
@@ -398,7 +402,8 @@ class PlaylistGenerator:
         self.root.grid_columnconfigure(1, weight=1)
         
         # Метки и поля ввода
-        tk.Label(self.root, text=self.localization.tr("music_folder_label")).grid(row=0, column=0, sticky="w", padx=10, pady=5)
+        self.music_folder_label = tk.Label(self.root, text=self.localization.tr("music_folder_label"))
+        self.music_folder_label.grid(row=0, column=0, sticky="w", padx=10, pady=5)
         self.folder_entry = ttk.Entry(self.root, width=40)
         self.folder_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
@@ -410,7 +415,8 @@ class PlaylistGenerator:
             )
         self.browse_btn.grid(row=0, column=2, padx=1, pady=10, sticky="w")
         
-        tk.Label(self.root, text=self.localization.tr("playlist_name_label")).grid(row=1, column=0, sticky="w", padx=10, pady=5)
+        self.playlist_name_label = tk.Label(self.root, text=self.localization.tr("playlist_name_label"))
+        self.playlist_name_label.grid(row=1, column=0, sticky="w", padx=10, pady=5)
         self.playlist_entry = ttk.Entry(self.root, width=40)
         self.playlist_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
         self.playlist_entry.insert(0, self.localization.tr("default_playlist_name")) # Добавляем значение по умолчанию
@@ -713,26 +719,6 @@ class PlaylistGenerator:
                     )
         print(f"[DEBUG] Поле ввода очищена")
         
-    def update_ui_texts(self):
-        """Обновляет все тексты в интерфейсе"""
-        # Обновляем language_label
-        self.language_label.config(text=self.localization.tr("language_label"))
-        
-        widgets_to_update = [
-            (0, 0, "music_folder_label"),
-            (0, 2, "browse_button"),
-            (1, 0, "playlist_name_label"),
-            (2, 0, "language_label") # Для label в language_frame   
-        ]
-        
-        for row, col, key in widgets_to_update:
-            widget = self.root.grid_slaves(row=row, column=col)[0]
-            if isinstance(widget, (tk.Label, tk.Button, tk.Checkbutton)):
-                widget.config(text=self.localization.tr(key))
-        
-        # Обновляем текст подсказки
-        if hasattr(self, 'folder_entry_tooltip'):
-            self.folder_entry_tooltip.config(text=self.localization.tr("folder_entry_tooltip"))
         
 
     def toggle_step_entry(self):
@@ -955,7 +941,8 @@ class PlaylistGenerator:
         random_part = random.getrandbits(256)
         random_nbr = random.getrandbits(128)
         random_nbrr = random.getrandbits(64)
-        number = [1, random_nbr, random_nbrr, 1]
+        random_nbrrr = random.getrandbits(4)
+        number = [1, random_nbr, random_nbrr, 1, random_nbrrr]
         random_divisor = random.choice(number)
         
         # Выбираем подходящий делитель
@@ -1661,7 +1648,7 @@ if __name__ == "__main__":
     if debug_mode:
         setup_logging_and_console()
         print("===========================================")
-        print("    Playlist Generator v4.26 by VolfLife   ")
+        print("    Playlist Generator v4.27 by VolfLife   ")
         print("                                           ")
         print("   github.com/VolfLife/Playlist-Generator  ")
         print("                                           ")
