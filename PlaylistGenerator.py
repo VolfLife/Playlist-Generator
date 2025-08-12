@@ -521,7 +521,7 @@ class PlaylistGenerator:
             text=self.localization.tr("generate_button"),
             command=self.generate_playlist
         )
-        self.generate_btn.pack(side=tk.LEFT, padx=(95, 10))
+        self.generate_btn.pack(side=tk.LEFT, padx=(75, 10))
         
         
         # Combobox формата
